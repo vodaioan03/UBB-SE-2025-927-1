@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Data.SqlClient;
-using CourseApp.Data;
+using Duo.Data;
 
-namespace CourseApp.ModelViews
+namespace Duo.ModelViews
 {
     [ExcludeFromCodeCoverage]
     public class ProgressModelView : DataLink
