@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.UI.Xaml;
 
-namespace CourseApp.Converters
+namespace Duo.Converters
 {
     /// <summary>
     /// Converts a boolean value to a <see cref="Visibility"/> value.
