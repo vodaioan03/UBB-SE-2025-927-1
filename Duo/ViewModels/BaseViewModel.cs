@@ -2,7 +2,7 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-namespace CourseApp.ViewModels
+namespace Duo.ViewModels
 {
     /// <summary>
     /// A base class for view models that supports property change notifications.
