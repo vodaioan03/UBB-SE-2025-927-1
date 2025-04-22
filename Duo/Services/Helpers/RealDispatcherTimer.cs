@@ -1,6 +1,6 @@
 ﻿#pragma warning disable IDE0290
 
-namespace CourseApp.Services.Helpers
+namespace Duo.Services.Helpers
 {
     using System;
     using System.Diagnostics.CodeAnalysis;

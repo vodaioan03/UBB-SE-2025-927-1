@@ -1,6 +1,6 @@
 using System;
 
-namespace CourseApp.Services
+namespace Duo.Services
 {
     /// <summary>
     /// Interface for coin-related operations

@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Duo.Models;
-using Duo.Repository;
+using Duo.Repositories;
 using Duo.ModelViews;
 
 #pragma warning disable IDE0079 // Remove unnecessary suppression

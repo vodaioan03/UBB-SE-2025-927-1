@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace CourseApp.Services
+namespace Duo.Services
 {
     /// <summary>
     /// Defines a service contract for a dispatcher timer that raises events at specified intervals.

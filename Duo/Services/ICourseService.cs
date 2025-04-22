@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-using CourseApp.Models;
+using Duo.Models;
 
-namespace CourseApp.Services
+namespace Duo.Services
 {
     /// <summary>
     /// Interface for course-related operations
