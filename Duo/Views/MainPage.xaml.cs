@@ -1,14 +1,14 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.UI.Xaml.Controls;
-using CourseApp.Models;
-using CourseApp.ViewModels;
+using Duo.Models;
+using Duo.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Navigation;
-using CourseApp.Repository;
-using CourseApp.Services;
+using Duo.Repository;
+using Duo.Services;
 
-namespace CourseApp.Views
+namespace Duo.Views
 {
     [ExcludeFromCodeCoverage]
     public sealed partial class MainPage : Page
