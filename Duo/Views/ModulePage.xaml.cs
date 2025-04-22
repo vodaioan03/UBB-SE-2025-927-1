@@ -2,11 +2,11 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using CourseApp.Models;
-using CourseApp.ViewModels;
-using CourseApp.Services;
+using Duo.Models;
+using Duo.ViewModels;
+using Duo.Services;
 
-namespace CourseApp.Views
+namespace Duo.Views
 {
     [ExcludeFromCodeCoverage]
     public sealed partial class ModulePage : Page
