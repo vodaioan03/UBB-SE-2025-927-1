@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using CourseApp.Models;
-using CourseApp.ModelViews;
+using Duo.Models;
+using Duo.ModelViews;
 
-namespace CourseApp.Repository
+namespace Duo.Repositories
 {
     /// <summary>
     /// Repository class responsible for managing courses, modules, enrollments, progress, and rewards.

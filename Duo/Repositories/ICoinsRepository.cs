@@ -1,6 +1,6 @@
 using System;
 
-namespace CourseApp.Repository
+namespace Duo.Repositories
 {
     /// <summary>
     /// Interface for coin-related data operations

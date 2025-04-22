@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
+using Duo.Repositories;
 
-namespace CourseApp.Repository
+namespace Duo.Repository
 {
     [ExcludeFromCodeCoverage]
     public class FakeCoinsRepository : ICoinsRepository
