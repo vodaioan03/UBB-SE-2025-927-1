@@ -54,17 +54,8 @@ namespace CourseApp.Views
         {
             if (e.ClickedItem is Course selectedCourse)
             {
-                var mainWindow = MainWindow.Instance;
-                if (mainWindow != null)
-                {
-                    var courseVM = mainWindow.GetOrCreateCourseViewModel(selectedCourse);
-                    this.Frame.Navigate(typeof(CoursePage), courseVM);
-                }
-                else
-                {
-                    // Handle the case where mainWindow is null
-                    // For example, you could log an error or show a message to the user
-                }
+                var courseVM = new CourseViewModel(selectedCourse);
+                this.Frame.Navigate(typeof(CoursePage), courseVM);
             }
         }
     }
