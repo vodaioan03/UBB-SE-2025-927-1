@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Duo.Models.Exercises;
+﻿namespace Duo.Models.Exercises;
 
 public class MultipleChoiceAnswerModel
 {
