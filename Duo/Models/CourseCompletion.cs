@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Duo.Models
+namespace CourseApp.Models
 {
     /// <summary>
     /// Represents the completion status of a course by a user,

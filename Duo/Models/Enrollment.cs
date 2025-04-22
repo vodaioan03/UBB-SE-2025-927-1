@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Duo.Models
+namespace CourseApp.Models
 {
     /// <summary>
     /// Represents a user's enrollment in a course, including progress and completion status.
