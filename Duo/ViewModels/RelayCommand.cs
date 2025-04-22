@@ -3,7 +3,7 @@ using System.Windows.Input;
 
 #pragma warning disable IDE0290
 
-namespace CourseApp.ViewModels
+namespace Duo.ViewModels
 {
     /// <summary>
     /// A command implementation that can be executed and supports conditional execution based on a predicate.
