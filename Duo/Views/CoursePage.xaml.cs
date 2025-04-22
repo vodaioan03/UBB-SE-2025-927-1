@@ -1,14 +1,14 @@
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using CourseApp.Models;
-using CourseApp.ViewModels;
+using Duo.Models;
+using Duo.ViewModels;
 using Microsoft.UI.Xaml.Navigation;
 
 #pragma warning disable CS8602
 #pragma warning disable IDE0059
 
-namespace CourseApp.Views
+namespace Duo.Views
 {
     [ExcludeFromCodeCoverage]
     public sealed partial class CoursePage : Page
