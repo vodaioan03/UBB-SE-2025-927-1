@@ -2,13 +2,13 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Windows.Input;
-using CourseApp.Models;
-using CourseApp.Services;
+using Duo.Models;
+using Duo.Services;
 using Windows.System.Threading;
 
 #pragma warning disable IDE0028, CS8618, CS8602, CS8601, IDE0060
 
-namespace CourseApp.ViewModels
+namespace Duo.ViewModels
 {
     /// <summary>
     /// ViewModel responsible for managing the main application logic, including course display, filtering, and user coin balance.
