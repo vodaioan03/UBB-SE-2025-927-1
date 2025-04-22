@@ -42,7 +42,7 @@ namespace Duo.ViewModels
                             pageType = typeof(Views.Pages.AdminMainPage);
                             break;
                         case "CoursesParent":
-                            pageType = typeof(CourseApp.Views.MainPage);
+                            pageType = typeof(Duo.Views.MainPage);
                             break;
                         default:
                             Debug.WriteLine($"Unknown page tag: {tag}");
