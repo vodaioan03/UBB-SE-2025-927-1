@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.UI.Xaml.Data;
 
-namespace CourseApp.Converters
+namespace Duo.Converters
 {
     public interface IAppValueConverter : IValueConverter
     {
