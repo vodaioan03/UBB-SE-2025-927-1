@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
-using CourseApp.Models;
+using Duo.Models;
 
-namespace CourseApp.Repository
+namespace Duo.Repositories
 {
     /// <summary>
     /// Interface for course-related data operations

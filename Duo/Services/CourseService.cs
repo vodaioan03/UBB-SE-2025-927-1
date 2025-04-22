@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using CourseApp.Models;
-using CourseApp.Repository;
 using CourseApp.ModelViews;
+using Duo.Repositories;
 
 #pragma warning disable IDE0079 // Remove unnecessary suppression
 #pragma warning disable SA1010 // Opening square brackets should be spaced correctly

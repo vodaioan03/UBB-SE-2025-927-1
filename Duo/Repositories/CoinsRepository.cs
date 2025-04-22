@@ -1,10 +1,10 @@
 ﻿using System;
-using CourseApp.ModelViews;
+using Duo.ModelViews;
 
 #pragma warning disable IDE0079 // Remove unnecessary suppression
 #pragma warning disable SA1009 // Closing parenthesis should be spaced correctly
 
-namespace CourseApp.Repository
+namespace Duo.Repositories
 {
     /// <summary>
     /// Repository class responsible for interacting with the user wallet.
