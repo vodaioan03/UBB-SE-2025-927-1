@@ -3,14 +3,14 @@ using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Windows.Input;
-using CourseApp.Models;
-using CourseApp.Services;
-using CourseApp.ViewModels.Helpers;
+using Duo.Models;
+using Duo.Services;
+using Duo.ViewModels.Helpers;
 
 #pragma warning disable IDE0079 // Remove unnecessary suppression
 #pragma warning disable SA1010 // Opening square brackets should be spaced correctly
 
-namespace CourseApp.ViewModels
+namespace Duo.ViewModels
 {
     /// <summary>
     /// ViewModel for handling course presentation, progress tracking, and user interactions
