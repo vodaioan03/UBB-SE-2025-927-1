@@ -1,8 +1,8 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using CourseApp.Data;
+using Duo.Data;
 using Microsoft.Data.SqlClient;
 
-namespace CourseApp.ModelViews
+namespace Duo.ModelViews
 {
     [ExcludeFromCodeCoverage]
     public class EnrollmentModelView : DataLink
