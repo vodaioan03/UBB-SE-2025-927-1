@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using Duo.Models.Quizzes;
-using Duo.Models.Exercises;
 
 namespace Duo.Models.Sections;
 
