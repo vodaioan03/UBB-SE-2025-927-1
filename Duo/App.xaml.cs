@@ -58,21 +58,21 @@ namespace Duo
             services.AddSingleton<IConfiguration>(configuration);
             services.AddSingleton<DatabaseConnection>();
 
-            services.AddSingleton<UserRepository>();
-            services.AddSingleton<UserService>();
+            services.AddSingleton<IUserRepository, UserRepository>();
+            services.AddSingleton<IUserService, UserService>();
 
-            services.AddSingleton<ExerciseRepository>();
-            services.AddSingleton<ExerciseService>();
+            services.AddSingleton<IExerciseRepository, ExerciseRepository>();
+            services.AddSingleton<IExerciseService, ExerciseService>();
 
-            services.AddSingleton<ExamRepository>();
-            services.AddSingleton<QuizRepository>();
-            services.AddSingleton<QuizService>();
+            services.AddSingleton<IExamRepository, ExamRepository>();
+            services.AddSingleton<IQuizRepository, QuizRepository>();
+            services.AddSingleton<IQuizService, QuizService>();
 
-            services.AddSingleton<SectionRepository>();
-            services.AddSingleton<SectionService>();
+            services.AddSingleton<ISectionRepository, SectionRepository>();
+            services.AddSingleton<ISectionService, SectionService>();
 
-            services.AddSingleton<RoadmapRepository>();
-            services.AddSingleton<RoadmapService>();
+            services.AddSingleton<IRoadmapRepository, RoadmapRepository>();
+            services.AddSingleton<IRoadmapService, RoadmapService>();
 
             services.AddSingleton<IExerciseViewFactory, ExerciseViewFactory>();
             services.AddSingleton<IUserRepository, UserRepository>();
