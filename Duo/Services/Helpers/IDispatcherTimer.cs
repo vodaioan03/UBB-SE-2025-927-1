@@ -1,4 +1,4 @@
-﻿namespace CourseApp.Services.Helpers
+﻿namespace Duo.Services.Helpers
 {
     using System;
 

@@ -1,14 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using CourseApp.Models;
-using CourseApp.ModelViews;
+using Duo.Models;
 using Duo.Repositories;
+using Duo.ModelViews;
 
 #pragma warning disable IDE0079 // Remove unnecessary suppression
 #pragma warning disable SA1010 // Opening square brackets should be spaced correctly
 
-namespace CourseApp.Services
+namespace Duo.Services
 {
     /// <summary>
     /// Provides core business logic for managing courses, modules, and user interactions.

@@ -1,11 +1,11 @@
 using System;
-using CourseApp.ModelViews;
 using Duo.Repositories;
+using Duo.ModelViews;
 
 #pragma warning disable IDE0079 // Remove unnecessary suppression
 #pragma warning disable SA1009 // Closing parenthesis should be spaced correctly
 
-namespace CourseApp.Services
+namespace Duo.Services
 {
     /// <summary>
     /// Service responsible for managing coin-related operations for users.
