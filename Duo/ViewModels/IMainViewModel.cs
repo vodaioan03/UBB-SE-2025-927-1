@@ -1,6 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.Windows.Input;
-using CourseApp.Models;
+using Duo.Models;
 
 #pragma warning disable IDE0079
 #pragma warning disable CA1050
