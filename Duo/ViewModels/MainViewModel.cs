@@ -4,6 +4,7 @@ using System.Linq;
 using System.Windows.Input;
 using Duo.Models;
 using Duo.Services;
+using Duo.Commands;
 using Windows.System.Threading;
 
 #pragma warning disable IDE0028, CS8618, CS8602, CS8601, IDE0060
