@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace CourseApp.Converters
+namespace Duo.Converters
 {
     /// <summary>
     /// A converter that inverts a boolean value.

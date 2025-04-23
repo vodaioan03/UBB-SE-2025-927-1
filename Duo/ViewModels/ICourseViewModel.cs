@@ -1,9 +1,9 @@
 ﻿using System.Collections.ObjectModel;
 using System.Windows.Input;
-using CourseApp.Models;
-using static CourseApp.ViewModels.CourseViewModel;
+using Duo.Models;
+using static Duo.ViewModels.CourseViewModel;
 
-namespace CourseApp.ViewModels
+namespace Duo.ViewModels
 {
     /// <summary>
     /// Interface defining the view model for course management in the application.

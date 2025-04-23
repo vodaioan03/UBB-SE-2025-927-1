@@ -3,27 +3,41 @@ using System.Windows.Input;
 
 namespace Duo.Commands
 {
+    /// <summary>
+    /// A flexible ICommand implementation that supports both parameterless and parameterized execution logic.
+    /// </summary>
     public class RelayCommand : ICommand
     {
-        private readonly Action execute;
-        private readonly Func<bool> canExecute;
+        private readonly Action<object?> execute;
+        private readonly Predicate<object?>? canExecute;
 
-        public RelayCommand(Action execute, Func<bool> canExecute = null)
+        public event EventHandler? CanExecuteChanged;
+
+        public RelayCommand(Action<object?> execute, Predicate<object?>? canExecute = null)
         {
             this.execute = execute ?? throw new ArgumentNullException(nameof(execute));
             this.canExecute = canExecute;
         }
 
-        public event EventHandler CanExecuteChanged;
-
-        public bool CanExecute(object parameter)
+        public RelayCommand(Action execute, Func<bool>? canExecute = null)
         {
-            return canExecute?.Invoke() ?? true;
+            if (execute == null)
+            {
+                throw new ArgumentNullException(nameof(execute));
+            }
+
+            this.execute = _ => execute();
+            this.canExecute = canExecute != null ? _ => canExecute() : null;
         }
 
-        public void Execute(object parameter)
+        public bool CanExecute(object? parameter)
         {
-            execute();
+            return canExecute?.Invoke(parameter) ?? true;
+        }
+
+        public void Execute(object? parameter)
+        {
+            execute(parameter);
         }
 
         public void RaiseCanExecuteChanged()

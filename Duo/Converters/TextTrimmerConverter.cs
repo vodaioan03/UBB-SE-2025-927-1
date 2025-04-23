@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace CourseApp.Converters
+namespace Duo.Converters
 {
     /// <summary>
     /// A converter that trims a string to a specified length and adds ellipsis ("...") at the end.

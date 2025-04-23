@@ -1,8 +1,9 @@
 using System.Windows.Input;
-using CourseApp.Models;
-using CourseApp.Services;
+using Duo.Models;
+using Duo.Services;
+using Duo.Commands;
 
-namespace CourseApp.ViewModels
+namespace Duo.ViewModels
 {
     public partial class ModuleViewModel : BaseViewModel, IModuleViewModel
     {

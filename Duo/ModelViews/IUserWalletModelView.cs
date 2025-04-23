@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace CourseApp.ModelViews
+namespace Duo.ModelViews
 {
     /// <summary>
     /// Defines the methods for interacting with a user's wallet, including adding and deducting coins,

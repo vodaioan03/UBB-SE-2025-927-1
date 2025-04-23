@@ -2,7 +2,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.UI.Xaml.Media;
 
-namespace CourseApp.Converters
+namespace Duo.Converters
 {
     /// <summary>
     /// Converts a boolean value to a color brush indicating availability.

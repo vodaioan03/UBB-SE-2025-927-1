@@ -1,4 +1,4 @@
-﻿namespace CourseApp.ViewModels.Helpers
+﻿namespace Duo.ViewModels.Helpers
 {
     /// <summary>
     /// Interface for managing temporary notifications in the course view.
