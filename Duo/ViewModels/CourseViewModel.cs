@@ -6,6 +6,7 @@ using System.Windows.Input;
 using Duo.Models;
 using Duo.Services;
 using Duo.ViewModels.Helpers;
+using Duo.Commands;
 
 #pragma warning disable IDE0079 // Remove unnecessary suppression
 #pragma warning disable SA1010 // Opening square brackets should be spaced correctly
