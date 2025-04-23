@@ -1,6 +1,7 @@
 using System.Windows.Input;
 using Duo.Models;
 using Duo.Services;
+using Duo.Commands;
 
 namespace Duo.ViewModels
 {
