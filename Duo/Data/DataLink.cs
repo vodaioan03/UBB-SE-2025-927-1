@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using Microsoft.Data.SqlClient;
 
-namespace CourseApp.Data
+namespace Duo.Data
 {
     /// <summary>
     /// Provides a static method to retrieve a SQL connection to the CourseApp database.

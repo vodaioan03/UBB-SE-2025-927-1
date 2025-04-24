@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Data.SqlClient;
-using CourseApp.Models;
-using CourseApp.Data;
+using Duo.Models;
+using Duo.Data;
 
-namespace CourseApp.ModelViews
+namespace Duo.ModelViews
 {
     [ExcludeFromCodeCoverage]
     public class TagModelView : DataLink

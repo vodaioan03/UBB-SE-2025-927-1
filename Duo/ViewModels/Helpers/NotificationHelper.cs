@@ -1,8 +1,8 @@
-﻿namespace CourseApp.ViewModels.Helpers
+﻿namespace Duo.ViewModels.Helpers
 {
     using System;
-    using CourseApp.Services;
-    using CourseApp.ViewModels;
+    using Duo.Services;
+    using Duo.ViewModels;
 
     /// <summary>
     /// Helper class for managing temporary notifications in the course view.

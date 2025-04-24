@@ -1,8 +1,8 @@
 <Page
-    x:Class="CourseApp.Views.ModulePage"
+    x:Class="Duo.Views.ModulePage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:vm="using:CourseApp.ViewModels"
+    xmlns:vm="using:Duo.ViewModels"
     Background="#121212">
     <Grid Margin="16">
         <Grid.RowDefinitions>

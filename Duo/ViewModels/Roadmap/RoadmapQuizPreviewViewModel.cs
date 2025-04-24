@@ -24,8 +24,8 @@ namespace Duo.ViewModels.Roadmap
         }
         private Section section;
         private Visibility isPreviewVisible;
-        private readonly QuizService quizService;
-        private readonly SectionService sectionService;
+        private readonly IQuizService quizService;
+        private readonly ISectionService sectionService;
 
         public Visibility IsPreviewVisible
         {
@@ -80,8 +80,8 @@ namespace Duo.ViewModels.Roadmap
 
         public RoadmapQuizPreviewViewModel()
         {
-            quizService = (QuizService)App.ServiceProvider.GetService(typeof(QuizService));
-            sectionService = (SectionService)App.ServiceProvider.GetService(typeof(SectionService));
+            quizService = (IQuizService)App.ServiceProvider.GetService(typeof(IQuizService));
+            sectionService = (ISectionService)App.ServiceProvider.GetService(typeof(ISectionService));
             isPreviewVisible = Visibility.Visible;
 
             var mainPageViewModel = (RoadmapMainPageViewModel)App.ServiceProvider.GetService(typeof(RoadmapMainPageViewModel));

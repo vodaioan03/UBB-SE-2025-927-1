@@ -1,14 +1,14 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.UI.Xaml.Controls;
-using CourseApp.Models;
-using CourseApp.ViewModels;
+using Duo.Models;
+using Duo.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Navigation;
-using CourseApp.Repository;
-using CourseApp.Services;
+using Duo.Repository;
+using Duo.Services;
 
-namespace CourseApp.Views
+namespace Duo.Views
 {
     [ExcludeFromCodeCoverage]
     public sealed partial class MainPage : Page
@@ -54,17 +54,8 @@ namespace CourseApp.Views
         {
             if (e.ClickedItem is Course selectedCourse)
             {
-                var mainWindow = MainWindow.Instance;
-                if (mainWindow != null)
-                {
-                    var courseVM = mainWindow.GetOrCreateCourseViewModel(selectedCourse);
-                    this.Frame.Navigate(typeof(CoursePage), courseVM);
-                }
-                else
-                {
-                    // Handle the case where mainWindow is null
-                    // For example, you could log an error or show a message to the user
-                }
+                var courseVM = new CourseViewModel(selectedCourse);
+                this.Frame.Navigate(typeof(CoursePage), courseVM);
             }
         }
     }

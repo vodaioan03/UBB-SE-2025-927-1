@@ -1,8 +1,8 @@
-﻿namespace CourseApp.Services
+﻿namespace Duo.Services
 {
     using System;
     using System.Diagnostics.CodeAnalysis;
-    using CourseApp.Services.Helpers;
+    using Duo.Services.Helpers;
 
     /// <summary>
     /// Service implementation for a dispatcher timer that raises events at specified intervals.
