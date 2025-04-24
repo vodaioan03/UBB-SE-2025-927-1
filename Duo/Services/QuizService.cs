@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
@@ -115,27 +116,47 @@ namespace Duo.Services
         }
 
         // API based methods
-
         public async Task<QuizModel> FetchQuizAsync(int quizId)
         {
-            var response = await httpClient.GetAsync($"api/quizzes/{quizId}");
+            /* var response = await httpClient.GetAsync($"api/quizzes/{quizId}");
             response.EnsureSuccessStatusCode();
             var quiz = await response.Content.ReadFromJsonAsync<QuizModel>();
-            return quiz!;
+            return quiz!;*/
+
+            await Task.Delay(200); // simulate network delay
+            return new QuizModel
+            {
+                Id = quizId,
+                SectionId = 1,
+                ExpirationTime = DateTime.Now.AddMinutes(30),
+                ExerciseIds = new List<int> { 101, 102, 103 }
+            };
         }
 
         public async Task SubmitQuizAsync(QuizSubmission submission)
         {
-            var response = await httpClient.PostAsJsonAsync("api/quizzes/submit", submission);
-            response.EnsureSuccessStatusCode();
+            /* var response = await httpClient.PostAsJsonAsync("api/quizzes/submit", submission);
+            response.EnsureSuccessStatusCode();*/
+
+            await Task.Delay(100); // pretend to send
         }
 
         public async Task<QuizResult> GetResultAsync(int quizId)
         {
+            await Task.Delay(100);
+            return new QuizResult
+            {
+                QuizId = quizId,
+                TotalQuestions = 10,
+                CorrectAnswers = 8,
+                TimeTaken = TimeSpan.FromMinutes(12)
+            };
+
+            /*
             var response = await httpClient.GetAsync($"api/quizzes/{quizId}/result");
             response.EnsureSuccessStatusCode();
             var result = await response.Content.ReadFromJsonAsync<QuizResult>();
-            return result!;
+            return result!;*/
         }
     }
 }
