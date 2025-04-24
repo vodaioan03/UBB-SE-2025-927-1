@@ -1,6 +1,9 @@
-// for submitting answers
-public class AnswerSubmission
+namespace Duo.Models.Quizzes.API
 {
-	public int QuestionId { get; set; }
-	public int SelectedOptionIndex { get; set; }
+    // for submitting answers
+    public class AnswerSubmission
+    {
+        public int QuestionId { get; set; }
+        public int SelectedOptionIndex { get; set; }
+    }
 }

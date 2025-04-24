@@ -1,8 +1,13 @@
-// result from the server
-public class QuizResult
+using System;
+
+namespace Duo.Models.Quizzes.API
 {
-    public int QuizId { get; set; }
-    public int TotalQuestions { get; set; }
-    public int CorrectAnswers { get; set; }
-    public TimeSpan TimeTaken { get; set; }
+    // result from the server
+    public class QuizResult
+    {
+        public int QuizId { get; set; }
+        public int TotalQuestions { get; set; }
+        public int CorrectAnswers { get; set; }
+        public TimeSpan TimeTaken { get; set; }
+    }
 }

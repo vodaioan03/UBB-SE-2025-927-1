@@ -1,5 +1,10 @@
-public class QuizSubmission
+using System.Collections.Generic;
+
+namespace Duo.Models.Quizzes.API
 {
-	public int QuizId { get; set; }
-	public List<AnswerSubmission> Answers { get; set; }
+    public class QuizSubmission
+    {
+        public int QuizId { get; set; }
+        public List<AnswerSubmission> Answers { get; set; }
+    }
 }
