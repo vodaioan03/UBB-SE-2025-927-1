@@ -9,7 +9,7 @@ namespace Duo.Data
     [ExcludeFromCodeCoverage]
     public class DataLink
     {
-        private static readonly string ConnectionString = "Data Source=localhost\\SQLEXPRESS;Initial Catalog=CourseApp;Integrated Security=True;TrustServerCertificate=True";
+		private static readonly string ConnectionString = "Data Source=localhost\\SQLEXPRESS;Initial Catalog=CourseApp;Integrated Security=True;TrustServerCertificate=True";
 
         /// <summary>
         /// Retrieves a new SQL connection using the predefined connection string.

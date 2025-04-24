@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-namespace Duo.Models
+namespace CourseApp.Models
 {
     /// <summary>
     /// Represents a tag that can be assigned to courses or modules, with support for property change notifications.

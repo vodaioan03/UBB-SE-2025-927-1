@@ -43,11 +43,6 @@ namespace CourseApp.Models
         public int Cost { get; set; }
 
         /// <summary>
-        /// Gets a shortened version of the module description, limited to 23 characters.
-        /// </summary>
-        public string ShortDescription => Description.Length > 23 ? string.Concat(Description.AsSpan(0, 23), "...") : Description;
-
-        /// <summary>
         /// Gets or sets the URL of the image associated with the module.
         /// </summary>
         public required string ImageUrl { get; set; }

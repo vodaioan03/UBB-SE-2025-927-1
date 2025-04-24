@@ -12,7 +12,7 @@ public class User
     public string Username { get; set; }
     public int NumberOfCompletedSections { get; set; }
     public int NumberOfCompletedQuizzesInSection { get; set; }
-    public string? Email { get; set; }
+    public required string Email { get; set; }
 
     public User(int id, string username, int numberOfCompletedSections = 0, int numberOfCompletedQuizzesInSection = 0)
     {
