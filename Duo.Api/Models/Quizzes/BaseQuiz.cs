@@ -1,72 +1,46 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using Duo.Models.Exercises;
 
 namespace Duo.Models.Quizzes;
 
+/// <summary>
+/// Represents a base class for quiz types.
+/// </summary>
 public abstract class BaseQuiz
 {
+    /// <summary>
+    /// Gets or sets the quiz ID.
+    /// </summary>
+    [Key]
     public int Id { get; set; }
+
+    /// <summary>
+    /// Gets or sets the section ID to which this quiz belongs.
+    /// </summary>
     public int? SectionId { get; set; }
-    public List<Exercise> ExerciseList { get; set; } = new ();
-    private int numberOfAnswersGiven = 0;
-    private int numberOfCorrectAnswers = 0;
 
-    protected int maxExercises;
-    protected double passingThreshold;
+    /// <summary>
+    /// Gets or sets the exercises associated with this quiz.
+    /// </summary>
+    public virtual ICollection<Exercise> ExerciseList { get; set; } = new List<Exercise>();
 
-    protected BaseQuiz(int id, int? sectionId, int maxExercises, double passingThreshold)
-    {
-        Id = id;
-        SectionId = sectionId;
-        this.maxExercises = maxExercises;
-        this.passingThreshold = passingThreshold;
-    }
+    /// <summary>
+    /// Gets or sets the maximum number of exercises allowed in the quiz.
+    /// </summary>
+    public int MaxExercises { get; set; }
 
-    public bool AddExercise(Exercise exercise)
-    {
-        if (ExerciseList.Count < maxExercises)
-        {
-            ExerciseList.Add(exercise);
-            return true;
-        }
-        return false;
-    }
+    /// <summary>
+    /// Gets or sets the threshold required to pass the quiz.
+    /// </summary>
+    public double PassingThreshold { get; set; }
 
-    public bool RemoveExercise(Exercise exercise)
-    {
-        return ExerciseList.Remove(exercise);
-    }
-
-    public bool IsValid()
-    {
-        return ExerciseList.Count == maxExercises;
-    }
-
-    public double GetPassingThreshold()
-    {
-        return passingThreshold;
-    }
-
-    public int GetNumberOfAnswersGiven()
-    {
-        return ExerciseList.Count;
-    }
-
-    public int GetNumberOfCorrectAnswers()
-    {
-        return numberOfCorrectAnswers;
-    }
-
-    public void IncrementCorrectAnswers()
-    {
-        numberOfCorrectAnswers++;
-    }
-
+    /// <summary>
+    /// Returns a string that represents the current quiz.
+    /// </summary>
     public override string ToString()
     {
-        var progress = numberOfAnswersGiven > 0
-            ? $"Progress: {numberOfCorrectAnswers}/{numberOfAnswersGiven} ({((double)numberOfCorrectAnswers / numberOfAnswersGiven) * 100:F1}%)"
-            : "Not started";
-        return $"Quiz {Id} (Section: {SectionId ?? 0}) - {ExerciseList.Count}/{maxExercises} exercises - {progress}";
+        return $"Quiz {Id} (Section: {SectionId ?? 0}) - {ExerciseList.Count}/{MaxExercises} exercises";
     }
 }
