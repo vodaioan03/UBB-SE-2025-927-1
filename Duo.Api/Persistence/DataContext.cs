@@ -1,4 +1,5 @@
 using CourseApp.Models;
+using Duo.Api.Models;
 using Duo.Models;
 using Microsoft.EntityFrameworkCore;
 

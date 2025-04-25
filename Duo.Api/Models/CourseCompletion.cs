@@ -3,7 +3,7 @@ using System;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 
-namespace CourseApp.Models
+namespace Duo.Api.Models
 {
     /// <summary>
     /// Represents the completion status of a course by a user,
