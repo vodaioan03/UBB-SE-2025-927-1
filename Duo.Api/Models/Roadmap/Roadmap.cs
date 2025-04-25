@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using Duo.Models.Sections;
+using Duo.Api.Models.Sections;
 
-namespace Duo.Models.Roadmap;
+namespace Duo.Api.Models.Roadmap;
 
 /// <summary>
 /// Represents a roadmap consisting of multiple sections.
