@@ -3,7 +3,6 @@ using System;
 
 namespace Duo.Models.Quizzes.API
 {
-    // for fetching a quiz from API
     public class QuizModel
     {
         public int Id { get; set; }

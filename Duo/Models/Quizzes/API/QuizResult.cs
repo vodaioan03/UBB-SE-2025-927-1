@@ -2,7 +2,6 @@ using System;
 
 namespace Duo.Models.Quizzes.API
 {
-    // result from the server
     public class QuizResult
     {
         public int QuizId { get; set; }

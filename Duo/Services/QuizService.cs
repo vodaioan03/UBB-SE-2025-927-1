@@ -115,48 +115,26 @@ namespace Duo.Services
             return examRepository.AddAsync(exam);
         }
 
-        // API based methods
         public async Task<QuizModel> FetchQuizAsync(int quizId)
         {
-            /* var response = await httpClient.GetAsync($"api/quizzes/{quizId}");
+            var response = await httpClient.GetAsync($"api/quizzes/{quizId}");
             response.EnsureSuccessStatusCode();
             var quiz = await response.Content.ReadFromJsonAsync<QuizModel>();
-            return quiz!;*/
-
-            await Task.Delay(200); // simulate network delay
-            return new QuizModel
-            {
-                Id = quizId,
-                SectionId = 1,
-                ExpirationTime = DateTime.Now.AddMinutes(30),
-                ExerciseIds = new List<int> { 101, 102, 103 }
-            };
+            return quiz!;
         }
 
         public async Task SubmitQuizAsync(QuizSubmission submission)
         {
-            /* var response = await httpClient.PostAsJsonAsync("api/quizzes/submit", submission);
-            response.EnsureSuccessStatusCode();*/
-
-            await Task.Delay(100); // pretend to send
+            var response = await httpClient.PostAsJsonAsync("api/quizzes/submit", submission);
+            response.EnsureSuccessStatusCode();
         }
 
         public async Task<QuizResult> GetResultAsync(int quizId)
         {
-            await Task.Delay(100);
-            return new QuizResult
-            {
-                QuizId = quizId,
-                TotalQuestions = 10,
-                CorrectAnswers = 8,
-                TimeTaken = TimeSpan.FromMinutes(12)
-            };
-
-            /*
             var response = await httpClient.GetAsync($"api/quizzes/{quizId}/result");
             response.EnsureSuccessStatusCode();
             var result = await response.Content.ReadFromJsonAsync<QuizResult>();
-            return result!;*/
+            return result!;
         }
     }
 }
