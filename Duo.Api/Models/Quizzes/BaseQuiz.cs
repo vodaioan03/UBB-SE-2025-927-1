@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Duo.Models.Exercises;
+using Duo.Api.Models.Exercises;
 
-namespace Duo.Models.Quizzes;
+namespace Duo.Api.Models.Quizzes;
 
 /// <summary>
 /// Represents a base class for quiz types.
