@@ -13,14 +13,10 @@ namespace Duo.Api.Persistence
         public DbSet<Tag> Tags { get; set; }
         public DbSet<Module> Modules { get; set; }
 
-        public DbSet<BaseQuiz> Quizzes { get; set; }
-
-        public DbSet<Exercise> Exercises { get; set; }
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-
+            
             // Configure TPH inheritance for quizzes
             modelBuilder.Entity<BaseQuiz>()
                 .HasDiscriminator<string>("QuizType")
@@ -49,7 +45,7 @@ namespace Duo.Api.Persistence
                     j => j.HasOne<Exercise>().WithMany().HasForeignKey("ExerciseId"),
                     j => j.HasOne<BaseQuiz>().WithMany().HasForeignKey("QuizId")
                 );
-        }
+         }
 
     }
 }

@@ -6,7 +6,7 @@ namespace CourseApp.Models
     /// <summary>
     /// Represents a tag that can be assigned to courses or modules, with support for property change notifications.
     /// </summary>
-    public partial class Tag : INotifyPropertyChanged
+    public partial class Tag
     {
         /// <summary>
         /// Gets or sets the unique identifier for the tag.
