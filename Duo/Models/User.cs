@@ -1,40 +1,29 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace Duo.Models
+namespace Duo.Models;
+
+public class User
 {
-    /// <summary>
-    /// Represents a user of the platform.
-    /// </summary>
-    public class User
+    public int UserId { get; set; }
+    public string Username { get; set; }
+    public int NumberOfCompletedSections { get; set; }
+    public int NumberOfCompletedQuizzesInSection { get; set; }
+    public string? Email { get; set; }
+
+    public User(int id, string username, int numberOfCompletedSections = 0, int numberOfCompletedQuizzesInSection = 0)
     {
-        /// <summary>
-        /// Gets or sets the unique identifier of the user.
-        /// </summary>
-        [Key]
-        public int UserId { get; set; }
+        UserId = id;
+        Username = username;
+        NumberOfCompletedSections = numberOfCompletedSections;
+        NumberOfCompletedQuizzesInSection = numberOfCompletedQuizzesInSection;
+    }
 
-        /// <summary>
-        /// Gets or sets the username of the user.
-        /// </summary>
-        public string Username { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Gets or sets the number of completed sections by the user.
-        /// </summary>
-        public int NumberOfCompletedSections { get; set; }
-
-        /// <summary>
-        /// Gets or sets the number of completed quizzes in the current section.
-        /// </summary>
-        public int NumberOfCompletedQuizzesInSection { get; set; }
-
-        /// <summary>
-        /// Gets or sets the email of the user.
-        /// </summary>
-        public string? Email { get; set; }
-
-        public User()
-        {
-        }
+    public User(string username)
+    {
+        Username = username;
     }
 }

@@ -1,77 +1,61 @@
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using Duo.Models.Quizzes;
-using Duo.Models.Exercises;
 
-namespace Duo.Models.Sections;
-
-public class Section
+namespace Duo.Models.Sections
 {
-    public int Id { get; set; }
-    public int? SubjectId { get; set; }
-    public string Title { get; set; }
-    public string Description { get; set; }
-    public int RoadmapId { get; set; }
-    public int? OrderNumber { get; set; }
-    public List<Quiz> Quizzes { get; set; }
-    public Exam? Exam { get; set; }
-
-    private const int MAX_QUIZZES = 5;
-    private const int MIN_QUIZZES = 2;
-
-    public Section()
+    /// <summary>
+    /// Represents a learning section within a roadmap.
+    /// </summary>
+    public class Section
     {
-        Quizzes = new List<Quiz>();
-    }
+        /// <summary>
+        /// Gets or sets the unique identifier of the section.
+        /// </summary>
+        [Key]
+        public int Id { get; set; }
 
-    public Section(int id, int? subjectId, string title, string description, int roadmapId, int? orderNumber)
-    {
-        Id = id;
-        SubjectId = subjectId;
-        Title = title;
-        Description = description;
-        RoadmapId = roadmapId;
-        OrderNumber = orderNumber;
-        Quizzes = new List<Quiz>();
-    }
+        /// <summary>
+        /// Gets or sets the optional subject identifier this section belongs to.
+        /// </summary>
+        public int? SubjectId { get; set; }
 
-    public bool AddQuiz(Quiz quiz)
-    {
-        if (Quizzes.Count < MAX_QUIZZES)
+        /// <summary>
+        /// Gets or sets the title of the section.
+        /// </summary>
+        public string Title { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the description of the section.
+        /// </summary>
+        public string Description { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the roadmap identifier this section belongs to.
+        /// </summary>
+        public int RoadmapId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the display order of the section (optional).
+        /// </summary>
+        public int? OrderNumber { get; set; }
+
+        /// <summary>
+        /// Gets or sets the list of quizzes associated with this section.
+        /// </summary>
+        public List<Quiz> Quizzes { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets the final exam associated with this section.
+        /// </summary>
+        public Exam? Exam { get; set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Section"/> class.
+        /// </summary>
+        public Section()
         {
-            Quizzes.Add(quiz);
-            return true;
         }
-        return false;
-    }
-
-    public bool AddExam(Exam newExam)
-    {
-        if (Exam == null)
-        {
-            Exam = newExam;
-            return true;
-        }
-        return false;
-    }
-
-    public bool IsValid()
-    {
-        return Quizzes.Count >= MIN_QUIZZES && Exam != null;
-    }
-
-    public IEnumerable<Quiz> GetAllQuizzes()
-    {
-        return Quizzes;
-    }
-
-    public Exam? GetFinalExam()
-    {
-        return Exam;
-    }
-
-    public override string ToString()
-    {
-        var examStatus = Exam != null ? "with Exam" : "without Exam";
-        return $"Section {Id}: {Title} - {Quizzes.Count} quizzes {examStatus}";
     }
 }
