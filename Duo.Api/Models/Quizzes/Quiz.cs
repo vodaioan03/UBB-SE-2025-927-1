@@ -1,19 +1,41 @@
-﻿namespace Duo.Models.Quizzes;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using Duo.Api.Models;
+using Duo.Api.Models.Exercises;
+using Duo.Api.Models.Sections;
 
-public class Quiz : BaseQuiz
+namespace Duo.Api.Models.Quizzes;
+
+/// <summary>
+/// Represents a concrete quiz implementation with ordering capability.
+/// Inherits from BaseQuiz to share common quiz properties and behavior.
+/// </summary>
+public class Quiz
 {
-    private const int MAX_EXERCISES = 10;
-    private const double PASSING_THRESHOLD = 75;
+    /// <summary>
+    /// Unique identifier
+    /// </summary>
+    [Key]
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    public int Id { get; set; }
+
+    /// <summary>
+    /// Unique identifier of the section this quiz belongs to.
+    /// This is a foreign key relationship.
+    /// </summary>
+    public int? SectionId { get; set; }
+
+    /// <summary>
+    /// Navigation property to the section this quiz belongs to.
+    /// </summary>
+    /// 
+    public Section? Section { get; set; }
+
+    /// <summary>
+    /// Gets or sets the order number of the quiz within its section.
+    /// This determines the sequence in which quizzes appear.
+    /// </summary>
     public int? OrderNumber { get; set; }
 
-    public Quiz(int id, int? sectionId, int? orderNumber)
-        : base(id, sectionId, MAX_EXERCISES, PASSING_THRESHOLD)
-    {
-        OrderNumber = orderNumber;
-    }
-
-    public override string ToString()
-    {
-        return $"{base.ToString()} - Order: {OrderNumber ?? 0}";
-    }
+    //public ICollection<Exercise> Exercises { get; set; }
 }

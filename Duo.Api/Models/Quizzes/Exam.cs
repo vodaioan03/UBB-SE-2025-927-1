@@ -1,17 +1,33 @@
-﻿namespace Duo.Models.Quizzes;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using Duo.Api.Models.Exercises;
+using Duo.Api.Models.Sections;
 
-public class Exam : BaseQuiz
+namespace Duo.Api.Models.Quizzes;
+
+/// <summary>
+/// Represents an exam, a specialized type of quiz with additional constraints or behaviors.
+/// Inherits from BaseQuiz to share common quiz properties and functionality.
+/// </summary>
+public class Exam
 {
-    private const int MAX_EXERCISES = 25;
-    private const double PASSING_THRESHOLD = 90;
+    /// <summary>
+    /// Unique identifier
+    /// </summary>
+    [Key]
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    public int Id { get; set; }
 
-    public Exam(int id, int? sectionId)
-        : base(id, sectionId, MAX_EXERCISES, PASSING_THRESHOLD)
-    {
-    }
+    /// <summary>
+    /// Unique identifier of the section this quiz belongs to.
+    /// This is a foreign key relationship.
+    /// </summary>
+    public int? SectionId { get; set; }
 
-    public override string ToString()
-    {
-        return $"{base.ToString()} [Final Exam]";
-    }
+    /// <summary>
+    /// Navigation property to the section this quiz belongs to.
+    /// </summary>
+    public Section? Section { get; set; }
+
+    //public ICollection<Exercise> Exercises { get; set; } = new List<Exercise>();
 }

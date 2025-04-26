@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Duo.Models.Exercises;
+namespace Duo.Api.Models.Exercises;
 
 public class MultipleChoiceExercise : Exercise
 {

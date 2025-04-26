@@ -1,13 +1,11 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.CodeAnalysis;
+using System.ComponentModel.DataAnnotations;
 
 namespace Duo.Api.Models
 {
     /// <summary>
     /// Represents a tag that can be assigned to courses or modules, with support for property change notifications.
     /// </summary>
-    [ExcludeFromCodeCoverage]
-    public partial class Tag 
+    public class Tag
     {
         /// <summary>
         /// Gets or sets the unique identifier for the tag.
