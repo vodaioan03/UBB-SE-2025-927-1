@@ -1,25 +1,22 @@
-﻿namespace Duo.Api.Models.Quizzes;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using Duo.Api.Models;
+using Duo.Api.Models.Sections;
+
+namespace Duo.Api.Models.Quizzes;
 
 /// <summary>
 /// Represents a concrete quiz implementation with ordering capability.
 /// Inherits from BaseQuiz to share common quiz properties and behavior.
 /// </summary>
-public class Quiz : BaseQuiz
+public class Quiz
 {
-    /// <summary>
-    /// The order number of the quiz within its section (optional).
-    /// Used for sequencing quizzes in a particular order.
-    /// </summary>
-    public int? OrderNumber { get; set; }
+    [Key]
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    public int Id { get; set; }
 
-    /// <summary>
-    /// Initializes a new instance of the Quiz class.
-    /// </summary>
-    /// <param name="sectionId">The identifier of the section this quiz belongs to (optional)</param>
-    /// <param name="orderNumber">The position of this quiz in the section's ordering (optional)</param>
-    public Quiz(int? sectionId, int? orderNumber)
-        : base(sectionId)
-    {
-        OrderNumber = orderNumber;
-    }
+    public int? SectionId { get; set; }
+    public Section? Section { get; set; }
+
+    public int? OrderNumber { get; set; }
 }

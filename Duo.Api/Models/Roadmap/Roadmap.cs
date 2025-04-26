@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
-using Duo.Models.Sections;
+using Duo.Api.Models.Sections;
 
-namespace Duo.Models.Roadmap;
+namespace Duo.Models.Api.Roadmap;
 
 public class Roadmap
 {

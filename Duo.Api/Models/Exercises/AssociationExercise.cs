@@ -50,30 +50,6 @@ namespace Duo.Api.Models.Exercises
         }
 
         /// <summary>
-        /// Validates the user's answer by checking if the provided pairs match the correct associations.
-        /// </summary>
-        /// <param name="userPairs">The list of user-provided pairs to validate.</param>
-        /// <returns>True if all pairs are correct; otherwise, false.</returns>
-        public bool ValidateAnswer(List<(string, string)> userPairs)
-        {
-            if (userPairs == null || userPairs.Count != FirstAnswersList.Count)
-            {
-                return false;
-            }
-
-            foreach (var (userA, userB) in userPairs)
-            {
-                int index = FirstAnswersList.IndexOf(userA);
-                if (index == -1 || SecondAnswersList[index] != userB)
-                {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        /// <summary>
         /// Returns a string representation of the association exercise, including its ID, question, and answer pairs.
         /// </summary>
         /// <returns>A string describing the association exercise.</returns>

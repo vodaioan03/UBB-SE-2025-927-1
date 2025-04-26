@@ -1,3 +1,7 @@
+using DotNetEnv;
+using System.Text.Json.Serialization;
+using Duo.Api.Persistence;
+using Microsoft.EntityFrameworkCore;
 
 namespace Duo.Api
 {
@@ -5,14 +9,28 @@ namespace Duo.Api
     {
         public static void Main(string[] args)
         {
+            Env.Load(".env");
+
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
 
-            builder.Services.AddControllers();
+            builder.Services.AddControllers()
+                .AddJsonOptions(options =>
+                {
+                    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
+                });
+
+
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+
+            var connectionString = Environment.GetEnvironmentVariable("ConnectionStrings__WebApiDatabase");
+            Console.WriteLine("Connection string: " + connectionString);
+
+            builder.Services.AddDbContext<DataContext>(options =>
+                options.UseSqlServer(connectionString));
 
             var app = builder.Build();
 
@@ -24,11 +42,14 @@ namespace Duo.Api
             }
 
             app.UseHttpsRedirection();
-
             app.UseAuthorization();
-
-
             app.MapControllers();
+
+            using (var scope = app.Services.CreateScope())
+            {
+                var db = scope.ServiceProvider.GetRequiredService<DataContext>();
+                db.Database.Migrate();
+            }
 
             app.Run();
         }
