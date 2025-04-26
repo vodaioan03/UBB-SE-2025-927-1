@@ -1,10 +1,9 @@
-﻿using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Duo.Models.Exercises;
+using Duo.Api.Models.Exercises;
 using Duo.Models.Sections;
 
-namespace Duo.Models.Quizzes;
+namespace Duo.Api.Models.Quizzes;
 
 /// <summary>
 /// Represents a base quiz entity containing common properties and relationships for quizzes.

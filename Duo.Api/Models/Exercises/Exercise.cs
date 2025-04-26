@@ -1,6 +1,7 @@
-﻿using Duo.Models.Quizzes;
+﻿using Duo.Api.Models.Quizzes;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Duo.Api.Models.Exercises
 {
@@ -12,16 +13,18 @@ namespace Duo.Api.Models.Exercises
     /// <remarks>
     /// Initializes a new instance of the <see cref="Exercise"/> class.
     /// </remarks>
-    /// <param name="id">The unique identifier for the exercise.</param>
+    /// <param name="ExerciseId">The unique identifier for the exercise.</param>
     /// <param name="question">The question or prompt for the exercise.</param>
     /// <param name="difficulty">The difficulty level of the exercise.</param>
     [Index(nameof(Question))] // Optimizes search queries on the Question field
-    public abstract class Exercise(int id, string question, Difficulty difficulty)
+    public abstract class Exercise(int ExerciseId, string question, Difficulty difficulty)
     {
         /// <summary>
         /// Gets or sets the unique identifier for the exercise.
         /// </summary>
-        public int Id { get; set; } = id;
+        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public int ExerciseId { get; set; } = ExerciseId;
 
         /// <summary>
         /// Gets or sets the question or prompt for the exercise.
@@ -47,7 +50,7 @@ namespace Duo.Api.Models.Exercises
         /// <returns>A string describing the exercise.</returns>
         public override string ToString()
         {
-            return $"Exercise {Id}: {Question} (Difficulty: {Difficulty})";
+            return $"Exercise {ExerciseId}: {Question} (Difficulty: {Difficulty})";
         }
     }
 }
