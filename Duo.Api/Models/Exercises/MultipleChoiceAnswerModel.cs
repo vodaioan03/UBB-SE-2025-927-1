@@ -23,30 +23,5 @@ namespace Duo.Api.Models.Exercises
         /// </summary>
         public MultipleChoiceAnswerModel() { }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="MultipleChoiceAnswerModel"/> class.
-        /// </summary>
-        /// <param name="answer">The answer text.</param>
-        /// <param name="isCorrect">Indicates if the answer is correct.</param>
-        /// <exception cref="ArgumentException">Thrown when answer is null or whitespace.</exception>
-        public MultipleChoiceAnswerModel(string answer, bool isCorrect)
-        {
-            if (string.IsNullOrWhiteSpace(answer))
-            {
-                throw new ArgumentException("Answer cannot be empty", nameof(answer));
-            }
-
-            Answer = answer;
-            IsCorrect = isCorrect;
-        }
-
-        /// <summary>
-        /// Returns a string representation of the answer, indicating correctness.
-        /// </summary>
-        /// <returns>A string representing the answer and its correctness.</returns>
-        public override string ToString()
-        {
-            return $"{Answer}{(IsCorrect ? " (Correct)" : string.Empty)}";
-        }
     }
 }
