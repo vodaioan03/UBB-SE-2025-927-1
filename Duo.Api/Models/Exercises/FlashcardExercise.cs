@@ -1,6 +1,6 @@
 using System;
 
-namespace Duo.Models.Exercises
+namespace Duo.Api.Models.Exercises
 {
     public class FlashcardExercise : Exercise
     {
@@ -80,7 +80,7 @@ namespace Duo.Models.Exercises
 
         public override string ToString()
         {
-            return $"Id: {Id},  Difficulty: {Difficulty}, Time: {TimeInSeconds}s";
+            return $"Id: {ExerciseId},  Difficulty: {Difficulty}, Time: {TimeInSeconds}s";
         }
     }
 }
