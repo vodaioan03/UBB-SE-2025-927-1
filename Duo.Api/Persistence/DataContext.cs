@@ -14,6 +14,9 @@ namespace Duo.Api.Persistence
         public DbSet<User> Users { get; set; }
         public DbSet<Tag> Tags { get; set; }
         public DbSet<Module> Modules { get; set; }
+        public DbSet<Exercise> Exercises { get; set; }
+        public DbSet<BaseQuiz> Quizzes { get; set; }
+
 
         public DbSet<Exam> Exams { get; set; }
         public DbSet<Quiz> Quizzes { get; set; }
