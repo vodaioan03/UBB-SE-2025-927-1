@@ -36,11 +36,5 @@ public abstract class BaseQuiz
     /// </summary>
     public double PassingThreshold { get; set; }
 
-    /// <summary>
-    /// Returns a string that represents the current quiz.
-    /// </summary>
-    public override string ToString()
-    {
-        return $"Quiz {Id} (Section: {SectionId ?? 0}) - {ExerciseList.Count}/{MaxExercises} exercises";
-    }
+
 }
