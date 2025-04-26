@@ -1,4 +1,4 @@
-﻿namespace Duo.Models.Quizzes;
+﻿namespace Duo.Api.Models.Quizzes;
 
 /// <summary>
 /// Represents a concrete quiz implementation with ordering capability.
