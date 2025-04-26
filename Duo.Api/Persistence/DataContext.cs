@@ -1,5 +1,5 @@
 using CourseApp.Models;
-using Duo.Models;
+using Duo.Api.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace Duo.Api.Persistence

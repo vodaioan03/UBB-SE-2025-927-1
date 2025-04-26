@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
-namespace CourseApp.Models
+namespace Duo.Api.Models
 {
     /// <summary>
     /// Represents a course with its details such as title, description, difficulty, and pricing information.

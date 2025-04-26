@@ -1,8 +1,11 @@
-﻿using System.Threading.Tasks;
-using Duo.Models;
+using System.Threading.Tasks;
+using Duo.Api.Models;
 
-namespace Duo.Repositories
+namespace Duo.Api.Repositories
 {
+    /// <summary>
+    /// Interface for user repository to manage user-related data operations.
+    /// </summary>
     public interface IUserRepository
     {
         /// <summary>
@@ -43,3 +46,4 @@ namespace Duo.Repositories
         Task IncrementUserProgressAsync(int userId);
     }
 }
+
