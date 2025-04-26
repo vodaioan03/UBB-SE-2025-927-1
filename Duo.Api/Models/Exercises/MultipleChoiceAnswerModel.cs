@@ -1,24 +1,72 @@
-﻿using System;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Duo.Api.Models.Exercises;
-
-public class MultipleChoiceAnswerModel
+namespace Duo.Api.Models.Exercises
 {
-    public string Answer { get; set; }
-    public bool IsCorrect { get; set; }
-
-    public MultipleChoiceAnswerModel()
+    /// <summary>
+    /// Represents an answer option for a multiple-choice exercise.
+    /// This model includes the answer text and whether it is correct.
+    /// </summary>
+    public class MultipleChoiceAnswerModel
     {
-    }
+        // Fields and Properties
 
-    public MultipleChoiceAnswerModel(string answer, bool isCorrect)
-    {
-        Answer = answer;
-        IsCorrect = isCorrect;
-    }
+        /// <summary>
+        /// Gets or sets the unique identifier for the answer model.
+        /// </summary>
+        [Key]
+        public string? AnswerModelId { get; set; }
 
-    public override string ToString()
-    {
-        return $"{Answer}{(IsCorrect ? " (Correct)" : string.Empty)}";
+        /// <summary>
+        /// Gets or sets the text of the answer.
+        /// </summary>
+        public string? Answer { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this answer is correct.
+        /// </summary>
+        public bool IsCorrect { get; set; }
+
+        /// <summary>
+        /// Gets or sets the foreign key to the related MultipleChoiceExercise.
+        /// </summary>
+        [Required]
+        public int ExerciseId { get; set; }
+
+        /// <summary>
+        /// Navigation property to the related MultipleChoiceExercise.
+        /// </summary>
+        [ForeignKey(nameof(ExerciseId))]
+        public MultipleChoiceExercise Exercise { get; set; } = null!;
+
+        // Constructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MultipleChoiceAnswerModel"/> class.
+        /// This parameterless constructor is required for Entity Framework.
+        /// </summary>
+        public MultipleChoiceAnswerModel() { }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MultipleChoiceAnswerModel"/> class with the specified parameters.
+        /// </summary>
+        /// <param name="answer">The text of the answer.</param>
+        /// <param name="isCorrect">A value indicating whether this answer is correct.</param>
+        public MultipleChoiceAnswerModel(string answer, bool isCorrect)
+        {
+            Answer = answer;
+            IsCorrect = isCorrect;
+        }
+
+        // Methods
+
+        /// <summary>
+        /// Returns a string representation of the answer model, including whether it is correct.
+        /// </summary>
+        /// <returns>A string describing the answer model.</returns>
+        public override string ToString()
+        {
+            return $"{Answer}{(IsCorrect ? " (Correct)" : string.Empty)}";
+        }
     }
 }
