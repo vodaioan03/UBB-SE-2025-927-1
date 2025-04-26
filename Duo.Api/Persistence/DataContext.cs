@@ -13,11 +13,11 @@ namespace Duo.Api.Persistence
         public DbSet<Module> Modules { get; set; }
 
 
-        // Add Course-related models
+        /*
         public DbSet<Course> Courses { get; set; }
         public DbSet<CourseCompletion> CourseCompletions { get; set; }
 
-        /*protected override void OnModelCreating(ModelBuilder modelBuilder)
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
