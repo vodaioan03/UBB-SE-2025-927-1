@@ -1,44 +1,28 @@
 ﻿using System.Collections.Generic;
-using Duo.Models.Sections;
+using System.ComponentModel.DataAnnotations;
+using Duo.Api.Models.Sections;
 
-namespace Duo.Models.Roadmap;
+namespace Duo.Api.Models.Roadmap;
 
+/// <summary>
+/// Represents a roadmap consisting of multiple sections.
+/// </summary>
 public class Roadmap
 {
+    /// <summary>
+    /// Gets or sets the unique identifier for the roadmap.
+    /// </summary>
+    [Key]
     public int Id { get; set; }
-    public string Name { get; set; }
-    public List<Section> Sections { get; set; }
 
-    public Roadmap()
-    {
-        Sections = new List<Section>();
-        Name = string.Empty;
-    }
+    /// <summary>
+    /// Gets or sets the name of the roadmap.
+    /// </summary>
+    public string Name { get; set; } = string.Empty;
 
-    public Roadmap(int id, string name)
-    {
-        Id = id;
-        Name = name;
-        Sections = new List<Section>();
-    }
+    /// <summary>
+    /// Gets or sets the sections associated with this roadmap.
+    /// </summary>
+    public virtual ICollection<Section> Sections { get; set; } = new List<Section>();
 
-    public void AddSection(Section section)
-    {
-        Sections.Add(section);
-    }
-
-    public void RemoveSection(Section section)
-    {
-        Sections.Remove(section);
-    }
-
-    public IEnumerable<Section> GetAllSections()
-    {
-        return Sections;
-    }
-
-    public override string ToString()
-    {
-        return $"Roadmap {Id}: {Name} - {Sections.Count} sections";
-    }
 }

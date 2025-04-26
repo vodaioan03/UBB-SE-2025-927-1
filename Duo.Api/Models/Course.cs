@@ -1,6 +1,7 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 
-namespace CourseApp.Models
+namespace Duo.Api.Models
 {
     /// <summary>
     /// Represents a course with its details such as title, description, difficulty, and pricing information.
@@ -11,6 +12,7 @@ namespace CourseApp.Models
         /// <summary>
         /// Gets or sets the unique identifier of the course.
         /// </summary>
+        [Key]
         public int CourseId { get; set; }
 
         /// <summary>
