@@ -4,7 +4,7 @@ using Duo.Api.Models.Exercises;
 using Duo.Api.Models.Quizzes;
 using Duo.Api.Models.Sections;
 using Microsoft.EntityFrameworkCore;
-
+using System.Text.Json;
 
 namespace Duo.Api.Persistence
 {
@@ -20,13 +20,17 @@ namespace Duo.Api.Persistence
         
         public DbSet<Section> Sections {get;set;}
 
-        //public DbSet<Exercise> Exercises { get; set; }
+        public DbSet<Exercise> Exercises { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-            // Configure Section -> Quizzes (one-to-many)
+            // ================================
+            // Section and Quiz Relationships
+            // ================================
+
+            // Section -> Quizzes (one-to-many)
             modelBuilder.Entity<Section>()
                 .HasMany(s => s.Quizzes)
                 .WithOne(q => q.Section)
@@ -40,33 +44,65 @@ namespace Duo.Api.Persistence
                 .HasForeignKey<Exam>(e => e.SectionId)
                 .OnDelete(DeleteBehavior.SetNull);
 
-            // Configure Quiz -> Exercises (many-to-many)
-            //modelBuilder.Entity<Quiz>()
-            //    .HasMany(q => q.Exercises)
-            //    .WithMany(e => e.Quizzes)
-            //    .UsingEntity(j => j.ToTable("QuizExercises"));
+            // Quiz -> Exercises (many-to-many)
+            modelBuilder.Entity<Quiz>()
+                .HasMany(q => q.Exercises)
+                .WithMany(e => e.Quizzes)
+                .UsingEntity(j => j.ToTable("QuizExercises"));
 
-            // Configure Exam -> Exercises (many-to-many)
-            //modelBuilder.Entity<Exam>()
-            //    .HasMany(e => e.Exercises)
-            //    .WithMany(e => e.Exams)
-            //    .UsingEntity(j => j.ToTable("ExamExercises"));
+            // Exam -> Exercises (many-to-many)
+            modelBuilder.Entity<Exam>()
+                .HasMany(e => e.Exercises)
+                .WithMany(e => e.Exams)
+                .UsingEntity(j => j.ToTable("ExamExercises"));
 
+            // ================================
+            // Exercise Hierarchy and Configuration
+            // ================================
 
-            //Configure TPH inheritance for exercises
-            //modelBuilder.Entity<Exercise>()
-               //.HasDiscriminator<string>("ExerciseType")
-               //.HasValue<AssociationExercise>("Association");
-               //.HasValue<FillInTheBlankExercise>("Fill in the blank")
-               //.HasValue<FlashcardExercise>("Flashcard")
-               //.HasValue<MultipleChoiceExercise>("Multiple Choice");
+            // Table-Per-Hierarchy (TPH) for Exercises
+            modelBuilder.Entity<Exercise>()
+                .HasDiscriminator<string>("ExerciseType")
+                .HasValue<AssociationExercise>("Association")
+                .HasValue<FillInTheBlankExercise>("Fill in the blank")
+                .HasValue<FlashcardExercise>("Flashcard")
+                .HasValue<MultipleChoiceExercise>("Multiple Choice");
 
-            // Configure indexes for search optimization
-            //modelBuilder.Entity<Exercise>()
-            //    .HasIndex(e => e.Question)
-            //    .HasDatabaseName("IX_Exercise_Question");
+            // Index for Exercise Question (search optimization)
+            modelBuilder.Entity<Exercise>()
+                .HasIndex(e => e.Question)
+                .HasDatabaseName("IX_Exercise_Question");
 
+            // ================================
+            // Exercise Specific Properties
+            // ================================
+
+            // AssociationExercise -> FirstAnswersList and SecondAnswersList (stored as JSON)
+            modelBuilder.Entity<AssociationExercise>()
+                .Property(a => a.FirstAnswersList)
+                .HasConversion(
+                    v => JsonSerializer.Serialize(v, (JsonSerializerOptions)null!),
+                    v => JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions)null));
+
+            modelBuilder.Entity<AssociationExercise>()
+                .Property(a => a.SecondAnswersList)
+                .HasConversion(
+                    v => JsonSerializer.Serialize(v, (JsonSerializerOptions)null!),
+                    v => JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions)null));
+
+            // FillInTheBlankExercise -> PossibleCorrectAnswers (stored as JSON)
+            modelBuilder.Entity<FillInTheBlankExercise>()
+                .Property(a => a.PossibleCorrectAnswers)
+                .HasConversion(
+                    v => JsonSerializer.Serialize(v, (JsonSerializerOptions)null!),
+                    v => JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions)null));
+
+            // MultipleChoiceExercise -> MultipleChoiceAnswerModel (real one-to-many)
+            modelBuilder.Entity<MultipleChoiceExercise>()
+                .HasMany(m => m.Choices)
+                .WithOne(c => c.Exercise)
+                .HasForeignKey(c => c.ExerciseId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
-
     }
 }
