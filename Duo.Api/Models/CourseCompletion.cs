@@ -1,7 +1,9 @@
-﻿using System;
+﻿using Duo.Models;
+using System;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 
-namespace CourseApp.Models
+namespace Duo.Api.Models
 {
     /// <summary>
     /// Represents the completion status of a course by a user,
@@ -13,11 +15,13 @@ namespace CourseApp.Models
         /// <summary>
         /// Gets or sets the unique identifier of the user who completed the course.
         /// </summary>
+        [ForeignKey(nameof(User))]
         public int UserId { get; set; }
 
         /// <summary>
         /// Gets or sets the unique identifier of the completed course.
         /// </summary>
+        [ForeignKey(nameof(Course))]
         public int CourseId { get; set; }
 
         /// <summary>
@@ -34,5 +38,15 @@ namespace CourseApp.Models
         /// Gets or sets the date and time when the course was completed.
         /// </summary>
         public DateTime CompletedAt { get; set; }
+
+        /// <summary>
+        /// Navigation property to the related course.
+        /// </summary>
+        public Course Course { get; set; } = null!;
+
+        /// <summary>
+        /// Navigation property to the related user.
+        /// </summary>
+        public User User { get; set; } = null!;
     }
 }

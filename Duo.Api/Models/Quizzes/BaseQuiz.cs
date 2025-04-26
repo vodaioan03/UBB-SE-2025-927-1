@@ -1,72 +1,50 @@
-﻿using System.Collections.Generic;
-using Duo.Models.Exercises;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using Duo.Api.Models.Exercises;
+using Duo.Models.Sections;
 
-namespace Duo.Models.Quizzes;
+namespace Duo.Api.Models.Quizzes;
 
+/// <summary>
+/// Represents a base quiz entity containing common properties and relationships for quizzes.
+/// </summary>
 public abstract class BaseQuiz
 {
+    /// <summary>
+    /// The unique identifier for the quiz.
+    /// </summary>
+    [Key]
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int Id { get; set; }
+
+    /// <summary>
+    /// The identifier of the section this quiz belongs to, if any.
+    /// </summary>
+    [ForeignKey(nameof(Section))]
     public int? SectionId { get; set; }
-    public List<Exercise> ExerciseList { get; set; } = new ();
-    private int numberOfAnswersGiven = 0;
-    private int numberOfCorrectAnswers = 0;
 
-    protected int maxExercises;
-    protected double passingThreshold;
+    /// <summary>
+    /// Navigation property to the section this quiz belongs to.
+    /// </summary>
+    public Section? Section { get; set; }
 
-    protected BaseQuiz(int id, int? sectionId, int maxExercises, double passingThreshold)
+    /// <summary>
+    /// Collection of exercises included in this quiz.
+    /// </summary>
+    public ICollection<Exercise> ExerciseList { get; set; } = new List<Exercise>();
+
+    /// <summary>
+    /// Discriminator column for Table-per-hierarchy inheritance
+    /// </summary>
+    [Column("QuizType")]
+    public string Discriminator { get; protected set; } = null!;
+
+    /// <summary>
+    /// Initializes a new instance of the BaseQuiz class.
+    /// </summary>
+    /// <param name="sectionId">The identifier of the section this quiz belongs to (optional)</param>
+    protected BaseQuiz(int? sectionId)
     {
-        Id = id;
         SectionId = sectionId;
-        this.maxExercises = maxExercises;
-        this.passingThreshold = passingThreshold;
-    }
-
-    public bool AddExercise(Exercise exercise)
-    {
-        if (ExerciseList.Count < maxExercises)
-        {
-            ExerciseList.Add(exercise);
-            return true;
-        }
-        return false;
-    }
-
-    public bool RemoveExercise(Exercise exercise)
-    {
-        return ExerciseList.Remove(exercise);
-    }
-
-    public bool IsValid()
-    {
-        return ExerciseList.Count == maxExercises;
-    }
-
-    public double GetPassingThreshold()
-    {
-        return passingThreshold;
-    }
-
-    public int GetNumberOfAnswersGiven()
-    {
-        return ExerciseList.Count;
-    }
-
-    public int GetNumberOfCorrectAnswers()
-    {
-        return numberOfCorrectAnswers;
-    }
-
-    public void IncrementCorrectAnswers()
-    {
-        numberOfCorrectAnswers++;
-    }
-
-    public override string ToString()
-    {
-        var progress = numberOfAnswersGiven > 0
-            ? $"Progress: {numberOfCorrectAnswers}/{numberOfAnswersGiven} ({((double)numberOfCorrectAnswers / numberOfAnswersGiven) * 100:F1}%)"
-            : "Not started";
-        return $"Quiz {Id} (Section: {SectionId ?? 0}) - {ExerciseList.Count}/{maxExercises} exercises - {progress}";
     }
 }

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace CourseApp.Models
+namespace Duo.Models
 {
     /// <summary>
     /// Represents a learning module within a course.
