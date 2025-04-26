@@ -6,9 +6,24 @@
     /// </summary>
     public enum ExerciseType
     {
+        /// <summary>
+        /// Represents an association exercise where users match items from two lists.
+        /// </summary>
         Association,
+
+        /// <summary>
+        /// Represents a fill-in-the-blank exercise where users complete missing parts of a sentence or text.
+        /// </summary>
         FillInTheBlank,
+
+        /// <summary>
+        /// Represents a multiple-choice exercise where users select one or more correct answers from a list of options.
+        /// </summary>
         MultipleChoice,
+
+        /// <summary>
+        /// Represents a flashcard exercise used for studying and memorization.
+        /// </summary>
         Flashcard
     }
 
@@ -21,12 +36,12 @@
         /// <summary>
         /// List of available exercise types represented as strings.
         /// </summary>
-        public static readonly List<string> EXERCISE_TYPES = new()
-        {
+        public static readonly List<string> ExerciseTypeList =
+        [
             "Association",
             "Fill in the Blank",
             "Multiple Choice",
             "Flashcard"
-        };
+        ];
     }
 }
