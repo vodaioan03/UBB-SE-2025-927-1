@@ -1,9 +1,11 @@
+using CourseApp.Models;
+using Duo.Api.Models;
 using Duo.Api.Models.Exercises;
 using Duo.Api.Models.Quizzes;
 using Duo.Api.Persistence;
 using Microsoft.EntityFrameworkCore;
 
-namespace Duo.Api.Repsitories
+namespace Duo.Api.Repositories
 {
     public class Repository : IRepository
     {
@@ -12,6 +14,93 @@ namespace Duo.Api.Repsitories
         public Repository(DataContext context)
         {
             context = context;
+        }
+
+        // Users
+        public async Task<List<User>> GetUsersFromDbAsync()
+        {
+            return await context.Users.ToListAsync();
+        }
+        public async Task<User> GetUserByIdAsync(int id)
+        {
+            return await context.Users.FindAsync(id);
+        }
+        public async Task AddUserAsync(User user)
+        {
+            context.Users.Add(user);
+            await context.SaveChangesAsync();
+        }
+        public async Task UpdateUserAsync(User user)
+        {
+            context.Users.Update(user);
+            await context.SaveChangesAsync();
+        }
+        public async Task DeleteUserAsync(int id)
+        {
+            var user = await context.Users.FindAsync(id);
+            if (user != null)
+            {
+                context.Users.Remove(user);
+                await context.SaveChangesAsync();
+            }
+        }
+
+        // Tags
+        public async Task<List<Tag>> GetTagsFromDbAsync()
+        {
+            return await context.Tags.ToListAsync();
+        }
+        public async Task<Tag> GetTagByIdAsync(int id)
+        {
+            return await context.Tags.FindAsync(id);
+        }
+        public async Task AddTagAsync(Tag tag)
+        {
+            context.Tags.Add(tag);
+            await context.SaveChangesAsync();
+        }
+        public async Task UpdateTagAsync(Tag tag)
+        {
+            context.Tags.Update(tag);
+            await context.SaveChangesAsync();
+        }
+        public async Task DeleteTagAsync(int id)
+        {
+            var tag = await context.Tags.FindAsync(id);
+            if (tag != null)
+            {
+                context.Tags.Remove(tag);
+                await context.SaveChangesAsync();
+            }
+        }
+
+        // Modules
+        public async Task<List<Module>> GetModulesFromDbAsync()
+        {
+            return await context.Modules.ToListAsync();
+        }
+        public async Task<Module> GetModuleByIdAsync(int id)
+        {
+            return await context.Modules.FindAsync(id);
+        }
+        public async Task AddModuleAsync(Module module)
+        {
+            context.Modules.Add(module);
+            await context.SaveChangesAsync();
+        }
+        public async Task UpdateModuleAsync(Module module)
+        {
+            context.Modules.Update(module);
+            await context.SaveChangesAsync();
+        }
+        public async Task DeleteModuleAsync(int id)
+        {
+            var module = await context.Modules.FindAsync(id);
+            if (module != null)
+            {
+                context.Modules.Remove(module);
+                await context.SaveChangesAsync();
+            }
         }
 
         // Exercises
