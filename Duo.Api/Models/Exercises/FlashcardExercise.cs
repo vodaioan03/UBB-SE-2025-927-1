@@ -133,7 +133,7 @@ namespace Duo.Api.Models.Exercises
         /// <returns>A string with the exercise ID, difficulty, and time limit.</returns>
         public override string ToString()
         {
-            return $"Id: {Id},  Difficulty: {Difficulty}, Time: {TimeInSeconds}s";
+            return $"Id: {ExerciseId}, Difficulty: {Difficulty}, Time: {TimeInSeconds}s";
         }
     }
 }
