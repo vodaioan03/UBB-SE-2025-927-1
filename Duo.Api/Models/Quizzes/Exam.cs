@@ -1,4 +1,4 @@
-﻿namespace Duo.Models.Quizzes;
+﻿namespace Duo.Api.Models.Quizzes;
 
 /// <summary>
 /// Represents an exam, a specialized type of quiz with additional constraints or behaviors.
