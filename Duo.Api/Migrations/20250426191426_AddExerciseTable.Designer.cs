@@ -4,6 +4,7 @@ using Duo.Api.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Duo.Api.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20250426191426_AddExerciseTable")]
+    partial class AddExerciseTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -114,17 +117,18 @@ namespace Duo.Api.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Answer")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("ExerciseId")
-                        .HasColumnType("int");
 
                     b.Property<bool>("IsCorrect")
                         .HasColumnType("bit");
 
+                    b.Property<int?>("MultipleChoiceExerciseExerciseId")
+                        .HasColumnType("int");
+
                     b.HasKey("AnswerModelId");
 
-                    b.HasIndex("ExerciseId");
+                    b.HasIndex("MultipleChoiceExerciseExerciseId");
 
                     b.ToTable("MultipleChoiceAnswerModel");
                 });
@@ -276,6 +280,7 @@ namespace Duo.Api.Migrations
                     b.HasBaseType("Duo.Api.Models.Exercises.Exercise");
 
                     b.Property<string>("PossibleCorrectAnswers")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasDiscriminator().HasValue("Fill in the blank");
@@ -304,13 +309,9 @@ namespace Duo.Api.Migrations
 
             modelBuilder.Entity("Duo.Api.Models.Exercises.MultipleChoiceAnswerModel", b =>
                 {
-                    b.HasOne("Duo.Api.Models.Exercises.MultipleChoiceExercise", "Exercise")
+                    b.HasOne("Duo.Api.Models.Exercises.MultipleChoiceExercise", null)
                         .WithMany("Choices")
-                        .HasForeignKey("ExerciseId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Exercise");
+                        .HasForeignKey("MultipleChoiceExerciseExerciseId");
                 });
 
             modelBuilder.Entity("Duo.Api.Models.Quizzes.Exam", b =>
