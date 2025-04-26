@@ -1,7 +1,7 @@
 using CourseApp.Models;
-using Duo.Models;
-using Duo.Models.Exercises;
-using Duo.Models.Quizzes;
+using Duo.Api.Models;
+using Duo.Api.Models.Exercises;
+using Duo.Api.Models.Quizzes;
 using Microsoft.EntityFrameworkCore;
 
 namespace Duo.Api.Persistence
@@ -15,6 +15,8 @@ namespace Duo.Api.Persistence
 
         public DbSet<BaseQuiz> Quizzes { get; set; }
 
+        public DbSet<Exercise> Exercises { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -24,6 +26,19 @@ namespace Duo.Api.Persistence
                 .HasDiscriminator<string>("QuizType")
                 .HasValue<Quiz>("Quiz")
                 .HasValue<Exam>("Exam");
+
+            // Configure TPH inheritance for exercises
+            modelBuilder.Entity<Exercise>()
+                .HasDiscriminator<string>("ExerciseType")
+                .HasValue<AssociationExercise>("Association")
+                .HasValue<FillInTheBlankExercise>("Fill in the blank")
+                .HasValue<FlashcardExercise>("Flashcard")
+                .HasValue<MultipleChoiceExercise>("Multiple Choice");
+
+            // Configure indexes for search optimization
+            modelBuilder.Entity<Exercise>()
+                .HasIndex(e => e.Question)
+                .HasDatabaseName("IX_Exercise_Question");
 
             // Configure the many-to-many relationship between quizzes and exercises
             modelBuilder.Entity<BaseQuiz>()
@@ -35,5 +50,6 @@ namespace Duo.Api.Persistence
                     j => j.HasOne<BaseQuiz>().WithMany().HasForeignKey("QuizId")
                 );
         }
+
     }
 }
