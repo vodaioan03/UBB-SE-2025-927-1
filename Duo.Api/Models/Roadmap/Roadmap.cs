@@ -25,11 +25,4 @@ public class Roadmap
     /// </summary>
     public virtual ICollection<Section> Sections { get; set; } = new List<Section>();
 
-    /// <summary>
-    /// Returns a string representation of the roadmap.
-    /// </summary>
-    public override string ToString()
-    {
-        return $"Roadmap {Id}: {Name} - {Sections.Count} sections";
-    }
 }
