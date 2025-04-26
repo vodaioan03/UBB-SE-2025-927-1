@@ -1,19 +1,25 @@
 ﻿namespace Duo.Models.Quizzes;
 
+/// <summary>
+/// Represents a concrete quiz implementation with ordering capability.
+/// Inherits from BaseQuiz to share common quiz properties and behavior.
+/// </summary>
 public class Quiz : BaseQuiz
 {
-    private const int MAX_EXERCISES = 10;
-    private const double PASSING_THRESHOLD = 75;
+    /// <summary>
+    /// The order number of the quiz within its section (optional).
+    /// Used for sequencing quizzes in a particular order.
+    /// </summary>
     public int? OrderNumber { get; set; }
 
-    public Quiz(int id, int? sectionId, int? orderNumber)
-        : base(id, sectionId, MAX_EXERCISES, PASSING_THRESHOLD)
+    /// <summary>
+    /// Initializes a new instance of the Quiz class.
+    /// </summary>
+    /// <param name="sectionId">The identifier of the section this quiz belongs to (optional)</param>
+    /// <param name="orderNumber">The position of this quiz in the section's ordering (optional)</param>
+    public Quiz(int? sectionId, int? orderNumber)
+        : base(sectionId)
     {
         OrderNumber = orderNumber;
-    }
-
-    public override string ToString()
-    {
-        return $"{base.ToString()} - Order: {OrderNumber ?? 0}";
     }
 }
