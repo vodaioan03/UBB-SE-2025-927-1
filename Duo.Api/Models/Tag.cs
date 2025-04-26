@@ -1,21 +1,24 @@
-﻿using System.ComponentModel;
-using System.Runtime.CompilerServices;
+﻿using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 
-namespace CourseApp.Models
+namespace Duo.Api.Models
 {
     /// <summary>
     /// Represents a tag that can be assigned to courses or modules, with support for property change notifications.
     /// </summary>
+    [ExcludeFromCodeCoverage]
     public partial class Tag 
     {
         /// <summary>
         /// Gets or sets the unique identifier for the tag.
         /// </summary>
+        [Key]
         public int TagId { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the tag.
         /// </summary>
+        [Required]
         public string Name { get; set; } = string.Empty;
     }
 }
