@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using Duo.Api.Models.Sections;
+﻿using Duo.Api.Models.Sections;
+using System.ComponentModel.DataAnnotations;
 
 namespace Duo.Models.Api.Roadmap;
 
