@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Duo.Models.Quizzes;
 
-namespace Duo.Models.Sections
+namespace Duo.Api.Models.Sections
 {
     /// <summary>
     /// Represents a learning section within a roadmap.
