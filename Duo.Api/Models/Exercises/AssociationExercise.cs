@@ -14,14 +14,14 @@ namespace Duo.Api.Models.Exercises
         /// <summary>
         /// Gets or sets the first list of answers for the association exercise.
         /// </summary>
-        [Required]
-        public List<string> FirstAnswersList { get; set; } = [];
+        //[Required]
+        //public List<string> FirstAnswersList { get; set; } = [];
 
         /// <summary>
         /// Gets or sets the second list of answers for the association exercise.
         /// </summary>
-        [Required]
-        public List<string> SecondAnswersList { get; set; } = [];
+        //[Required]
+        //public List<string> SecondAnswersList { get; set; } = [];
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AssociationExercise"/> class.
@@ -45,18 +45,8 @@ namespace Duo.Api.Models.Exercises
                 throw new ArgumentException("Answer lists must have the same length.");
             }
 
-            FirstAnswersList = firstAnswers;
-            SecondAnswersList = secondAnswers;
-        }
-
-        /// <summary>
-        /// Returns a string representation of the association exercise, including its ID, question, and answer pairs.
-        /// </summary>
-        /// <returns>A string describing the association exercise.</returns>
-        public override string ToString()
-        {
-            var pairs = string.Join(", ", FirstAnswersList.Zip(SecondAnswersList, (a, b) => $"{a} ↔ {b}"));
-            return $"{base.ToString()} [Association] Pairs: {pairs}";
+            //FirstAnswersList = firstAnswers;
+            //SecondAnswersList = secondAnswers;
         }
     }
 }

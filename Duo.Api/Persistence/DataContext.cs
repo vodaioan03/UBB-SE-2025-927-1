@@ -40,28 +40,32 @@ namespace Duo.Api.Persistence
                 .HasForeignKey<Exam>(e => e.SectionId)
                 .OnDelete(DeleteBehavior.SetNull);
 
-            // Configure TPH inheritance for exercises
+            // Configure Quiz -> Exercises (many-to-many)
+            //modelBuilder.Entity<Quiz>()
+            //    .HasMany(q => q.Exercises)
+            //    .WithMany(e => e.Quizzes)
+            //    .UsingEntity(j => j.ToTable("QuizExercises"));
+
+            // Configure Exam -> Exercises (many-to-many)
+            //modelBuilder.Entity<Exam>()
+            //    .HasMany(e => e.Exercises)
+            //    .WithMany(e => e.Exams)
+            //    .UsingEntity(j => j.ToTable("ExamExercises"));
+
+
+            //Configure TPH inheritance for exercises
             //modelBuilder.Entity<Exercise>()
-            //    .HasDiscriminator<string>("ExerciseType")
-            //    .HasValue<AssociationExercise>("Association")
-            //    .HasValue<FillInTheBlankExercise>("Fill in the blank")
-            //    .HasValue<FlashcardExercise>("Flashcard")
-            //    .HasValue<MultipleChoiceExercise>("Multiple Choice");
+               //.HasDiscriminator<string>("ExerciseType")
+               //.HasValue<AssociationExercise>("Association");
+               //.HasValue<FillInTheBlankExercise>("Fill in the blank")
+               //.HasValue<FlashcardExercise>("Flashcard")
+               //.HasValue<MultipleChoiceExercise>("Multiple Choice");
 
             // Configure indexes for search optimization
             //modelBuilder.Entity<Exercise>()
             //    .HasIndex(e => e.Question)
             //    .HasDatabaseName("IX_Exercise_Question");
 
-            // Configure the many-to-many relationship between quizzes and exercises
-            //modelBuilder.Entity<BaseQuiz>()
-            //    .HasMany(bq => bq.ExerciseList)
-            //    .WithMany(e => e.Quizzes)
-            //    .UsingEntity<Dictionary<string, object>>(
-            //        "QuizExercises",
-            //        j => j.HasOne<Exercise>().WithMany().HasForeignKey("ExerciseId"),
-            //        j => j.HasOne<BaseQuiz>().WithMany().HasForeignKey("QuizId")
-            //    );
         }
 
     }
