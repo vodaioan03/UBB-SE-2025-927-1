@@ -1,8 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Duo.Api.Models;
-
-public class User
+namespace Duo.Api.Models
 {
     /// <summary>
     /// Represents a user of the platform.
