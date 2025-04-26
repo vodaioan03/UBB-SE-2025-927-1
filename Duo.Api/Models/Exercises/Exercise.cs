@@ -24,7 +24,7 @@ namespace Duo.Api.Models.Exercises
         /// </summary>
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int ExerciseId { get; set; } = ExerciseId;
+        public int ExerciseId { get; set; }
 
         /// <summary>
         /// Gets or sets the question or prompt for the exercise.
@@ -39,10 +39,16 @@ namespace Duo.Api.Models.Exercises
         public Difficulty Difficulty { get; set; } = difficulty;
 
         /// <summary>
+        /// Navigation property to the exams that include this exercise.
+        /// This establishes a many-to-many relationship between exercises and exams.
+        /// </summary>
+        //public ICollection<Exam> Exams { get; set; } = [];
+
+        /// <summary>
         /// Navigation property to the quizzes that include this exercise.
         /// This establishes a many-to-many relationship between exercises and quizzes.
         /// </summary>
-        public ICollection<BaseQuiz> Quizzes { get; set; } = [];
+        //public ICollection<Quiz> Quizzes { get; set; } = [];
 
         /// <summary>
         /// Returns a string representation of the exercise, including its ID, question, and difficulty level.
