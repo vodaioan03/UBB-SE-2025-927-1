@@ -1,17 +1,17 @@
-﻿namespace Duo.Models.Quizzes;
+﻿namespace Duo.Api.Models.Quizzes;
 
+/// <summary>
+/// Represents an exam, a specialized type of quiz with additional constraints or behaviors.
+/// Inherits from BaseQuiz to share common quiz properties and functionality.
+/// </summary>
 public class Exam : BaseQuiz
 {
-    private const int MAX_EXERCISES = 25;
-    private const double PASSING_THRESHOLD = 90;
-
-    public Exam(int id, int? sectionId)
-        : base(id, sectionId, MAX_EXERCISES, PASSING_THRESHOLD)
+    /// <summary>
+    /// Initializes a new instance of the Exam class.
+    /// </summary>
+    /// <param name="sectionId">The identifier of the section this exam belongs to (optional)</param>
+    public Exam(int? sectionId)
+        : base(sectionId)
     {
-    }
-
-    public override string ToString()
-    {
-        return $"{base.ToString()} [Final Exam]";
     }
 }

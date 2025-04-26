@@ -1,6 +1,7 @@
 using CourseApp.Models;
 using Duo.Api.Models;
-using Duo.Models;
+using Duo.Api.Models.Exercises;
+using Duo.Api.Models.Quizzes;
 using Microsoft.EntityFrameworkCore;
 
 namespace Duo.Api.Persistence
@@ -12,30 +13,39 @@ namespace Duo.Api.Persistence
         public DbSet<Tag> Tags { get; set; }
         public DbSet<Module> Modules { get; set; }
 
-
-        /*
-        public DbSet<Course> Courses { get; set; }
-        public DbSet<CourseCompletion> CourseCompletions { get; set; }
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+            
+            // Configure TPH inheritance for quizzes
+            modelBuilder.Entity<BaseQuiz>()
+                .HasDiscriminator<string>("QuizType")
+                .HasValue<Quiz>("Quiz")
+                .HasValue<Exam>("Exam");
 
-            // Composite key for CourseCompletion: UserId + CourseId
-            modelBuilder.Entity<CourseCompletion>()
-                .HasKey(cc => new { cc.UserId, cc.CourseId });
+            // Configure TPH inheritance for exercises
+            modelBuilder.Entity<Exercise>()
+                .HasDiscriminator<string>("ExerciseType")
+                .HasValue<AssociationExercise>("Association")
+                .HasValue<FillInTheBlankExercise>("Fill in the blank")
+                .HasValue<FlashcardExercise>("Flashcard")
+                .HasValue<MultipleChoiceExercise>("Multiple Choice");
 
-            // Configure relationships
-            modelBuilder.Entity<CourseCompletion>()
-                .HasOne(cc => cc.Course)
-                .WithMany()
-                .HasForeignKey(cc => cc.CourseId);
+            // Configure indexes for search optimization
+            modelBuilder.Entity<Exercise>()
+                .HasIndex(e => e.Question)
+                .HasDatabaseName("IX_Exercise_Question");
 
-            modelBuilder.Entity<CourseCompletion>()
-                .HasOne(cc => cc.User)
-                .WithMany()
-                .HasForeignKey(cc => cc.UserId);
-        }*/
+            // Configure the many-to-many relationship between quizzes and exercises
+            modelBuilder.Entity<BaseQuiz>()
+                .HasMany(bq => bq.ExerciseList)
+                .WithMany(e => e.Quizzes)
+                .UsingEntity<Dictionary<string, object>>(
+                    "QuizExercises",
+                    j => j.HasOne<Exercise>().WithMany().HasForeignKey("ExerciseId"),
+                    j => j.HasOne<BaseQuiz>().WithMany().HasForeignKey("QuizId")
+                );
+         }
 
     }
 }
