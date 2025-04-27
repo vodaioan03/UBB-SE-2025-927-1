@@ -36,10 +36,10 @@ namespace Duo.Api.Repositories
         Task DeleteExerciseAsync(int id);
 
         //Quizzes
-        Task<List<BaseQuiz>> GetQuizzesFromDbAsync();
-        Task<BaseQuiz> GetQuizByIdAsync(int id);
-        Task AddQuizAsync(BaseQuiz quiz);
-        Task UpdateQuizAsync(BaseQuiz quiz);
+        Task<List<Quiz>> GetQuizzesFromDbAsync();
+        Task<Quiz> GetQuizByIdAsync(int id);
+        Task AddQuizAsync(Quiz quiz);
+        Task UpdateQuizAsync(Quiz quiz);
         Task DeleteQuizAsync(int id);
     }
 }
