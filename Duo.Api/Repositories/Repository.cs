@@ -4,6 +4,7 @@ using Duo.Api.Models.Exercises;
 using Duo.Api.Models.Quizzes;
 using Duo.Api.Persistence;
 using Microsoft.EntityFrameworkCore;
+using Duo.Api.Models.Sections;
 
 namespace Duo.Api.Repositories
 {
@@ -13,7 +14,7 @@ namespace Duo.Api.Repositories
 
         public Repository(DataContext context)
         {
-            context = context;
+            this.context = context;
         }
 
         // Users
@@ -165,6 +166,39 @@ namespace Duo.Api.Repositories
             if (quiz != null)
             {
                 context.Quizzes.Remove(quiz);
+                await context.SaveChangesAsync();
+            }
+        }
+
+        // Sections
+        public async Task<List<Section>> GetSectionsFromDbAsync()
+        {
+            return await context.Sections.ToListAsync();
+        }
+
+        public async Task<Section?> GetSectionByIdAsync(int id)
+        {
+            return await context.Sections.FindAsync(id);
+        }
+
+        public async Task AddSectionAsync(Section section)
+        {
+            context.Sections.Add(section);
+            await context.SaveChangesAsync();
+        }
+
+        public async Task UpdateSectionAsync(Section section)
+        {
+            context.Sections.Update(section);
+            await context.SaveChangesAsync();
+        }
+
+        public async Task DeleteSectionAsync(int id)
+        {
+            var section = await context.Sections.FindAsync(id);
+            if (section != null)
+            {
+                context.Sections.Remove(section);
                 await context.SaveChangesAsync();
             }
         }

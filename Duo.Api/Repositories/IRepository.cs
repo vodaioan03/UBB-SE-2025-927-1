@@ -2,6 +2,7 @@ using CourseApp.Models;
 using Duo.Api.Models;
 using Duo.Api.Models.Exercises;
 using Duo.Api.Models.Quizzes;
+using Duo.Api.Models.Sections;
 
 namespace Duo.Api.Repositories
 {
@@ -41,5 +42,12 @@ namespace Duo.Api.Repositories
         Task AddQuizAsync(Quiz quiz);
         Task UpdateQuizAsync(Quiz quiz);
         Task DeleteQuizAsync(int id);
+
+        //Sections
+        Task<List<Section>> GetSectionsFromDbAsync();
+        Task<Section?> GetSectionByIdAsync(int id);
+        Task AddSectionAsync(Section section);
+        Task UpdateSectionAsync(Section section);
+        Task DeleteSectionAsync(int id);
     }
 }

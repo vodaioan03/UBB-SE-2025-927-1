@@ -1,104 +1,187 @@
-﻿using Duo.Api.Models.Sections;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Duo.Api.DTO.Requests;
+using Duo.Api.Models.Sections;
 using Duo.Api.Persistence;
-using Microsoft.EntityFrameworkCore;
+using Duo.Api.Repositories;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Duo.Api.Controllers;
-
-/// <summary>
-/// Controller for managing sections.
-/// </summary>
-[Route("section")]
-public class SectionController : BaseController
+namespace Duo.Api.Controllers
 {
-    public SectionController(DataContext dataContext) : base(dataContext)
+    [Route("section")]
+    public class SectionController : BaseController
     {
-    }
-
-    /// <summary>
-    /// Adds a new section.
-    /// </summary>
-    /// <param name="section">Section data from form.</param>
-    /// <returns>Created section.</returns>
-    [HttpPost("add")]
-    public async Task<IActionResult> Add([FromForm] Section section)
-    {
-        dataContext.Sections.Add(section);
-        await dataContext.SaveChangesAsync();
-        return Ok(section);
-    }
-
-    /// <summary>
-    /// Retrieves a single section by ID.
-    /// </summary>
-    /// <param name="id">ID of the section.</param>
-    [HttpGet("get")]
-    public async Task<IActionResult> Get([FromQuery] int id)
-    {
-        var section = await dataContext.Sections
-            .Include(s => s.Quizzes)
-            .Include(s => s.Exam)
-            .FirstOrDefaultAsync(s => s.Id == id);
-        if (section == null)
+        public SectionController(DataContext dataContext, IRepository repository) : base(dataContext, repository)
         {
-            return NotFound();
         }
-        return Ok(section);
-    }
 
-    /// <summary>
-    /// Lists all sections.
-    /// </summary>
-    /// <returns>List of all sections.</returns>
-    [HttpGet("list")]
-    public async Task<IActionResult> List()
-    {
-        var section = await dataContext.Sections
-            .Include(s => s.Quizzes)
-            .Include(s => s.Exam)
-            .ToListAsync();
-        return Ok(section);
-    }
-
-    /// <summary>
-    /// Deletes a section by ID.
-    /// </summary>
-    /// <param name="id">Id of the section to be deleted</param>
-    /// <returns>Status of the deletion.</returns>
-    [HttpDelete("delete")]
-    public async Task<IActionResult> Delete([FromQuery] int id)
-    {
-        var section = await dataContext.Sections.FindAsync(id);
-        if (section == null)
+        private async Task<int> GetLastOrderNumberAsync(int roadmapId)
         {
-            return NotFound();
-        }
-        dataContext.Sections.Remove(section);
-        await dataContext.SaveChangesAsync();
-        return Ok();
-    }
+            List<Section> sections = await repository.GetSectionsFromDbAsync();
+            List<int> orderNumbers = sections
+                        .Where(section => section.RoadmapId == roadmapId)
+                        .OrderBy(section => section.OrderNumber)
+                        .Select(section => section.OrderNumber ?? 0)
+                        .ToList();
 
-    /// <summary>
-    /// Updates an existing section.
-    /// </summary>
-    /// <param name="section">Updated section data from form</param>
-    /// <returns>Status of the update</returns>
-    [HttpPut("update")]
-    public async Task<IActionResult> Update([FromForm] Section section)
-    {
-        var existingSection = await dataContext.Sections.FindAsync(section.Id);
-        if (existingSection == null)
-        {
-            return NotFound();
+            if (orderNumbers.Count == 0)
+            {
+                return 1;
+            }
+
+            for (int i = 1; i <= orderNumbers.Count; i++)
+            {
+                if (orderNumbers[i - 1] != i)
+                {
+                    return i;
+                }
+            }
+
+            return orderNumbers.Count + 1;
         }
-        existingSection.SubjectId = section.SubjectId;
-        existingSection.Title = section.Title;
-        existingSection.Description = section.Description;
-        existingSection.RoadmapId = section.RoadmapId;
-        existingSection.OrderNumber = section.OrderNumber;
-        dataContext.Sections.Update(existingSection);
-        await dataContext.SaveChangesAsync();
-        return Ok(existingSection);
+
+        [HttpPost("add")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> AddSection([FromForm] AddSectionRequest request)
+        {
+            try
+            {
+                Section section = new Section
+                {
+                    SubjectId = request.SubjectId,
+                    Title = request.Title,
+                    Description = request.Description,
+                    RoadmapId = request.RoadmapId,
+                    OrderNumber = request.OrderNumber ?? await this.GetLastOrderNumberAsync(request.RoadmapId)
+                    // Quizzes and Exam are left as null
+                };
+
+                await repository.AddSectionAsync(section);
+
+                return Ok(new { message = "Section added successfully!" });
+            }
+            catch (Exception e)
+            {
+                return BadRequest(new { message = e.Message });
+            }
+        }
+
+        [HttpDelete("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> RemoveSection([FromForm] int id)
+        {
+            try
+            {
+                var section = await repository.GetSectionByIdAsync(id);
+                if (section == null)
+                {
+                    return NotFound(new { message = "Section not found!" });
+                }
+
+                await repository.DeleteSectionAsync(id);
+                return Ok(new { message = "Section removed successfully!" });
+            }
+            catch (Exception e)
+            {
+                return BadRequest(new { message = e.Message });
+            }
+        }
+
+        [HttpGet("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetSectionById(int id)
+        {
+            try
+            {
+                var section = await repository.GetSectionByIdAsync(id);
+                if (section == null)
+                {
+                    return NotFound(new { message = "Section not found!" });
+                }
+
+                return Ok(new { result = section, message = "Successfully got section!" });
+            }
+            catch (Exception e)
+            {
+                return BadRequest(new { message = e.Message });
+            }
+        }
+
+        [HttpGet("list")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> ListSections()
+        {
+            try
+            {
+                var sections = await repository.GetSectionsFromDbAsync();
+                return Ok(new { result = sections, message = "Successfully got list of sections" });
+            }
+            catch (Exception e)
+            {
+                return BadRequest(new { message = e.Message });
+            }
+        }
+
+        [HttpGet("list/roadmap/{roadmapId}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> ListSectionsByRoadmapId(int roadmapId)
+        {
+            try
+            {
+                List<Section> sections = await repository.GetSectionsFromDbAsync();
+                sections = sections
+                            .Where(section => section.RoadmapId == roadmapId)
+                            .ToList();
+                if (!sections.Any())
+                {
+                    return NotFound(new { result = new List<Section>(), message = "No sections found for the specified roadmap!" });
+                }
+                return Ok(new { result = sections, message = "Successfully got list of sections" });
+            }
+            catch (Exception e)
+            {
+                return BadRequest(new { message = e.Message });
+            }
+        }
+
+        [HttpPatch("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> UpdateSection([FromForm] int id, [FromForm] UpdateSectionRequest request)
+        {
+            try
+            {
+                var section = await repository.GetSectionByIdAsync(id);
+                if (section == null)
+                {
+                    return NotFound(new { message = "Section not found!" });
+                }
+
+                section.SubjectId = request.SubjectId ?? section.SubjectId;
+                section.Title = request.Title ?? section.Title;
+                section.Description = request.Description ?? section.Description;
+                section.RoadmapId = request.RoadmapId ?? section.RoadmapId;
+                section.OrderNumber = request.OrderNumber ?? section.OrderNumber;
+
+                await repository.UpdateSectionAsync(section);
+                return Ok(new { message = "Section updated successfully!" });
+            }
+            catch (Exception e)
+            {
+                return BadRequest(new { message = e.Message });
+            }
+        }
     }
 }
-
