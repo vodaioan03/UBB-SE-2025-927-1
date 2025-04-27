@@ -4,6 +4,7 @@ using Duo.Api.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Duo.Api.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20250426183205_duoapi")]
+    partial class duoapi
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -74,59 +77,6 @@ namespace Duo.Api.Migrations
                     b.HasKey("TagId");
 
                     b.ToTable("Tags");
-                });
-
-            modelBuilder.Entity("Duo.Api.Models.Exercises.Exercise", b =>
-                {
-                    b.Property<int>("ExerciseId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ExerciseId"));
-
-                    b.Property<int>("Difficulty")
-                        .HasColumnType("int");
-
-                    b.Property<string>("ExerciseType")
-                        .IsRequired()
-                        .HasMaxLength(21)
-                        .HasColumnType("nvarchar(21)");
-
-                    b.Property<string>("Question")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("ExerciseId");
-
-                    b.HasIndex("Question")
-                        .HasDatabaseName("IX_Exercise_Question");
-
-                    b.ToTable("Exercises");
-
-                    b.HasDiscriminator<string>("ExerciseType").HasValue("Exercise");
-
-                    b.UseTphMappingStrategy();
-                });
-
-            modelBuilder.Entity("Duo.Api.Models.Exercises.MultipleChoiceAnswerModel", b =>
-                {
-                    b.Property<string>("AnswerModelId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("Answer")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("ExerciseId")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("IsCorrect")
-                        .HasColumnType("bit");
-
-                    b.HasKey("AnswerModelId");
-
-                    b.HasIndex("ExerciseId");
-
-                    b.ToTable("MultipleChoiceAnswerModel");
                 });
 
             modelBuilder.Entity("Duo.Api.Models.Quizzes.Exam", b =>
@@ -226,93 +176,6 @@ namespace Duo.Api.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("ExamExercise", b =>
-                {
-                    b.Property<int>("ExamsId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ExercisesExerciseId")
-                        .HasColumnType("int");
-
-                    b.HasKey("ExamsId", "ExercisesExerciseId");
-
-                    b.HasIndex("ExercisesExerciseId");
-
-                    b.ToTable("ExamExercises", (string)null);
-                });
-
-            modelBuilder.Entity("ExerciseQuiz", b =>
-                {
-                    b.Property<int>("ExercisesExerciseId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("QuizzesId")
-                        .HasColumnType("int");
-
-                    b.HasKey("ExercisesExerciseId", "QuizzesId");
-
-                    b.HasIndex("QuizzesId");
-
-                    b.ToTable("QuizExercises", (string)null);
-                });
-
-            modelBuilder.Entity("Duo.Api.Models.Exercises.AssociationExercise", b =>
-                {
-                    b.HasBaseType("Duo.Api.Models.Exercises.Exercise");
-
-                    b.Property<string>("FirstAnswersList")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("SecondAnswersList")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasDiscriminator().HasValue("Association");
-                });
-
-            modelBuilder.Entity("Duo.Api.Models.Exercises.FillInTheBlankExercise", b =>
-                {
-                    b.HasBaseType("Duo.Api.Models.Exercises.Exercise");
-
-                    b.Property<string>("PossibleCorrectAnswers")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasDiscriminator().HasValue("Fill in the blank");
-                });
-
-            modelBuilder.Entity("Duo.Api.Models.Exercises.FlashcardExercise", b =>
-                {
-                    b.HasBaseType("Duo.Api.Models.Exercises.Exercise");
-
-                    b.Property<string>("Answer")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<TimeSpan>("ElapsedTime")
-                        .HasColumnType("time");
-
-                    b.HasDiscriminator().HasValue("Flashcard");
-                });
-
-            modelBuilder.Entity("Duo.Api.Models.Exercises.MultipleChoiceExercise", b =>
-                {
-                    b.HasBaseType("Duo.Api.Models.Exercises.Exercise");
-
-                    b.HasDiscriminator().HasValue("Multiple Choice");
-                });
-
-            modelBuilder.Entity("Duo.Api.Models.Exercises.MultipleChoiceAnswerModel", b =>
-                {
-                    b.HasOne("Duo.Api.Models.Exercises.MultipleChoiceExercise", "Exercise")
-                        .WithMany("Choices")
-                        .HasForeignKey("ExerciseId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Exercise");
-                });
-
             modelBuilder.Entity("Duo.Api.Models.Quizzes.Exam", b =>
                 {
                     b.HasOne("Duo.Api.Models.Sections.Section", "Section")
@@ -333,46 +196,11 @@ namespace Duo.Api.Migrations
                     b.Navigation("Section");
                 });
 
-            modelBuilder.Entity("ExamExercise", b =>
-                {
-                    b.HasOne("Duo.Api.Models.Quizzes.Exam", null)
-                        .WithMany()
-                        .HasForeignKey("ExamsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Duo.Api.Models.Exercises.Exercise", null)
-                        .WithMany()
-                        .HasForeignKey("ExercisesExerciseId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("ExerciseQuiz", b =>
-                {
-                    b.HasOne("Duo.Api.Models.Exercises.Exercise", null)
-                        .WithMany()
-                        .HasForeignKey("ExercisesExerciseId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Duo.Api.Models.Quizzes.Quiz", null)
-                        .WithMany()
-                        .HasForeignKey("QuizzesId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("Duo.Api.Models.Sections.Section", b =>
                 {
                     b.Navigation("Exam");
 
                     b.Navigation("Quizzes");
-                });
-
-            modelBuilder.Entity("Duo.Api.Models.Exercises.MultipleChoiceExercise", b =>
-                {
-                    b.Navigation("Choices");
                 });
 #pragma warning restore 612, 618
         }

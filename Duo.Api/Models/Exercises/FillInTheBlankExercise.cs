@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-
 namespace Duo.Api.Models.Exercises
 {
     /// <summary>
@@ -9,29 +6,41 @@ namespace Duo.Api.Models.Exercises
     /// </summary>
     public class FillInTheBlankExercise : Exercise
     {
+        // Fields and Properties
+
         /// <summary>
         /// Gets or sets the list of possible correct answers for this fill-in-the-blank exercise.
         /// </summary>
-        public List<string> PossibleCorrectAnswers { get; set; }
+        public List<string>? PossibleCorrectAnswers { get; set; }
+
+        // Constructors
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="FillInTheBlankExercise"/> class.
+        /// Initializes a new instance of the <see cref="FillInTheBlankExercise"/> class with the specified parameters.
         /// </summary>
-        /// <param name="id">The unique identifier for the exercise.</param>
+        /// <param name="exerciseId">The unique identifier for the exercise.</param>
         /// <param name="question">The question or prompt for the exercise.</param>
         /// <param name="difficulty">The difficulty level of the exercise.</param>
         /// <param name="possibleCorrectAnswers">A list of possible correct answers for this exercise.</param>
         /// <exception cref="ArgumentException">Thrown when the list of possible correct answers is null or empty.</exception>
-        public FillInTheBlankExercise(int id, string question, Difficulty difficulty, List<string> possibleCorrectAnswers)
-            : base(id, question, difficulty)
+        public FillInTheBlankExercise(int exerciseId, string question, Difficulty difficulty, List<string> possibleCorrectAnswers)
+            : base(exerciseId, question, difficulty)
         {
             if (possibleCorrectAnswers == null || possibleCorrectAnswers.Count == 0)
             {
-                throw new ArgumentException("Answers cannot be empty", nameof(possibleCorrectAnswers));
+                throw new ArgumentException("Answers cannot be empty.", nameof(possibleCorrectAnswers));
             }
 
             PossibleCorrectAnswers = possibleCorrectAnswers;
         }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FillInTheBlankExercise"/> class.
+        /// This parameterless constructor is required for Entity Framework.
+        /// </summary>
+        public FillInTheBlankExercise() { }
+
+        // Methods
 
         /// <summary>
         /// Gets the type of the exercise.
@@ -45,7 +54,7 @@ namespace Duo.Api.Models.Exercises
         /// <returns><c>true</c> if the answers are correct, otherwise <c>false</c>.</returns>
         public bool ValidateAnswer(List<string> userAnswers)
         {
-            if (userAnswers == null || userAnswers.Count != PossibleCorrectAnswers.Count)
+            if (userAnswers == null || userAnswers.Count != PossibleCorrectAnswers!.Count)
             {
                 return false;
             }
@@ -58,6 +67,7 @@ namespace Duo.Api.Models.Exercises
                     return false;
                 }
             }
+
             return true;
         }
 
@@ -67,7 +77,7 @@ namespace Duo.Api.Models.Exercises
         /// <returns>A string describing the fill-in-the-blank exercise.</returns>
         public override string ToString()
         {
-            var answers = string.Join(", ", PossibleCorrectAnswers);
+            var answers = string.Join(", ", PossibleCorrectAnswers!);
             return $"{base.ToString()} [Fill in the Blank] Correct Answers: {answers}";
         }
     }

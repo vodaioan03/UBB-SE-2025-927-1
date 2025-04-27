@@ -10,15 +10,11 @@ namespace Duo.Api.Models.Exercises
     /// Configured for Table-Per-Hierarchy (TPH) inheritance to allow different exercise types
     /// to share a single database table with a discriminator column.
     /// </summary>
-    /// <remarks>
-    /// Initializes a new instance of the <see cref="Exercise"/> class.
-    /// </remarks>
-    /// <param name="ExerciseId">The unique identifier for the exercise.</param>
-    /// <param name="question">The question or prompt for the exercise.</param>
-    /// <param name="difficulty">The difficulty level of the exercise.</param>
     [Index(nameof(Question))] // Optimizes search queries on the Question field
-    public abstract class Exercise(int ExerciseId, string question, Difficulty difficulty)
+    public abstract class Exercise
     {
+        // Fields and Properties
+
         /// <summary>
         /// Gets or sets the unique identifier for the exercise.
         /// </summary>
@@ -31,24 +27,47 @@ namespace Duo.Api.Models.Exercises
         /// This field is required and indexed for efficient querying.
         /// </summary>
         [Required]
-        public string Question { get; set; } = question;
+        public string? Question { get; set; }
 
         /// <summary>
         /// Gets or sets the difficulty level of the exercise.
         /// </summary>
-        public Difficulty Difficulty { get; set; } = difficulty;
+        public Difficulty Difficulty { get; set; }
 
         /// <summary>
         /// Navigation property to the exams that include this exercise.
         /// This establishes a many-to-many relationship between exercises and exams.
         /// </summary>
-        //public ICollection<Exam> Exams { get; set; } = [];
+        public ICollection<Exam> Exams { get; set; } = [];
 
         /// <summary>
         /// Navigation property to the quizzes that include this exercise.
         /// This establishes a many-to-many relationship between exercises and quizzes.
         /// </summary>
-        //public ICollection<Quiz> Quizzes { get; set; } = [];
+        public ICollection<Quiz> Quizzes { get; set; } = [];
+
+        // Constructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Exercise"/> class with the specified parameters.
+        /// </summary>
+        /// <param name="exerciseId">The unique identifier for the exercise.</param>
+        /// <param name="question">The question or prompt for the exercise.</param>
+        /// <param name="difficulty">The difficulty level of the exercise.</param>
+        public Exercise(int exerciseId, string question, Difficulty difficulty)
+        {
+            ExerciseId = exerciseId;
+            Question = question;
+            Difficulty = difficulty;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Exercise"/> class.
+        /// This parameterless constructor is required for Entity Framework.
+        /// </summary>
+        public Exercise() { }
+
+        // Methods
 
         /// <summary>
         /// Returns a string representation of the exercise, including its ID, question, and difficulty level.

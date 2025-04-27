@@ -37,5 +37,5 @@ public class Quiz
     /// </summary>
     public int? OrderNumber { get; set; }
 
-    //public ICollection<Exercise> Exercises { get; set; }
+    public ICollection<Exercise> Exercises { get; set; }
 }

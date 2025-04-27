@@ -29,5 +29,5 @@ public class Exam
     /// </summary>
     public Section? Section { get; set; }
 
-    //public ICollection<Exercise> Exercises { get; set; } = new List<Exercise>();
+    public ICollection<Exercise> Exercises { get; set; } = new List<Exercise>();
 }
