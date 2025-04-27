@@ -1,4 +1,3 @@
-using CourseApp.Models;
 using Duo.Api.Models;
 using Duo.Api.Models.Exercises;
 using Duo.Api.Models.Quizzes;
