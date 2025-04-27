@@ -137,23 +137,23 @@ namespace Duo.Api.Repositories
         }
 
         // Quizzes
-        public async Task<List<BaseQuiz>> GetQuizzesFromDbAsync()
+        public async Task<List<Quiz>> GetQuizzesFromDbAsync()
         {
             return await context.Quizzes.ToListAsync();
         }
 
-        public async Task<BaseQuiz> GetQuizByIdAsync(int id)
+        public async Task<Quiz> GetQuizByIdAsync(int id)
         {
             return await context.Quizzes.FindAsync(id);
         }
 
-        public async Task AddQuizAsync(BaseQuiz quiz)
+        public async Task AddQuizAsync(Quiz quiz)
         {
             context.Quizzes.Add(quiz);
             await context.SaveChangesAsync();
         }
 
-        public async Task UpdateQuizAsync(BaseQuiz quiz)
+        public async Task UpdateQuizAsync(Quiz quiz)
         {
             context.Quizzes.Update(quiz);
             await context.SaveChangesAsync();
