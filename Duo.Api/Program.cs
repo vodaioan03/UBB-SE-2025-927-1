@@ -2,6 +2,7 @@ using DotNetEnv;
 using System.Text.Json.Serialization;
 using Duo.Api.Persistence;
 using Microsoft.EntityFrameworkCore;
+using Duo.Api.Repositories;
 
 namespace Duo.Api
 {
@@ -31,6 +32,8 @@ namespace Duo.Api
 
             builder.Services.AddDbContext<DataContext>(options =>
                 options.UseSqlServer(connectionString));
+
+            builder.Services.AddScoped<IRepository, Repository>();
 
             var app = builder.Build();
 
