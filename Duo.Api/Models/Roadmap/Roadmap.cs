@@ -1,7 +1,7 @@
 ﻿using Duo.Api.Models.Sections;
 using System.ComponentModel.DataAnnotations;
 
-namespace Duo.Models.Api.Roadmap;
+namespace Duo.Api.Models.Roadmap;
 
 /// <summary>
 /// Represents a roadmap consisting of multiple sections.
