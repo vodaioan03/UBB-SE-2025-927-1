@@ -1,41 +1,74 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-
-namespace Duo.Models.Exercises;
-
-public class MultipleChoiceExercise : Exercise
+﻿namespace Duo.Api.Models.Exercises
 {
-    public List<MultipleChoiceAnswerModel> Choices { get; set; }
-
-    public MultipleChoiceExercise(int id, string question, Difficulty difficulty, List<MultipleChoiceAnswerModel> choices)
-        : base(id, question, difficulty)
+    /// <summary>
+    /// Represents a multiple-choice exercise where users select one or more correct answers from a list of options.
+    /// Inherits from the <see cref="Exercise"/> base class.
+    /// </summary>
+    public class MultipleChoiceExercise : Exercise
     {
-        if (choices == null || !choices.Any(c => c.IsCorrect))
+        // Fields and Properties
+
+        /// <summary>
+        /// Gets or sets the list of answer choices for the multiple-choice exercise.
+        /// Each choice includes the answer text and whether it is correct.
+        /// </summary>
+        public List<MultipleChoiceAnswerModel>? Choices { get; set; }
+
+        // Constructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MultipleChoiceExercise"/> class with the specified parameters.
+        /// </summary>
+        /// <param name="exerciseId">The unique identifier for the exercise.</param>
+        /// <param name="question">The question or prompt for the exercise.</param>
+        /// <param name="difficulty">The difficulty level of the exercise.</param>
+        /// <param name="choices">The list of answer choices for the exercise.</param>
+        /// <exception cref="ArgumentException">Thrown when the list of choices is null or does not contain at least one correct answer.</exception>
+        public MultipleChoiceExercise(int exerciseId, string question, Difficulty difficulty, List<MultipleChoiceAnswerModel> choices)
+            : base(exerciseId, question, difficulty)
         {
-            throw new ArgumentException("At least one choice must be correct", nameof(choices));
+            if (choices == null || !choices.Any(c => c.IsCorrect))
+            {
+                throw new ArgumentException("At least one choice must be correct.", nameof(choices));
+            }
+
+            Choices = choices;
         }
 
-        Choices = choices;
-    }
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MultipleChoiceExercise"/> class.
+        /// This parameterless constructor is required for Entity Framework.
+        /// </summary>
+        public MultipleChoiceExercise() { }
 
-    public bool ValidateAnswer(List<string> userAnswers)
-    {
-        if (userAnswers == null || userAnswers.Count == 0)
+        // Methods
+
+        /// <summary>
+        /// Validates the user's answers against the correct answers for the exercise.
+        /// </summary>
+        /// <param name="userAnswers">A list of answers provided by the user.</param>
+        /// <returns><c>true</c> if the user's answers match the correct answers, otherwise <c>false</c>.</returns>
+        public bool ValidateAnswer(List<string> userAnswers)
         {
-            return false;
+            if (userAnswers == null || userAnswers.Count == 0)
+            {
+                return false;
+            }
+
+            var correctAnswers = Choices!.Where(a => a.IsCorrect).Select(a => a.Answer).OrderBy(a => a).ToList();
+            var userSelection = userAnswers.OrderBy(a => a).ToList();
+
+            return correctAnswers.SequenceEqual(userSelection);
         }
 
-        var correctAnswers = Choices.Where(a => a.IsCorrect).Select(a => a.Answer).OrderBy(a => a).ToList();
-        var userSelection = userAnswers.OrderBy(a => a).ToList();
-
-        return correctAnswers.SequenceEqual(userSelection);
-    }
-
-    public override string ToString()
-    {
-        var choices = string.Join(", ", Choices.Select(c => $"{c.Answer}{(c.IsCorrect ? " (Correct)" : string.Empty)}"));
-        return $"{base.ToString()} [Multiple Choice] Choices: {choices}";
+        /// <summary>
+        /// Returns a string representation of the multiple-choice exercise, including its question, difficulty, and answer choices.
+        /// </summary>
+        /// <returns>A string describing the multiple-choice exercise.</returns>
+        public override string ToString()
+        {
+            var choices = string.Join(", ", Choices!.Select(c => $"{c.Answer}{(c.IsCorrect ? " (Correct)" : string.Empty)}"));
+            return $"{base.ToString()} [Multiple Choice] Choices: {choices}";
+        }
     }
 }
-

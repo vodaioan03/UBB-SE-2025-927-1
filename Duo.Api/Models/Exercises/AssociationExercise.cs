@@ -1,48 +1,58 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 
-namespace Duo.Models.Exercises;
-
-public class AssociationExercise : Exercise
+namespace Duo.Api.Models.Exercises
 {
-    public List<string> FirstAnswersList { get; set; }
-    public List<string> SecondAnswersList { get; set; }
-
-    public AssociationExercise(int id, string question, Difficulty difficulty, List<string> firstAnswers, List<string> secondAnswers)
-        : base(id, question, difficulty)
+    /// <summary>
+    /// Represents an association exercise where users match items from two lists.
+    /// Inherits from the <see cref="Exercise"/> base class.
+    /// Configured for Table-Per-Hierarchy (TPH) inheritance.
+    /// </summary>
+    [Index(nameof(Question))] // Ensures efficient search queries on the Question field
+    public class AssociationExercise : Exercise
     {
-        if (firstAnswers == null || secondAnswers == null || firstAnswers.Count != secondAnswers.Count)
-        {
-            throw new ArgumentException("Answer lists must have the same length");
-        }
+        /// <summary>
+        /// Gets or sets the first list of answers for the association exercise.
+        /// </summary>
+        [Required]
+        public List<string> FirstAnswersList { get; set; } = [];
 
-        FirstAnswersList = firstAnswers;
-        SecondAnswersList = secondAnswers;
-    }
+        /// <summary>
+        /// Gets or sets the second list of answers for the association exercise.
+        /// </summary>
+        [Required]
+        public List<string> SecondAnswersList { get; set; } = [];
 
-    public bool ValidateAnswer(List<(string, string)> userPairs)
-    {
-        if (userPairs == null || userPairs.Count != FirstAnswersList.Count)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AssociationExercise"/> class.
+        /// </summary>
+        /// <param name="exerciseId">The unique identifier for the exercise.</param>
+        /// <param name="question">The question or prompt for the exercise.</param>
+        /// <param name="difficulty">The difficulty level of the exercise.</param>
+        /// <param name="firstAnswers">The first list of answers for the exercise.</param>
+        /// <param name="secondAnswers">The second list of answers for the exercise.</param>
+        /// <exception cref="ArgumentException">Thrown if the answer lists are null or have different lengths.</exception>
+        public AssociationExercise(
+            int exerciseId,
+            string question,
+            Difficulty difficulty,
+            List<string> firstAnswers,
+            List<string> secondAnswers)
+            : base(exerciseId, question, difficulty)
         {
-            return false;
-        }
-
-        foreach (var (userA, userB) in userPairs)
-        {
-            int index = FirstAnswersList.IndexOf(userA);
-            if (index == -1 || SecondAnswersList[index] != userB)
+            if (firstAnswers == null || secondAnswers == null || firstAnswers.Count != secondAnswers.Count)
             {
-                return false;
+                throw new ArgumentException("Answer lists must have the same length.", nameof(firstAnswers));
             }
+
+            FirstAnswersList = firstAnswers;
+            SecondAnswersList = secondAnswers;
         }
 
-        return true;
-    }
-
-    public override string ToString()
-    {
-        var pairs = string.Join(", ", FirstAnswersList.Zip(SecondAnswersList, (a, b) => $"{a} ↔ {b}"));
-        return $"{base.ToString()} [Association] Pairs: {pairs}";
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AssociationExercise"/> class.
+        /// This constructor is required for Entity Framework.
+        /// </summary>
+        public AssociationExercise() { }
     }
 }

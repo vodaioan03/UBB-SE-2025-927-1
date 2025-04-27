@@ -1,7 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Net.Http;
+using System.Net.Http.Json;
 using System.Threading.Tasks;
 using Duo.Models.Exercises;
 using Duo.Models.Quizzes;
+using Duo.Models.Quizzes.API;
 using Duo.Repositories;
 
 namespace Duo.Services
@@ -10,11 +14,13 @@ namespace Duo.Services
     {
         private readonly IQuizRepository quizRepository;
         private readonly IExamRepository examRepository;
+        private readonly HttpClient httpClient;
 
-        public QuizService(IQuizRepository quizRepository, IExamRepository examRepository)
+        public QuizService(IQuizRepository quizRepository, IExamRepository examRepository, HttpClient httpClient)
         {
             this.quizRepository = quizRepository;
             this.examRepository = examRepository;
+            this.httpClient = httpClient;
         }
 
         public async Task<List<Quiz>> Get()
@@ -107,6 +113,28 @@ namespace Duo.Services
         {
             ValidationHelper.ValidateExam(exam);
             return examRepository.AddAsync(exam);
+        }
+
+        public async Task<QuizModel> FetchQuizAsync(int quizId)
+        {
+            var response = await httpClient.GetAsync($"api/quizzes/{quizId}");
+            response.EnsureSuccessStatusCode();
+            var quiz = await response.Content.ReadFromJsonAsync<QuizModel>();
+            return quiz!;
+        }
+
+        public async Task SubmitQuizAsync(QuizSubmission submission)
+        {
+            var response = await httpClient.PostAsJsonAsync("api/quizzes/submit", submission);
+            response.EnsureSuccessStatusCode();
+        }
+
+        public async Task<QuizResult> GetResultAsync(int quizId)
+        {
+            var response = await httpClient.GetAsync($"api/quizzes/{quizId}/result");
+            response.EnsureSuccessStatusCode();
+            var result = await response.Content.ReadFromJsonAsync<QuizResult>();
+            return result!;
         }
     }
 }

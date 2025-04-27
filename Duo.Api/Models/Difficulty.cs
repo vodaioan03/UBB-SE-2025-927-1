@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace Duo.Models
+﻿namespace Duo.Api.Models
 {
     public enum Difficulty
     {
@@ -12,11 +10,11 @@ namespace Duo.Models
     // list with difficulties as strings
     public static class DifficultyList
     {
-        public static readonly List<string> DIFFICULTIES = new ()
-        {
+        public static readonly List<string> DIFFICULTIES =
+        [
             "Easy",
             "Normal",
             "Hard"
-        };
+        ];
     }
 }
