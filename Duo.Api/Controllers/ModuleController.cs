@@ -11,6 +11,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Duo.Api.Controllers
 {
+    /// <summary>
+    /// Controller for managing modules in the system
+    /// </summary>
     [Route("module")]
     public class ModuleController : BaseController
     {
@@ -19,6 +22,11 @@ namespace Duo.Api.Controllers
 
         }
 
+        /// <summary>
+        /// Gets the next available position for a module in a course
+        /// </summary>
+        /// <param name="courseId">The ID of the course (nullable)</param>
+        /// <returns>The next available position number</returns>
         private async Task<int> getLastPositionAsync(int? courseId)
         {
             if (courseId == null)
@@ -49,6 +57,11 @@ namespace Duo.Api.Controllers
             return positions.Count + 1;
         }
 
+        /// <summary>
+        /// Adds a new module to the system
+        /// </summary>
+        /// <param name="request">The module data to add</param>
+        /// <returns>ActionResult with operation result</returns>
         [HttpPost("add")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -78,6 +91,11 @@ namespace Duo.Api.Controllers
             }
         }
 
+        /// <summary>
+        /// Removes a module from the system
+        /// </summary>
+        /// <param name="id">The ID of the module to remove</param>
+        /// <returns>ActionResult with operation result</returns>
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -101,6 +119,11 @@ namespace Duo.Api.Controllers
             }
         }
 
+        /// <summary>
+        /// Gets a module by its ID
+        /// </summary>
+        /// <param name="id">The ID of the module to retrieve</param>
+        /// <returns>ActionResult with the module data or error message</returns>
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -124,6 +147,10 @@ namespace Duo.Api.Controllers
             }
         }
 
+        /// <summary>
+        /// Gets a list of all modules in the system
+        /// </summary>
+        /// <returns>ActionResult with list of modules or error message</returns>
         [HttpGet("list")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -140,6 +167,11 @@ namespace Duo.Api.Controllers
             }
         }
 
+        /// <summary>
+        /// Gets a list of modules belonging to a specific course
+        /// </summary>
+        /// <param name="id">The ID of the course</param>
+        /// <returns>ActionResult with list of modules or error message</returns>
         [HttpGet("list/course/{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -164,6 +196,12 @@ namespace Duo.Api.Controllers
             }
         }
 
+        /// <summary>
+        /// Updates an existing module
+        /// </summary>
+        /// <param name="id">The ID of the module to update</param>
+        /// <param name="request">The updated module data</param>
+        /// <returns>ActionResult with operation result</returns>
         [HttpPatch("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
