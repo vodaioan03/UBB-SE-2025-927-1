@@ -5,7 +5,7 @@ using Duo.Api.Models.Quizzes;
 
 namespace Duo.Api.Repositories
 {
-    public interface  IRepository
+    public interface IRepository
     {
         // Users
         Task<List<User>> GetUsersFromDbAsync();
@@ -23,7 +23,7 @@ namespace Duo.Api.Repositories
 
         // Modules
         Task<List<Module>> GetModulesFromDbAsync();
-        Task<Module> GetModuleByIdAsync(int id);
+        Task<Module?> GetModuleByIdAsync(int id);
         Task AddModuleAsync(Module module);
         Task UpdateModuleAsync(Module module);
         Task DeleteModuleAsync(int id);

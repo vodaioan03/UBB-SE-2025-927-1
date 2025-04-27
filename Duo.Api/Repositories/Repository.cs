@@ -13,7 +13,7 @@ namespace Duo.Api.Repositories
 
         public Repository(DataContext context)
         {
-            context = context;
+            this.context = context;
         }
 
         // Users
@@ -79,7 +79,7 @@ namespace Duo.Api.Repositories
         {
             return await context.Modules.ToListAsync();
         }
-        public async Task<Module> GetModuleByIdAsync(int id)
+        public async Task<Module?> GetModuleByIdAsync(int id)
         {
             return await context.Modules.FindAsync(id);
         }
