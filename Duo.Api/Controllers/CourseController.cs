@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Duo.Api.Models;
 using Duo.Api.Persistence;
+using Duo.Api.Repositories;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
 
 namespace Duo.Api.Controllers
 {
@@ -10,7 +10,12 @@ namespace Duo.Api.Controllers
     [Route("course")]
     public class CourseController : BaseController
     {
-        public CourseController(DataContext dataContext) : base(dataContext) { }
+        private readonly IRepository repository;
+
+        public CourseController(DataContext dataContext, IRepository repository) : base(dataContext)
+        {
+            this.repository = repository;
+        }
 
         /// <summary>
         /// Adds a new course to the database.
@@ -20,8 +25,7 @@ namespace Duo.Api.Controllers
         [HttpPost("add")]
         public async Task<IActionResult> AddCourse([FromForm] Course course)
         {
-            dataContext.Courses.Add(course);
-            await dataContext.SaveChangesAsync();
+            await repository.AddCourseAsync(course);
             return Ok(course);
         }
 
@@ -33,7 +37,7 @@ namespace Duo.Api.Controllers
         [HttpGet("get")]
         public async Task<IActionResult> GetCourse([FromQuery] int id)
         {
-            var course = await dataContext.Courses.FindAsync(id);
+            var course = await repository.GetCourseByIdAsync(id);
             if (course == null)
                 return NotFound();
             return Ok(course);
@@ -46,7 +50,7 @@ namespace Duo.Api.Controllers
         [HttpGet("list")]
         public async Task<IActionResult> ListCourses()
         {
-            var courses = await dataContext.Courses.ToListAsync();
+            var courses = await repository.GetCoursesFromDbAsync();
             return Ok(courses);
         }
 
@@ -58,12 +62,11 @@ namespace Duo.Api.Controllers
         [HttpPut("update")]
         public async Task<IActionResult> UpdateCourse([FromForm] Course updatedCourse)
         {
-            var course = await dataContext.Courses.FindAsync(updatedCourse.CourseId);
+            var course = await repository.GetCourseByIdAsync(updatedCourse.CourseId);
             if (course == null)
                 return NotFound();
-            dataContext.Entry(course).CurrentValues.SetValues(updatedCourse);
-            await dataContext.SaveChangesAsync();
-            return Ok(course);
+            await repository.UpdateCourseAsync(updatedCourse);
+            return Ok(updatedCourse);
         }
 
         /// <summary>
@@ -74,11 +77,10 @@ namespace Duo.Api.Controllers
         [HttpDelete("delete")]
         public async Task<IActionResult> DeleteCourse([FromQuery] int id)
         {
-            var course = await dataContext.Courses.FindAsync(id);
+            var course = await repository.GetCourseByIdAsync(id);
             if (course == null)
                 return NotFound();
-            dataContext.Courses.Remove(course);
-            await dataContext.SaveChangesAsync();
+            await repository.DeleteCourseAsync(id);
             return Ok();
         }
     }
