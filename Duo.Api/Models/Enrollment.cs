@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
+using System.ComponentModel.DataAnnotations.Schema;
 
-namespace CourseApp.Models
+namespace Duo.Api.Models
 {
     /// <summary>
     /// Represents a user's enrollment in a course, including progress and completion status.
@@ -12,11 +13,13 @@ namespace CourseApp.Models
         /// <summary>
         /// Gets or sets the unique identifier of the enrolled user.
         /// </summary>
+        [ForeignKey(nameof(User))]
         public int UserId { get; set; }
 
         /// <summary>
         /// Gets or sets the unique identifier of the course the user is enrolled in.
         /// </summary>
+        [ForeignKey(nameof(Course))]
         public int CourseId { get; set; }
 
         /// <summary>
