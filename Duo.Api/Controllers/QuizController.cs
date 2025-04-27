@@ -30,7 +30,7 @@ namespace Duo.Api.Controllers
         }
 
         /// <summary>
-        /// Retrieves a quiz by its ID.
+        /// Retrieves a quiz by its ID .
         /// </summary>
         /// <param name="id">The ID of the quiz to retrieve.</param>
         /// <returns>The quiz if found; otherwise, NotFound.</returns>
