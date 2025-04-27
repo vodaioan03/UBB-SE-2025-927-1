@@ -41,5 +41,12 @@ namespace Duo.Api.Repositories
         Task AddQuizAsync(Quiz quiz);
         Task UpdateQuizAsync(Quiz quiz);
         Task DeleteQuizAsync(int id);
+
+        // Courses
+        Task<List<Course>> GetCoursesFromDbAsync();
+        Task<Course> GetCourseByIdAsync(int id);
+        Task AddCourseAsync(Course course);
+        Task UpdateCourseAsync(Course course);
+        Task DeleteCourseAsync(int id);
     }
 }
