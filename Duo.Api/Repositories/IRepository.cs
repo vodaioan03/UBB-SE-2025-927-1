@@ -61,6 +61,8 @@ namespace Duo.Api.Repositories
         Task AddExamAsync(Exam exam);
         Task UpdateExamAsync(Exam exam);
         Task DeleteExamAsync(int id);
+        Task<Exam?> GetExamFromSectionAsync(int sectionId);
+        Task<List<Exam>> GetAvailableExamsAsync();
         #endregion
 
         #region Sections
