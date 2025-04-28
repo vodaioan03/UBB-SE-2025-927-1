@@ -1,3 +1,4 @@
+using Duo.Api.DTO;
 using Duo.Api.Models;
 using Duo.Api.Models.Exercises;
 using Duo.Api.Models.Quizzes;
@@ -316,7 +317,7 @@ namespace Duo.Api.Repositories
         /// <summary>
         /// Gets the quiz result. (for now just returns the quiz data, adjust if more needed)
         /// </summary>
-        public async Task<object> GetQuizResultAsync(int quizId)
+        public async Task<QuizResultDTO> GetQuizResultAsync(int quizId)
         {
             var quiz = await context.Quizzes
                 .Include(q => q.Exercises)
@@ -326,11 +327,11 @@ namespace Duo.Api.Repositories
                 return null;
 
             // Basic mock result, you can change this based on your real app requirements
-            return new
-            {
-                QuizId = quiz.Id,
-                ExerciseCount = quiz.Exercises.Count
-            };
+            return new QuizResultDTO
+            (
+                quiz.Id,
+                quiz.Exercises.Count
+            );
         }
         #endregion
 
