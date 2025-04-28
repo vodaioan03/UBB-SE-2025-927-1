@@ -80,5 +80,20 @@ namespace Duo.Api.Controllers
             await repository.DeleteExamAsync(id);
             return Ok();
         }
+
+        /// <summary>
+        /// Retrieves the exam associated with a specific section.
+        /// </summary>
+        /// <param name="sectionId">The ID of the section.</param>
+        /// <returns>The exam if found; otherwise, NotFound.</returns>
+        [HttpGet("get-from-section")]
+        public async Task<IActionResult> GetExamFromSection([FromQuery] int sectionId)
+        {
+            var exam = await repository.GetExamFromSectionAsync(sectionId);
+            if (exam == null)
+                return NotFound();
+            return Ok(exam);
+        }
+
     }
 }
