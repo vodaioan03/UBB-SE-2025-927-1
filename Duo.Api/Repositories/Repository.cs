@@ -118,6 +118,36 @@ namespace Duo.Api.Repositories
             await context.SaveChangesAsync();
         }
 
+        public async Task CompleteModuleAsync(int userId, int moduleId)
+        {
+            await Task.CompletedTask;
+        }
+
+        public async Task<bool> IsModuleOpenAsync(int userId, int moduleId)
+        {
+            return await Task.FromResult(true);
+        }
+
+        public async Task<bool> IsModuleCompletedAsync(int userId, int moduleId)
+        {
+            return await Task.FromResult(false);
+        }
+
+        public async Task<bool> IsModuleAvailableAsync(int userId, int moduleId)
+        {
+            return await Task.FromResult(true);
+        }
+
+        public async Task ClickModuleImageAsync(int userId, int moduleId)
+        {
+            await Task.CompletedTask;
+        }
+
+        public async Task<bool> IsModuleImageClickedAsync(int userId, int moduleId)
+        {
+            return await Task.FromResult(true);
+        }
+
         #endregion
 
         #region Exercises
