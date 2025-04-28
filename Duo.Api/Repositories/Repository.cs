@@ -327,25 +327,6 @@ namespace Duo.Api.Repositories
             }
         }
 
-        /// <summary>
-        /// Gets the quiz result. (for now just returns the quiz data, adjust if more needed)
-        /// </summary>
-        public async Task<QuizResultDTO> GetQuizResultAsync(int quizId)
-        {
-            var quiz = await context.Quizzes
-                .Include(q => q.Exercises)
-                .FirstOrDefaultAsync(q => q.Id == quizId);
-
-            if (quiz == null)
-                return null;
-
-            // Basic mock result, you can change this based on your real app requirements
-            return new QuizResultDTO
-            (
-                quiz.Id,
-                quiz.Exercises.Count
-            );
-        }
         #endregion
 
 
