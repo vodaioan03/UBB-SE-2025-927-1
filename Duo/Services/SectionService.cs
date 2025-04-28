@@ -1,64 +1,89 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using Duo.Models.Exercises;
-using Duo.Models.Quizzes;
 using Duo.Models.Sections;
-using Duo.Repositories;
 
 namespace Duo.Services
 {
     public class SectionService : ISectionService
     {
-        private ISectionRepository sectionRepository;
+        private readonly SectionServiceProxy sectionServiceProxy;
 
-        public SectionService(ISectionRepository sectionRepository)
+        public SectionService(SectionServiceProxy sectionServiceProxy)
         {
-            this.sectionRepository = sectionRepository;
+            this.sectionServiceProxy = sectionServiceProxy;
         }
 
         public async Task<List<Section>> GetAllSections()
         {
-            return await sectionRepository.GetAllAsync();
+            return await sectionServiceProxy.GetAllSections();
         }
 
-        public Task<Section> GetSectionById(int sectionId)
+        public async Task<Section> GetSectionById(int sectionId)
         {
-            return sectionRepository.GetByIdAsync(sectionId);
+            return await sectionServiceProxy.GetSectionById(sectionId);
         }
 
-        public Task<List<Section>> GetByRoadmapId(int roadmapId)
+        public async Task<List<Section>> GetByRoadmapId(int roadmapId)
         {
-            return sectionRepository.GetByRoadmapIdAsync(roadmapId);
+            return await sectionServiceProxy.GetByRoadmapId(roadmapId);
         }
 
         public async Task<int> CountSectionsFromRoadmap(int roadmapId)
         {
-            return await sectionRepository.CountByRoadmapIdAsync(roadmapId);
+            return await sectionServiceProxy.CountSectionsFromRoadmap(roadmapId);
         }
 
         public async Task<int> LastOrderNumberFromRoadmap(int roadmapId)
         {
-            return await sectionRepository.LastOrderNumberByRoadmapIdAsync(roadmapId);
+            return await sectionServiceProxy.LastOrderNumberFromRoadmap(roadmapId);
         }
 
         public async Task<int> AddSection(Section section)
         {
+            // Validate section via API
             ValidationHelper.ValidateSection(section);
-            List<Section> allSections = await GetAllSections();
-            int orderNumber = allSections.Count;
-            section.OrderNumber = orderNumber + 1;
-            return await sectionRepository.AddAsync(section);
+
+            // Get all sections to determine the order number
+            var allSections = await GetAllSections();
+            section.OrderNumber = allSections.Count + 1;
+
+            return await sectionServiceProxy.AddSection(section);
         }
 
-        public Task DeleteSection(int sectionId)
+        public async Task DeleteSection(int sectionId)
         {
-            return sectionRepository.DeleteAsync(sectionId);
+            await sectionServiceProxy.DeleteSection(sectionId);
         }
 
-        public Task UpdateSection(Section section)
+        public async Task UpdateSection(Section section)
         {
+            // Validate section via API
             ValidationHelper.ValidateSection(section);
-            return sectionRepository.UpdateAsync(section);
+            await sectionServiceProxy.UpdateSection(section);
+        }
+
+        // Track completion directly without the need for a separate model
+        public async Task<bool> TrackCompletion(int sectionId, bool isCompleted)
+        {
+            var response = await sectionServiceProxy.TrackCompletion(sectionId, isCompleted);
+            return response;
+        }
+
+        // Validate section dependencies
+        public async Task<bool> ValidateDependencies(int sectionId)
+        {
+            var dependencies = await sectionServiceProxy.GetSectionDependencies(sectionId);
+
+            // Check dependencies logic here
+            foreach (var dependency in dependencies)
+            {
+                if (!dependency.IsCompleted)
+                {
+                    return false; // Dependency not completed
+                }
+            }
+
+            return true; // All dependencies met
         }
     }
 }

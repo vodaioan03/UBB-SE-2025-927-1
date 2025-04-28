@@ -54,4 +54,17 @@ public class SectionServiceProxy
     {
         await httpClient.PutAsJsonAsync("api/sections/update", section);
     }
+
+    public async Task<bool> TrackCompletion(int sectionId, bool isCompleted)
+    {
+        var response = await httpClient.PostAsJsonAsync($"api/sections/completion/{sectionId}/{isCompleted}", new { });
+        response.EnsureSuccessStatusCode();
+        return await response.Content.ReadFromJsonAsync<bool>();
+    }
+
+    public async Task<List<SectionDependency>> GetSectionDependencies(int sectionId)
+    {
+        return await httpClient.GetFromJsonAsync<List<SectionDependency>>($"api/sections/dependencies/{sectionId}");
+    }
+
 }

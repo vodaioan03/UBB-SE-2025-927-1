@@ -111,9 +111,14 @@ namespace Duo.Services
             await httpClient.PostAsJsonAsync("exam/add", exam);
         }
 
-        public async Task<object> GetResultAsync(int quizId)
+        public async Task<QuizResult> GetResultAsync(int quizId)
         {
-            return await httpClient.GetFromJsonAsync<object>($"quiz/get-result?quizId={quizId}");
+            return await httpClient.GetFromJsonAsync<QuizResult>($"quiz/get-result?quizId={quizId}");
+        }
+
+        public async Task SubmitQuizAsync(QuizSubmission submission)
+        {
+            await httpClient.PostAsJsonAsync("quiz/submit", submission);
         }
     }
 }
