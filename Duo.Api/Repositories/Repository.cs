@@ -206,6 +206,132 @@ namespace Duo.Api.Repositories
                 await context.SaveChangesAsync();
             }
         }
+
+
+        // ==================
+
+        public async Task EnrollUserInCourseAsync(int userId, int courseId)
+        {
+            var existing = await context.CourseCompletions
+                .FirstOrDefaultAsync(cc => cc.UserId == userId && cc.CourseId == courseId);
+
+            if (existing == null)
+            {
+                var newCompletion = new CourseCompletion
+                {
+                    UserId = userId,
+                    CourseId = courseId,
+                    CompletionRewardClaimed = false,
+                    TimedRewardClaimed = false,
+                    CompletedAt = DateTime.MinValue // not yet completed
+                };
+                context.CourseCompletions.Add(newCompletion);
+                await context.SaveChangesAsync();
+            }
+        }
+
+        public async Task<bool> IsUserEnrolledInCourseAsync(int userId, int courseId)
+        {
+            return await context.CourseCompletions
+                .AnyAsync(cc => cc.UserId == userId && cc.CourseId == courseId);
+        }
+
+        public async Task<bool> IsCourseCompletedAsync(int userId, int courseId)
+        {
+            var completion = await context.CourseCompletions
+                .FirstOrDefaultAsync(cc => cc.UserId == userId && cc.CourseId == courseId);
+
+            return completion != null && completion.CompletedAt != DateTime.MinValue;
+        }
+
+        public async Task UpdateTimeSpentAsync(int userId, int courseId, int timeInSeconds)
+        {
+            var user = await context.Users.FindAsync(userId);
+            if (user != null)
+            {
+                user.NumberOfCompletedSections += timeInSeconds;
+                await context.SaveChangesAsync();
+            }
+        }
+
+        public async Task ClaimCompletionRewardAsync(int userId, int courseId)
+        {
+            var completion = await context.CourseCompletions
+                .FirstOrDefaultAsync(cc => cc.UserId == userId && cc.CourseId == courseId);
+
+            if (completion != null && !completion.CompletionRewardClaimed)
+            {
+                completion.CompletionRewardClaimed = true;
+                await context.SaveChangesAsync();
+            }
+        }
+
+        public async Task ClaimTimeRewardAsync(int userId, int courseId)
+        {
+            var completion = await context.CourseCompletions
+                .FirstOrDefaultAsync(cc => cc.UserId == userId && cc.CourseId == courseId);
+
+            if (completion != null && !completion.TimedRewardClaimed)
+            {
+                completion.TimedRewardClaimed = true;
+                await context.SaveChangesAsync();
+            }
+        }
+
+        public async Task<int> GetTimeSpentAsync(int userId, int courseId)
+        {
+            var user = await context.Users.FindAsync(userId);
+            return user?.NumberOfCompletedSections ?? 0;
+        }
+
+        public async Task<int> GetCourseTimeLimitAsync(int courseId)
+        {
+            var course = await context.Courses.FindAsync(courseId);
+            return course?.TimeToComplete ?? 0;
+        }
+
+        public async Task<List<Course>> GetFilteredCoursesAsync(string searchText, bool filterPremium, bool filterFree, bool filterEnrolled, bool filterNotEnrolled, int userId)
+        {
+            var courses = context.Courses.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(searchText))
+            {
+                courses = courses.Where(c => c.Title.Contains(searchText, StringComparison.OrdinalIgnoreCase));
+            }
+
+            if (filterPremium && filterFree)
+            {
+                // No filter (show all)
+            }
+            else if (filterPremium)
+            {
+                courses = courses.Where(c => c.IsPremium);
+            }
+            else if (filterFree)
+            {
+                courses = courses.Where(c => !c.IsPremium);
+            }
+
+            if (filterEnrolled && filterNotEnrolled)
+            {
+                // No filter (show all)
+            }
+            else if (filterEnrolled)
+            {
+                // User is enrolled in the course
+                courses = courses.Where(c => context.CourseCompletions.Any(cc => cc.UserId == userId && cc.CourseId == c.CourseId));
+            }
+            else if (filterNotEnrolled)
+            {
+                // User is not enrolled in the course
+                courses = courses.Where(c => !context.CourseCompletions.Any(cc => cc.UserId == userId && cc.CourseId == c.CourseId));
+            }
+
+            return await courses.ToListAsync();
+        }
+
+
+
         #endregion
 
         #region Exams
