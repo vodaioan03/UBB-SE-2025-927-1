@@ -768,7 +768,212 @@ namespace Duo.Api.Tests.Repositories
             var deletedCourse = await context.Courses.FindAsync(1);
             Assert.IsNull(deletedCourse);
         }
+        #endregion
 
+        #region CourseCompletion
+        [TestMethod]
+        public async Task EnrollUserInCourseAsync_EnrollsUserIfNotAlreadyEnrolled()
+        {
+            // Arrange
+            var context = GetInMemoryDbContext();
+            var user = new User { UserId = 1, Username = "Test User", CoinBalance = 100, LastLoginTime = DateTime.Now };
+            var course = new Course
+            {
+                CourseId = 1,
+                Title = "Test Course",
+                Description = "Test Course Description",
+                IsPremium = false,
+                Cost = 100,
+                ImageUrl = "http://example.com/course.jpg",
+                TimeToComplete = 3600,
+                Difficulty = "Beginner"
+            };
+            context.Users.Add(user);
+            context.Courses.Add(course);
+            await context.SaveChangesAsync();
+
+            var repository = new Repository(context);
+
+            // Act
+            await repository.EnrollUserInCourseAsync(user.UserId, course.CourseId);
+
+            // Assert
+            var courseCompletion = await context.CourseCompletions
+                .FirstOrDefaultAsync(cc => cc.UserId == user.UserId && cc.CourseId == course.CourseId);
+            Assert.IsNotNull(courseCompletion);
+            Assert.AreEqual(false, courseCompletion.CompletionRewardClaimed);
+        }
+
+        [TestMethod]
+        public async Task IsUserEnrolledInCourseAsync_ReturnsTrueIfUserIsEnrolled()
+        {
+            // Arrange
+            var context = GetInMemoryDbContext();
+            var user = new User { UserId = 1, Username = "Test User", CoinBalance = 100, LastLoginTime = DateTime.Now };
+            var course = new Course
+            {
+                CourseId = 1,
+                Title = "Test Course",
+                Description = "Test Course Description",
+                IsPremium = false,
+                Cost = 100,
+                ImageUrl = "http://example.com/course.jpg",
+                TimeToComplete = 3600,
+                Difficulty = "Beginner"
+            };
+            context.Users.Add(user);
+            context.Courses.Add(course);
+            await context.SaveChangesAsync();
+
+            var repository = new Repository(context); 
+            await repository.EnrollUserInCourseAsync(user.UserId, course.CourseId); 
+
+            // Act
+            var result = await repository.IsUserEnrolledInCourseAsync(user.UserId, course.CourseId);
+
+            // Assert
+            Assert.IsTrue(result); 
+        }
+
+        [TestMethod]
+        public async Task IsCourseCompletedAsync_ReturnsTrueIfCourseIsCompleted()
+        {
+            // Arrange
+            var context = GetInMemoryDbContext();
+            var user = new User { UserId = 1, Username = "Test User", CoinBalance = 100, LastLoginTime = DateTime.Now };
+            var course = new Course
+            {
+                CourseId = 1,
+                Title = "Test Course",
+                Description = "Test Course Description",
+                IsPremium = false,
+                Cost = 100,
+                ImageUrl = "http://example.com/course.jpg",
+                TimeToComplete = 3600,
+                Difficulty = "Beginner"
+            };
+            var courseCompletion = new CourseCompletion
+            {
+                UserId = user.UserId,
+                CourseId = course.CourseId,
+                CompletionRewardClaimed = false,
+                TimedRewardClaimed = false,
+                CompletedAt = DateTime.Now
+            };
+            context.Users.Add(user);
+            context.Courses.Add(course);
+            context.CourseCompletions.Add(courseCompletion);
+            await context.SaveChangesAsync();
+
+            var repository = new Repository(context);
+
+            // Act
+            var result = await repository.IsCourseCompletedAsync(user.UserId, course.CourseId);
+
+            // Assert
+            Assert.IsTrue(result);
+        }
+
+        [TestMethod]
+        public async Task UpdateTimeSpentAsync_UpdatesTimeSpentForUser()
+        {
+            // Arrange
+            var context = GetInMemoryDbContext(); 
+            var user = new User { UserId = 1, Username = "Test User", CoinBalance = 100, LastLoginTime = DateTime.Now, NumberOfCompletedSections = 0 };
+            context.Users.Add(user);
+            await context.SaveChangesAsync(); 
+
+            var repository = new Repository(context); 
+
+            // Act
+            await repository.UpdateTimeSpentAsync(user.UserId, 1, 500);  
+
+            // Assert
+            var updatedUser = await context.Users.FindAsync(user.UserId);
+            Assert.AreEqual(500, updatedUser?.NumberOfCompletedSections);
+        }
+
+        [TestMethod]
+        public async Task ClaimCompletionRewardAsync_ClaimsRewardSuccessfully()
+        {
+            // Arrange
+            var context = GetInMemoryDbContext(); 
+            var user = new User { UserId = 1, Username = "Test User", CoinBalance = 100, LastLoginTime = DateTime.Now };
+            var course = new Course
+            {
+                CourseId = 1,
+                Title = "Test Course",
+                Description = "Test Course Description",
+                IsPremium = false,
+                Cost = 100,
+                ImageUrl = "http://example.com/course.jpg",
+                TimeToComplete = 3600,
+                Difficulty = "Beginner"
+            };
+            var courseCompletion = new CourseCompletion
+            {
+                UserId = user.UserId,
+                CourseId = course.CourseId,
+                CompletionRewardClaimed = false,
+                TimedRewardClaimed = false,
+                CompletedAt = DateTime.Now
+            };
+            context.Users.Add(user);
+            context.Courses.Add(course);
+            context.CourseCompletions.Add(courseCompletion);
+            await context.SaveChangesAsync();
+
+            var repository = new Repository(context); 
+
+            // Act
+            await repository.ClaimCompletionRewardAsync(user.UserId, course.CourseId);
+
+            // Assert
+            var updatedCompletion = await context.CourseCompletions
+                .FirstOrDefaultAsync(cc => cc.UserId == user.UserId && cc.CourseId == course.CourseId);
+            Assert.IsTrue(updatedCompletion?.CompletionRewardClaimed); 
+        }
+
+        [TestMethod]
+        public async Task ClaimTimeRewardAsync_ClaimsTimeRewardSuccessfully()
+        {
+            // Arrange
+            var context = GetInMemoryDbContext();
+            var user = new User { UserId = 1, Username = "Test User", CoinBalance = 100, LastLoginTime = DateTime.Now };
+            var course = new Course
+            {
+                CourseId = 1,
+                Title = "Test Course",
+                Description = "Test Course Description",
+                IsPremium = false,
+                Cost = 100,
+                ImageUrl = "http://example.com/course.jpg",
+                TimeToComplete = 3600,
+                Difficulty = "Beginner"
+            };
+            var courseCompletion = new CourseCompletion
+            {
+                UserId = user.UserId,
+                CourseId = course.CourseId,
+                CompletionRewardClaimed = false,
+                TimedRewardClaimed = false,
+                CompletedAt = DateTime.Now
+            };
+            context.Users.Add(user);
+            context.Courses.Add(course);
+            context.CourseCompletions.Add(courseCompletion);
+            await context.SaveChangesAsync();
+
+            var repository = new Repository(context);
+
+            // Act
+            await repository.ClaimTimeRewardAsync(user.UserId, course.CourseId);
+
+            // Assert
+            var updatedCompletion = await context.CourseCompletions
+                .FirstOrDefaultAsync(cc => cc.UserId == user.UserId && cc.CourseId == course.CourseId);
+            Assert.IsTrue(updatedCompletion?.TimedRewardClaimed);
+        }
         #endregion
     }
 }
