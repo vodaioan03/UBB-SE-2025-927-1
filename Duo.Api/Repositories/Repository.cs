@@ -1,4 +1,3 @@
-using CourseApp.Models;
 using Duo.Api.Models;
 using Duo.Api.Models.Exercises;
 using Duo.Api.Models.Quizzes;
@@ -144,7 +143,7 @@ namespace Duo.Api.Repositories
         #region Quizzes
         public async Task<List<Quiz>> GetQuizzesFromDbAsync()
         {
-            return await context.Quizzes.ToListAsync();
+            return await context.Quizzes.Include(q => q.Exercises).ToListAsync();
         }
 
         public async Task<Quiz> GetQuizByIdAsync(int id)
