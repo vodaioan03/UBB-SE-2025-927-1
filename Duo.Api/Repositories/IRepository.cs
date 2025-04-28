@@ -29,6 +29,12 @@ namespace Duo.Api.Repositories
         Task AddModuleAsync(Module module);
         Task UpdateModuleAsync(Module module);
         Task DeleteModuleAsync(int id);
+        Task CompleteModuleAsync(int userId, int moduleId);
+        Task<bool> IsModuleOpenAsync(int userId, int moduleId);
+        Task<bool> IsModuleCompletedAsync(int userId, int moduleId);
+        Task<bool> IsModuleAvailableAsync(int userId, int moduleId);
+        Task ClickModuleImageAsync(int userId, int moduleId);
+        Task<bool> IsModuleImageClickedAsync(int userId, int moduleId);
         #endregion
 
         #region Exercises
