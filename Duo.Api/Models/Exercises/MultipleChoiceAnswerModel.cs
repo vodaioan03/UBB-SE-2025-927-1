@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Duo.Api.Models.Exercises
 {
@@ -7,9 +8,10 @@ namespace Duo.Api.Models.Exercises
     /// Represents an answer option for a multiple-choice exercise.
     /// This model includes the answer text and whether it is correct.
     /// </summary>
+    [ExcludeFromCodeCoverage]
     public class MultipleChoiceAnswerModel
     {
-        // Fields and Properties
+        #region Fields and Properties
 
         /// <summary>
         /// Gets or sets the unique identifier for the answer model.
@@ -28,24 +30,28 @@ namespace Duo.Api.Models.Exercises
         public bool IsCorrect { get; set; }
 
         /// <summary>
-        /// Gets or sets the foreign key to the related MultipleChoiceExercise.
+        /// Gets or sets the foreign key to the related <see cref="MultipleChoiceExercise"/>.
         /// </summary>
         [Required]
         public int ExerciseId { get; set; }
 
         /// <summary>
-        /// Navigation property to the related MultipleChoiceExercise.
+        /// Navigation property to the related <see cref="MultipleChoiceExercise"/>.
         /// </summary>
         [ForeignKey(nameof(ExerciseId))]
         public MultipleChoiceExercise Exercise { get; set; } = null!;
 
-        // Constructors
+        #endregion
+
+        #region Constructors
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MultipleChoiceAnswerModel"/> class.
         /// This parameterless constructor is required for Entity Framework.
         /// </summary>
-        public MultipleChoiceAnswerModel() { }
+        public MultipleChoiceAnswerModel()
+        {
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MultipleChoiceAnswerModel"/> class with the specified parameters.
@@ -58,7 +64,9 @@ namespace Duo.Api.Models.Exercises
             IsCorrect = isCorrect;
         }
 
-        // Methods
+        #endregion
+
+        #region Methods
 
         /// <summary>
         /// Returns a string representation of the answer model, including whether it is correct.
@@ -68,5 +76,7 @@ namespace Duo.Api.Models.Exercises
         {
             return $"{Answer}{(IsCorrect ? " (Correct)" : string.Empty)}";
         }
+
+        #endregion
     }
 }
