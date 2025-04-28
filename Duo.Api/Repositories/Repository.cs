@@ -148,7 +148,7 @@ namespace Duo.Api.Repositories
 
         public async Task<Quiz> GetQuizByIdAsync(int id)
         {
-            return await context.Quizzes.FindAsync(id);
+            return await context.Quizzes.Include(q => q.Exercises).FirstOrDefaultAsync(q => q.Id == id);
         }
 
         public async Task AddQuizAsync(Quiz quiz)
