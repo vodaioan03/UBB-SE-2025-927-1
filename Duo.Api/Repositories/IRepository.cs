@@ -53,6 +53,18 @@ namespace Duo.Api.Repositories
         Task AddCourseAsync(Course course);
         Task UpdateCourseAsync(Course course);
         Task DeleteCourseAsync(int id);
+
+
+        // here
+        Task EnrollUserInCourseAsync(int userId, int courseId);
+        Task<bool> IsUserEnrolledInCourseAsync(int userId, int courseId);
+        Task<bool> IsCourseCompletedAsync(int userId, int courseId);
+        Task UpdateTimeSpentAsync(int userId, int courseId, int timeInSeconds);
+        Task ClaimCompletionRewardAsync(int userId, int courseId);
+        Task ClaimTimeRewardAsync(int userId, int courseId);
+        Task<int> GetTimeSpentAsync(int userId, int courseId);
+        Task<int> GetCourseTimeLimitAsync(int courseId);
+        Task<List<Course>> GetFilteredCoursesAsync(string searchText, bool filterPremium, bool filterFree, bool filterEnrolled, bool filterNotEnrolled, int userId); // for /get-filtered endpoint
         #endregion
 
         #region Exams
