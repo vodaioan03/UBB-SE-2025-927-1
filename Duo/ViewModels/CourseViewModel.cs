@@ -80,15 +80,15 @@ namespace Duo.ViewModels
                 if (coinBalance != value)
                 {
                     coinBalance = value;
-                    OnPropertyChanged(nameof(CoinBalance));  // Notify UI about the change
+                    OnPropertyChanged(nameof(CoinBalance));
                 }
             }
         }
 
         public async Task<int> GetCoinBalanceAsync()
         {
-            CoinBalance = await coinsService.GetCoinBalanceAsync(0);  // Set the CoinBalance after fetching it
-            return CoinBalance;  // Return the CoinBalance
+            CoinBalance = await coinsService.GetCoinBalanceAsync(0);
+            return CoinBalance;
         }
 
         /// <summary>Gets the tags associated with this course</summary>
@@ -205,14 +205,11 @@ namespace Duo.ViewModels
         {
             CurrentCourse = course ?? throw new ArgumentNullException(nameof(course));
 
-            // Initialize services
             this.courseService = courseService ?? new CourseService();
             this.coinsService = coinsService ?? new CoinsService(serviceProxy ?? new ServiceProxy(new System.Net.Http.HttpClient()));
 
-            // Initialize timers and notification helper
             InitializeTimersAndNotificationHelper(timerService, notificationTimerService, notificationHelper);
 
-            // Initialize properties
             InitializeProperties();
             LoadInitialData();
         }
@@ -228,7 +225,6 @@ namespace Duo.ViewModels
         private void InitializeTimersAndNotificationHelper(IDispatcherTimerService? timerService,
             IDispatcherTimerService? notificationTimerService, INotificationHelper? notificationHelper)
         {
-            // Use separate timers for course progress and notifications
             courseProgressTimer = timerService ?? new DispatcherTimerService();
             var notificationTimer = notificationTimerService ?? new DispatcherTimerService();
 
@@ -242,13 +238,11 @@ namespace Duo.ViewModels
         /// </summary>
         private void InitializeProperties()
         {
-            // Set the IsEnrolled property using synchronous logic
             IsEnrolled = courseService.IsUserEnrolled(CurrentCourse.CourseId);
 
-            // Update the EnrollCommand to use async methods
             EnrollCommand = new RelayCommand(
-                async (parameter) => await EnrollUserInCourseAsync(parameter), // Async method for enrolling user
-                async (parameter) => await CanUserEnrollInCourseAsync(parameter)); // Async check for enrollment eligibility
+                async (parameter) => await EnrollUserInCourseAsync(parameter),
+                async (parameter) => await CanUserEnrollInCourseAsync(parameter));
         }
 
         /// <summary>
@@ -347,7 +341,6 @@ namespace Duo.ViewModels
         /// </summary>
         private async Task<bool> CanUserEnrollInCourseAsync(object? parameter)
         {
-            // Ensure that we can asynchronously get the coin balance
             int coinBalance = await GetCoinBalanceAsync();
             return !IsEnrolled && coinBalance >= CurrentCourse.Cost;
         }
@@ -357,7 +350,6 @@ namespace Duo.ViewModels
         /// </summary>
         private async Task EnrollUserInCourseAsync(object? parameter)
         {
-            // Attempt to deduct the coins asynchronously
             bool coinDeductionSuccessful = await coinsService.TrySpendingCoinsAsync(0, CurrentCourse.Cost);
 
             if (!coinDeductionSuccessful)
@@ -365,20 +357,17 @@ namespace Duo.ViewModels
                 return;
             }
 
-            // Attempt to enroll in the course
             bool enrollmentSuccessful = courseService.EnrollInCourse(CurrentCourse.CourseId);
             if (!enrollmentSuccessful)
             {
                 return;
             }
 
-            // If both operations are successful, proceed with updating the UI
             IsEnrolled = true;
             ResetCourseProgressTracking();
             OnPropertyChanged(nameof(IsEnrolled));
             OnPropertyChanged(nameof(CoinBalance));
 
-            // Start the course progress timer and load the modules
             StartCourseProgressTimer();
             LoadAndOrganizeCourseModules();
         }
