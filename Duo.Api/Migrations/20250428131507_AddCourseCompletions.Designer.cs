@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Duo.Api.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20250427125056_CourseMigration")]
-    partial class CourseMigration
+    [Migration("20250428131507_AddCourseCompletions")]
+    partial class AddCourseCompletions
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -61,6 +61,30 @@ namespace Duo.Api.Migrations
                     b.HasKey("CourseId");
 
                     b.ToTable("Courses");
+                });
+
+            modelBuilder.Entity("Duo.Api.Models.CourseCompletion", b =>
+                {
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("CourseId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CompletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("CompletionRewardClaimed")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("TimedRewardClaimed")
+                        .HasColumnType("bit");
+
+                    b.HasKey("UserId", "CourseId");
+
+                    b.HasIndex("CourseId");
+
+                    b.ToTable("CourseCompletions");
                 });
 
             modelBuilder.Entity("Duo.Api.Models.Exercises.Exercise", b =>
@@ -127,7 +151,7 @@ namespace Duo.Api.Migrations
                     b.Property<int>("Cost")
                         .HasColumnType("int");
 
-                    b.Property<int>("CourseId")
+                    b.Property<int?>("CourseId")
                         .HasColumnType("int");
 
                     b.Property<string>("Description")
@@ -249,8 +273,14 @@ namespace Duo.Api.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("UserId"));
 
+                    b.Property<int>("CoinBalance")
+                        .HasColumnType("int");
+
                     b.Property<string>("Email")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("LastLoginTime")
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("NumberOfCompletedQuizzesInSection")
                         .HasColumnType("int");
@@ -341,6 +371,25 @@ namespace Duo.Api.Migrations
                     b.HasBaseType("Duo.Api.Models.Exercises.Exercise");
 
                     b.HasDiscriminator().HasValue("Multiple Choice");
+                });
+
+            modelBuilder.Entity("Duo.Api.Models.CourseCompletion", b =>
+                {
+                    b.HasOne("Duo.Api.Models.Course", "Course")
+                        .WithMany()
+                        .HasForeignKey("CourseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Duo.Api.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Course");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Duo.Api.Models.Exercises.MultipleChoiceAnswerModel", b =>
