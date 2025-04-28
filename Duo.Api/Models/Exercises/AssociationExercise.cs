@@ -1,5 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.EntityFrameworkCore;
+
+#pragma warning disable IDE0079 // Remove unnecessary suppression
+#pragma warning disable SA1010 // Opening square brackets should be spaced correctly
 
 namespace Duo.Api.Models.Exercises
 {
@@ -9,8 +13,11 @@ namespace Duo.Api.Models.Exercises
     /// Configured for Table-Per-Hierarchy (TPH) inheritance.
     /// </summary>
     [Index(nameof(Question))] // Ensures efficient search queries on the Question field
+    [ExcludeFromCodeCoverage]
     public class AssociationExercise : Exercise
     {
+        #region Properties
+
         /// <summary>
         /// Gets or sets the first list of answers for the association exercise.
         /// </summary>
@@ -22,6 +29,10 @@ namespace Duo.Api.Models.Exercises
         /// </summary>
         [Required]
         public List<string> SecondAnswersList { get; set; } = [];
+
+        #endregion
+
+        #region Constructors
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AssociationExercise"/> class.
@@ -51,8 +62,12 @@ namespace Duo.Api.Models.Exercises
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AssociationExercise"/> class.
-        /// This constructor is required for Entity Framework.
+        /// This parameterless constructor is required for Entity Framework.
         /// </summary>
-        public AssociationExercise() { }
+        public AssociationExercise()
+        {
+        }
+
+        #endregion
     }
 }
