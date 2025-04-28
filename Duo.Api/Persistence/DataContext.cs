@@ -14,6 +14,7 @@ namespace Duo.Api.Persistence
         public DbSet<Tag> Tags { get; set; }
         public DbSet<Module> Modules { get; set; }
 
+        public DbSet<CourseCompletion> CourseCompletions { get; set; }
         public DbSet<Course> Courses { get; set; }
 
         public DbSet<Exam> Exams { get; set; }
@@ -104,6 +105,10 @@ namespace Duo.Api.Persistence
                 .WithOne(c => c.Exercise)
                 .HasForeignKey(c => c.ExerciseId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            // Course -> CourseCompleion (one-to-many)
+            modelBuilder.Entity<CourseCompletion>()
+                .HasKey(cc => new { cc.UserId, cc.CourseId });
         }
     }
 }
