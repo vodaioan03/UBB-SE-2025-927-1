@@ -8,11 +8,8 @@ namespace Duo.Api.Controllers
     [Route("api/coins")]
     public class CoinsController : BaseController
     {
-        private readonly IRepository repository;
-
-        public CoinsController(IRepository repository, DataContext dataContext) : base(dataContext)
+        public CoinsController(IRepository repository) : base(repository)
         {
-            this.repository = repository;
         }
 
         [HttpGet("balance/{userId}")]

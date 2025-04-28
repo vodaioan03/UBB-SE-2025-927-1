@@ -10,11 +10,8 @@ namespace Duo.Api.Controllers
     [Route("course")]
     public class CourseController : BaseController
     {
-        private readonly IRepository repository;
-
-        public CourseController(DataContext dataContext, IRepository repository) : base(dataContext)
+        public CourseController(IRepository repository) : base(repository)
         {
-            this.repository = repository;
         }
 
         /// <summary>

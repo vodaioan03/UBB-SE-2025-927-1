@@ -8,11 +8,9 @@ namespace Duo.Api.Controllers
     [Route("[controller]")]
     public class BaseController : ControllerBase
     {
-        protected DataContext dataContext;
         protected IRepository repository;
-        public BaseController(DataContext dataContext, IRepository repository)
+        public BaseController(IRepository repository)
         {
-            this.dataContext = dataContext;
             this.repository = repository;
         }
     }
