@@ -23,6 +23,18 @@ namespace Duo.Api.Tests.Repositories
             return new DataContext(options);
         }
 
+        [TestMethod]
+        public void Repository_Constructor_WithValidContext_DoesNotThrowException()
+        {
+            // Arrange
+            var context = GetInMemoryDbContext(); // Creates an in-memory DataContext with a valid database
+
+            // Act & Assert
+            var repository = new Repository(context);  // Should not throw any exception
+            Assert.IsNotNull(repository); // Verify repository is successfully created
+        }
+
+
         #region User
         [TestMethod]
         public async Task GetUsersFromDbAsync_ReturnsAllUsers()
@@ -40,6 +52,46 @@ namespace Duo.Api.Tests.Repositories
 
             // Assert
             Assert.AreEqual(2, users.Count);
+        }
+
+        [TestMethod]
+        public async Task GetUserByIdAsync_ReturnsUser_WhenUserExists()
+        {
+            // Arrange
+            var context = GetInMemoryDbContext();
+            var user = new User
+            {
+                UserId = 1,
+                Username = "TestUser",
+                CoinBalance = 100,
+                LastLoginTime = DateTime.Now
+            };
+            context.Users.Add(user);
+            await context.SaveChangesAsync();
+
+            var repository = new Repository(context);
+
+            // Act
+            var result = await repository.GetUserByIdAsync(1);
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(user.UserId, result.UserId);
+            Assert.AreEqual(user.Username, result.Username);
+        }
+
+        [TestMethod]
+        public async Task GetUserByIdAsync_ReturnsNull_WhenUserDoesNotExist()
+        {
+            // Arrange
+            var context = GetInMemoryDbContext();
+            var repository = new Repository(context);
+
+            // Act
+            var result = await repository.GetUserByIdAsync(999); // A user that does not exist
+
+            // Assert
+            Assert.IsNull(result);
         }
 
         [TestMethod]
@@ -974,6 +1026,461 @@ namespace Duo.Api.Tests.Repositories
                 .FirstOrDefaultAsync(cc => cc.UserId == user.UserId && cc.CourseId == course.CourseId);
             Assert.IsTrue(updatedCompletion?.TimedRewardClaimed);
         }
+
+        [TestMethod]
+        public async Task GetTimeSpentAsync_ReturnsNumberOfCompletedSections_WhenUserExists()
+        {
+            // Arrange
+            var context = GetInMemoryDbContext();
+            var user = new User { UserId = 1, NumberOfCompletedSections = 5 };
+            context.Users.Add(user);
+            await context.SaveChangesAsync();
+
+            var repository = new Repository(context);
+
+            // Act
+            var result = await repository.GetTimeSpentAsync(1, 1);
+
+            // Assert
+            Assert.AreEqual(5, result);
+        }
+
+        [TestMethod]
+        public async Task GetTimeSpentAsync_ReturnsZero_WhenUserDoesNotExist()
+        {
+            // Arrange
+            var context = GetInMemoryDbContext();
+            var repository = new Repository(context);
+
+            // Act
+            var result = await repository.GetTimeSpentAsync(999, 1); // User ID that doesn't exist
+
+            // Assert
+            Assert.AreEqual(0, result);
+        }
+
+        [TestMethod]
+        public async Task GetCourseTimeLimitAsync_ReturnsTimeToComplete_WhenCourseExists()
+        {
+            // Arrange
+            var context = GetInMemoryDbContext();
+            var course = new Course
+            {
+                CourseId = 1,
+                Title = "Test Course",
+                Description = "Description of test course",
+                IsPremium = true,
+                Cost = 100,
+                ImageUrl = "http://example.com/image.jpg",
+                TimeToComplete = 120,
+                Difficulty = "Intermediate"
+            };
+            context.Courses.Add(course);
+            await context.SaveChangesAsync();
+
+            var repository = new Repository(context);
+
+            // Act
+            var result = await repository.GetCourseTimeLimitAsync(1);
+
+            // Assert
+            Assert.AreEqual(120, result);
+        }
+
+        [TestMethod]
+        public async Task GetCourseTimeLimitAsync_ReturnsZero_WhenCourseDoesNotExist()
+        {
+            // Arrange
+            var context = GetInMemoryDbContext();
+            var repository = new Repository(context);
+
+            // Act
+            var result = await repository.GetCourseTimeLimitAsync(999); // Course ID that doesn't exist
+
+            // Assert
+            Assert.AreEqual(0, result);
+        }
+
+        [TestMethod]
+        public async Task GetFilteredCoursesAsync_ReturnsCoursesThatMatchSearchText()
+        {
+            // Arrange
+            var context = GetInMemoryDbContext();
+            context.Courses.Add(new Course
+            {
+                CourseId = 1,
+                Title = "Course 1",
+                Description = "Description of Course 1",
+                IsPremium = true,
+                Cost = 100,
+                ImageUrl = "http://example.com/course1.jpg",
+                TimeToComplete = 120,
+                Difficulty = "Beginner"
+            });
+            context.Courses.Add(new Course
+            {
+                CourseId = 2,
+                Title = "Course 2",
+                Description = "Description of Course 2",
+                IsPremium = false,
+                Cost = 50,
+                ImageUrl = "http://example.com/course2.jpg",
+                TimeToComplete = 90,
+                Difficulty = "Intermediate"
+            });
+            await context.SaveChangesAsync();
+
+            var repository = new Repository(context);
+
+            // Act
+            var result = await repository.GetFilteredCoursesAsync("Course 1", false, false, false, false, 0);
+
+            // Assert
+            Assert.AreEqual(1, result.Count);
+            Assert.AreEqual("Course 1", result.First().Title);
+        }
+
+        [TestMethod]
+        public async Task GetFilteredCoursesAsync_ReturnsNonEnrolledCourses_WhenFilterNotEnrolledIsTrue()
+        {
+            // Arrange
+            var context = GetInMemoryDbContext();
+            var user = new User { UserId = 1 };
+            var course1 = new Course
+            {
+                CourseId = 1,
+                Title = "Course 1",
+                Description = "Description of Course 1",
+                IsPremium = false,
+                Cost = 50,
+                ImageUrl = "http://example.com/course1.jpg",
+                TimeToComplete = 120,
+                Difficulty = "Beginner"
+            };
+            var course2 = new Course
+            {
+                CourseId = 2,
+                Title = "Course 2",
+                Description = "Description of Course 2",
+                IsPremium = true,
+                Cost = 200,
+                ImageUrl = "http://example.com/course2.jpg",
+                TimeToComplete = 150,
+                Difficulty = "Advanced"
+            };
+            context.Users.Add(user);
+            context.Courses.Add(course1);
+            context.Courses.Add(course2);
+            await context.SaveChangesAsync();
+
+            var repository = new Repository(context);
+
+            // Simulate that the user is enrolled in course 1
+            context.CourseCompletions.Add(new CourseCompletion { UserId = 1, CourseId = 1 });
+            await context.SaveChangesAsync();
+
+            // Act
+            var result = await repository.GetFilteredCoursesAsync("", false, false, false, true, 1);
+
+            // Assert
+            Assert.AreEqual(1, result.Count);
+            Assert.AreEqual("Course 2", result.First().Title);
+        }
+
+        [TestMethod]
+        public async Task GetFilteredCoursesAsync_ReturnsAllCourses_WhenNoFiltersAreApplied()
+        {
+            // Arrange
+            var context = GetInMemoryDbContext();
+            context.Courses.AddRange(
+                new Course
+                {
+                    CourseId = 1,
+                    Title = "Course 1",
+                    Description = "Description of Course 1",
+                    IsPremium = true,
+                    Cost = 100,
+                    ImageUrl = "http://example.com/course1.jpg",
+                    TimeToComplete = 120,
+                    Difficulty = "Beginner"
+                },
+                new Course
+                {
+                    CourseId = 2,
+                    Title = "Course 2",
+                    Description = "Description of Course 2",
+                    IsPremium = false,
+                    Cost = 50,
+                    ImageUrl = "http://example.com/course2.jpg",
+                    TimeToComplete = 90,
+                    Difficulty = "Intermediate"
+                }
+            );
+            await context.SaveChangesAsync();
+
+            var repository = new Repository(context);
+
+            // Act
+            var result = await repository.GetFilteredCoursesAsync("", false, false, false, false, 0);
+
+            // Assert
+            Assert.AreEqual(2, result.Count);
+        }
+
+        [TestMethod]
+        public async Task GetFilteredCoursesAsync_ReturnsPremiumCourses_WhenFilterPremiumIsTrue()
+        {
+            // Arrange
+            var context = GetInMemoryDbContext();
+            context.Courses.AddRange(
+                new Course
+                {
+                    CourseId = 1,
+                    Title = "Premium Course",
+                    Description = "Description of Premium Course",
+                    IsPremium = true,
+                    Cost = 200,
+                    ImageUrl = "http://example.com/premium.jpg",
+                    TimeToComplete = 150,
+                    Difficulty = "Advanced"
+                },
+                new Course
+                {
+                    CourseId = 2,
+                    Title = "Free Course",
+                    Description = "Description of Free Course",
+                    IsPremium = false,
+                    Cost = 0,
+                    ImageUrl = "http://example.com/free.jpg",
+                    TimeToComplete = 60,
+                    Difficulty = "Beginner"
+                }
+            );
+            await context.SaveChangesAsync();
+
+            var repository = new Repository(context);
+
+            // Act
+            var result = await repository.GetFilteredCoursesAsync("", true, false, false, false, 0);
+
+            // Assert
+            Assert.AreEqual(1, result.Count);
+            Assert.AreEqual("Premium Course", result.First().Title);
+        }
+
+        [TestMethod]
+        public async Task GetFilteredCoursesAsync_ReturnsFreeCourses_WhenFilterFreeIsTrue()
+        {
+            // Arrange
+            var context = GetInMemoryDbContext();
+            context.Courses.AddRange(
+                new Course
+                {
+                    CourseId = 1,
+                    Title = "Free Course 1",
+                    Description = "Description of Free Course 1",
+                    IsPremium = false,
+                    Cost = 0,
+                    ImageUrl = "http://example.com/free1.jpg",
+                    TimeToComplete = 60,
+                    Difficulty = "Beginner"
+                },
+                new Course
+                {
+                    CourseId = 2,
+                    Title = "Premium Course",
+                    Description = "Description of Premium Course",
+                    IsPremium = true,
+                    Cost = 200,
+                    ImageUrl = "http://example.com/premium.jpg",
+                    TimeToComplete = 120,
+                    Difficulty = "Advanced"
+                }
+            );
+            await context.SaveChangesAsync();
+
+            var repository = new Repository(context);
+
+            // Act
+            var result = await repository.GetFilteredCoursesAsync("", false, true, false, false, 0);
+
+            // Assert
+            Assert.AreEqual(1, result.Count);
+            Assert.AreEqual("Free Course 1", result.First().Title);
+        }
+
+        [TestMethod]
+        public async Task GetFilteredCoursesAsync_ReturnsAllCourses_WhenFilterFreeAndPremiumAreTrue()
+        {
+            // Arrange
+            var context = GetInMemoryDbContext();
+            context.Courses.AddRange(
+                new Course
+                {
+                    CourseId = 1,
+                    Title = "Free Course 1",
+                    Description = "Description of Free Course 1",
+                    IsPremium = false,
+                    Cost = 0,
+                    ImageUrl = "http://example.com/free1.jpg",
+                    TimeToComplete = 60,
+                    Difficulty = "Beginner"
+                },
+                new Course
+                {
+                    CourseId = 2,
+                    Title = "Premium Course",
+                    Description = "Description of Premium Course",
+                    IsPremium = true,
+                    Cost = 200,
+                    ImageUrl = "http://example.com/premium.jpg",
+                    TimeToComplete = 120,
+                    Difficulty = "Advanced"
+                }
+            );
+            await context.SaveChangesAsync();
+
+            var repository = new Repository(context);
+
+            // Act
+            var result = await repository.GetFilteredCoursesAsync("", true, true, false, false, 0);
+
+            // Assert
+            Assert.AreEqual(2, result.Count);
+        }
+
+        [TestMethod]
+        public async Task GetFilteredCoursesAsync_ReturnsEnrolledCourses_WhenFilterEnrolledIsTrue()
+        {
+            // Arrange
+            var context = GetInMemoryDbContext();
+            var user = new User { UserId = 1 };
+            var course1 = new Course
+            {
+                CourseId = 1,
+                Title = "Course 1",
+                Description = "Description of Course 1",
+                IsPremium = false,
+                Cost = 50,
+                ImageUrl = "http://example.com/course1.jpg",
+                TimeToComplete = 120,
+                Difficulty = "Beginner"
+            };
+            var course2 = new Course
+            {
+                CourseId = 2,
+                Title = "Course 2",
+                Description = "Description of Course 2",
+                IsPremium = true,
+                Cost = 200,
+                ImageUrl = "http://example.com/course2.jpg",
+                TimeToComplete = 150,
+                Difficulty = "Advanced"
+            };
+            context.Users.Add(user);
+            context.Courses.AddRange(course1, course2);
+            await context.SaveChangesAsync();
+
+            // Simulate enrollment
+            context.CourseCompletions.Add(new CourseCompletion { UserId = 1, CourseId = 1 });
+            await context.SaveChangesAsync();
+
+            var repository = new Repository(context);
+
+            // Act
+            var result = await repository.GetFilteredCoursesAsync("", false, false, true, false, 1);
+
+            // Assert
+            Assert.AreEqual(1, result.Count);
+            Assert.AreEqual("Course 1", result.First().Title);
+        }
+
+        [TestMethod]
+        public async Task GetFilteredCoursesAsync_ReturnsAllCourses_WhenFilterEnrolledAndNotEnrolledAreTrue()
+        {
+            // Arrange
+            var context = GetInMemoryDbContext();
+            var user = new User { UserId = 1 };
+            var course1 = new Course
+            {
+                CourseId = 1,
+                Title = "Course 1",
+                Description = "Description of Course 1",
+                IsPremium = false,
+                Cost = 50,
+                ImageUrl = "http://example.com/course1.jpg",
+                TimeToComplete = 120,
+                Difficulty = "Beginner"
+            };
+            var course2 = new Course
+            {
+                CourseId = 2,
+                Title = "Course 2",
+                Description = "Description of Course 2",
+                IsPremium = true,
+                Cost = 200,
+                ImageUrl = "http://example.com/course2.jpg",
+                TimeToComplete = 150,
+                Difficulty = "Advanced"
+            };
+            context.Users.Add(user);
+            context.Courses.AddRange(course1, course2);
+            await context.SaveChangesAsync();
+
+            // Simulate enrollment
+            context.CourseCompletions.Add(new CourseCompletion { UserId = 1, CourseId = 1 });
+            await context.SaveChangesAsync();
+
+            var repository = new Repository(context);
+
+            // Act
+            var result = await repository.GetFilteredCoursesAsync("", false, false, true, true, 1);
+
+            // Assert
+            Assert.AreEqual(2, result.Count);
+        }
+
+
+        [TestMethod]
+        public async Task GetFilteredCoursesAsync_ReturnsCoursesWithFiltersAndSearchText()
+        {
+            // Arrange
+            var context = GetInMemoryDbContext();
+            context.Courses.AddRange(
+                new Course
+                {
+                    CourseId = 1,
+                    Title = "Advanced Premium Course",
+                    Description = "Advanced Course",
+                    IsPremium = true,
+                    Cost = 150,
+                    ImageUrl = "http://example.com/advanced.jpg",
+                    TimeToComplete = 180,
+                    Difficulty = "Advanced"
+                },
+                new Course
+                {
+                    CourseId = 2,
+                    Title = "Beginner Free Course",
+                    Description = "Beginner Course",
+                    IsPremium = false,
+                    Cost = 0,
+                    ImageUrl = "http://example.com/beginner.jpg",
+                    TimeToComplete = 60,
+                    Difficulty = "Beginner"
+                }
+            );
+            await context.SaveChangesAsync();
+
+            var repository = new Repository(context);
+
+            // Act
+            var result = await repository.GetFilteredCoursesAsync("Advanced", true, false, false, false, 0);
+
+            // Assert
+            Assert.AreEqual(1, result.Count);
+            Assert.AreEqual("Advanced Premium Course", result.First().Title);
+        }
         #endregion
 
         #region Exam
@@ -1171,6 +1678,152 @@ namespace Duo.Api.Tests.Repositories
 
             // Assert
             Assert.IsNull(deletedSection);
+        }
+        #endregion
+
+        #region Coins
+        [TestMethod]
+        public async Task GetUserCoinBalanceAsync_ReturnsCorrectCoinBalance()
+        {
+            // Arrange
+            var userId = 1;
+            var user = new User { UserId = userId, CoinBalance = 100 };
+            var context = GetInMemoryDbContext();
+            context.Users.Add(user);
+            await context.SaveChangesAsync();
+            var repository = new Repository(context);
+
+            // Act
+            var coinBalance = await repository.GetUserCoinBalanceAsync(userId);
+
+            // Assert
+            Assert.AreEqual(100, coinBalance);
+        }
+
+        [TestMethod]
+        public async Task TryDeductCoinsFromUserWalletAsync_SuccessfulDeduction()
+        {
+            // Arrange
+            var userId = 1;
+            var user = new User { UserId = userId, CoinBalance = 100 };
+            var cost = 50;
+            var context = GetInMemoryDbContext();
+            context.Users.Add(user);
+            await context.SaveChangesAsync();
+            var repository = new Repository(context);
+
+            // Act
+            var result = await repository.TryDeductCoinsFromUserWalletAsync(userId, cost);
+
+            // Assert
+            Assert.IsTrue(result);
+            var updatedUser = await context.Users.FindAsync(userId);
+            Assert.AreEqual(50, updatedUser?.CoinBalance);
+        }
+
+        [TestMethod]
+        public async Task TryDeductCoinsFromUserWalletAsync_InsufficientFunds()
+        {
+            // Arrange
+            var userId = 1;
+            var user = new User { UserId = userId, CoinBalance = 30 };
+            var cost = 50;
+            var context = GetInMemoryDbContext();
+            context.Users.Add(user);
+            await context.SaveChangesAsync();
+            var repository = new Repository(context);
+
+            // Act
+            var result = await repository.TryDeductCoinsFromUserWalletAsync(userId, cost);
+
+            // Assert
+            Assert.IsFalse(result);
+            var updatedUser = await context.Users.FindAsync(userId);
+            Assert.AreEqual(30, updatedUser?.CoinBalance);
+        }
+
+        [TestMethod]
+        public async Task AddCoinsToUserWalletAsync_AddsCoinsSuccessfully()
+        {
+            // Arrange
+            var userId = 1;
+            var user = new User { UserId = userId, CoinBalance = 100 };
+            var amountToAdd = 50;
+            var context = GetInMemoryDbContext();
+            context.Users.Add(user);
+            await context.SaveChangesAsync();
+            var repository = new Repository(context);
+
+            // Act
+            await repository.AddCoinsToUserWalletAsync(userId, amountToAdd);
+            var updatedUser = await context.Users.FindAsync(userId);
+
+            // Assert
+            Assert.AreEqual(150, updatedUser?.CoinBalance);
+        }
+
+        [TestMethod]
+        public async Task GetUserLastLoginTimeAsync_ReturnsCorrectLastLoginTime()
+        {
+            // Arrange
+            var userId = 1;
+            var lastLoginTime = DateTime.Now.AddDays(-1);
+            var user = new User { UserId = userId, LastLoginTime = lastLoginTime };
+            var context = GetInMemoryDbContext();
+            context.Users.Add(user);
+            await context.SaveChangesAsync();
+            var repository = new Repository(context);
+
+            // Act
+            var result = await repository.GetUserLastLoginTimeAsync(userId);
+
+            // Assert
+            Assert.AreEqual(lastLoginTime, result);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(Exception), "Database context is not initialized.")]
+        public async Task GetUserLastLoginTimeAsync_ThrowsException_WhenContextIsNull()
+        {
+            // Arrange
+            var userId = 1;
+            var repository = new Repository(null); // Passing null as context
+
+            // Act
+            await repository.GetUserLastLoginTimeAsync(userId);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(Exception), "User with ID 999 not found")]
+        public async Task GetUserLastLoginTimeAsync_ThrowsException_WhenUserNotFound()
+        {
+            // Arrange
+            var userId = 999; // Assuming no user with this ID exists
+            var context = GetInMemoryDbContext();
+            var repository = new Repository(context);
+
+            // Act
+            await repository.GetUserLastLoginTimeAsync(userId);  // Should throw exception
+        }
+
+        [TestMethod]
+        public async Task UpdateUserLastLoginTimeToNowAsync_UpdatesLastLoginTimeSuccessfully()
+        {
+            // Arrange
+            var userId = 1;
+            var user = new User { UserId = userId, LastLoginTime = DateTime.Now.AddDays(-1) };
+            var context = GetInMemoryDbContext();
+            context.Users.Add(user);
+            await context.SaveChangesAsync();
+            var repository = new Repository(context);
+
+            // Act
+            await repository.UpdateUserLastLoginTimeToNowAsync(userId);
+            var updatedUser = await context.Users.FindAsync(userId);
+
+            // Assert
+            Assert.IsNotNull(updatedUser);
+            Assert.AreEqual(DateTime.Now.Date, updatedUser?.LastLoginTime.Date); // Date part should match, time will be different
         }
         #endregion
 
