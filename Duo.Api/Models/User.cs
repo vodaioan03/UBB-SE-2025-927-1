@@ -33,6 +33,10 @@ namespace Duo.Api.Models
         /// </summary>
         public string? Email { get; set; }
 
+        public int CoinBalance { get; set; }
+
+        public DateTime LastLoginTime { get; set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="User"/> class.
         /// </summary>

@@ -1,9 +1,5 @@
 using System;
-using Duo.Repositories;
-using Duo.ModelViews;
-
-#pragma warning disable IDE0079 // Remove unnecessary suppression
-#pragma warning disable SA1009 // Closing parenthesis should be spaced correctly
+using System.Threading.Tasks;
 
 namespace Duo.Services
 {
@@ -13,21 +9,24 @@ namespace Duo.Services
     /// <remarks>
     /// Initializes a new instance of the <see cref="CoinsService"/> class.
     /// </remarks>
-    /// <param name="coinsRepository">An optional repository for accessing coins data.</param>
-    public class CoinsService(ICoinsRepository? coinsRepository = null) : ICoinsService
+    /// <param name="serviceProxy">Proxy for accessing backend API services.</param>
+    public class CoinsService : ICoinsService
     {
-        private const int UserId = 0; // Default user ID for operations that don't specify a user
+        private readonly ServiceProxy serviceProxy;
 
-        private readonly ICoinsRepository coinsRepository = coinsRepository ?? new CoinsRepository(new UserWalletModelView());
+        public CoinsService(ServiceProxy serviceProxy)
+        {
+            this.serviceProxy = serviceProxy;
+        }
 
         /// <summary>
         /// Gets the coin balance for a specific user.
         /// </summary>
         /// <param name="userId">The ID of the user whose coin balance is being queried.</param>
         /// <returns>The coin balance of the user.</returns>
-        public int GetCoinBalance(int userId)
+        public async Task<int> GetCoinBalanceAsync(int userId)
         {
-            return coinsRepository.GetUserCoinBalance(userId);
+            return await serviceProxy.GetUserCoinBalanceAsync(userId);
         }
 
         /// <summary>
@@ -36,9 +35,9 @@ namespace Duo.Services
         /// <param name="userId">The ID of the user trying to spend coins.</param>
         /// <param name="cost">The amount of coins to deduct.</param>
         /// <returns>True if the operation was successful, false otherwise.</returns>
-        public bool TrySpendingCoins(int userId, int cost)
+        public async Task<bool> TrySpendingCoinsAsync(int userId, int cost)
         {
-            return coinsRepository.TryDeductCoinsFromUserWallet(userId, cost);
+            return await serviceProxy.TrySpendingCoinsAsync(userId, cost);
         }
 
         /// <summary>
@@ -46,9 +45,9 @@ namespace Duo.Services
         /// </summary>
         /// <param name="userId">The ID of the user receiving the coins.</param>
         /// <param name="amount">The amount of coins to add.</param>
-        public void AddCoins(int userId, int amount)
+        public async Task AddCoinsAsync(int userId, int amount)
         {
-            coinsRepository.AddCoinsToUserWallet(userId, amount);
+            await serviceProxy.AddCoinsAsync(userId, amount);
         }
 
         /// <summary>
@@ -56,17 +55,9 @@ namespace Duo.Services
         /// </summary>
         /// <param name="userId">The ID of the user receiving the bonus. Defaults to 0.</param>
         /// <returns>True if the bonus was applied, false if the user has already logged in today.</returns>
-        public bool ApplyDailyLoginBonus(int userId = 0)
+        public async Task<bool> ApplyDailyLoginBonusAsync(int userId = 0)
         {
-            DateTime lastLogin = coinsRepository.GetUserLastLoginTime(userId);
-            DateTime today = DateTime.Now;
-            if (lastLogin.Date < today.Date)
-            {
-                coinsRepository.AddCoinsToUserWallet(userId, 100);
-                coinsRepository.UpdateUserLastLoginTimeToNow(userId);
-                return true;
-            }
-            return false;
+            return await serviceProxy.ApplyDailyLoginBonusAsync(userId);
         }
     }
 }

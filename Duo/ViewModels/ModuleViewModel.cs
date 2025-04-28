@@ -1,7 +1,8 @@
+using System.Threading.Tasks;
 using System.Windows.Input;
+using Duo.Commands;
 using Duo.Models;
 using Duo.Services;
-using Duo.Commands;
 
 namespace Duo.ViewModels
 {
@@ -22,7 +23,7 @@ namespace Duo.ViewModels
         {
             // Corrected initialization: Use the proper concrete service classes
             courseService = courseServiceOverride ?? new CourseService();
-            coinsService = coinsServiceOverride ?? new CoinsService();
+            coinsService = coinsServiceOverride ?? new CoinsService(new ServiceProxy(new System.Net.Http.HttpClient()));
 
             CurrentModule = module;
             IsCompleted = courseService.IsModuleCompleted(module.ModuleId);
@@ -54,9 +55,21 @@ namespace Duo.ViewModels
 
         public string TimeSpent => courseViewModel.FormattedTimeRemaining;
 
+        private int coinBalance;
         public int CoinBalance
         {
-            get => coinsService.GetCoinBalance(0);
+            get => coinBalance;
+            private set
+            {
+                coinBalance = value;
+                OnPropertyChanged(nameof(CoinBalance));
+            }
+        }
+
+        // Async method to load and update the CoinBalance
+        public async Task LoadCoinBalanceAsync()
+        {
+            CoinBalance = await coinsService.GetCoinBalanceAsync(0);
         }
 
         private bool CanCompleteModule(object? parameter)
