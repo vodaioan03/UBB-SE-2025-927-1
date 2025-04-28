@@ -26,7 +26,7 @@ namespace Duo.Views
                             module,
                             courseVM,
                             new CourseService(),          // as IModuleCompletionService
-                            new CoinsService(new ServiceProxy(new System.Net.Http.HttpClient())));         // as ICoinsService
+                            new CoinsService(new CoinsServiceProxy(new System.Net.Http.HttpClient())));         // as ICoinsService
                 this.DataContext = viewModel;
             }
         }
