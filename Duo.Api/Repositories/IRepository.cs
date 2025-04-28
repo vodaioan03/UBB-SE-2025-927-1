@@ -1,4 +1,3 @@
-using CourseApp.Models;
 using Duo.Api.Models;
 using Duo.Api.Models.Exercises;
 using Duo.Api.Models.Quizzes;
@@ -62,6 +61,14 @@ namespace Duo.Api.Repositories
         Task AddSectionAsync(Section section);
         Task UpdateSectionAsync(Section section);
         Task DeleteSectionAsync(int id);
+        #endregion
+
+        #region Coins
+        Task<int> GetUserCoinBalanceAsync(int userId);
+        Task<bool> TryDeductCoinsFromUserWalletAsync(int userId, int cost);
+        Task AddCoinsToUserWalletAsync(int userId, int amount);
+        Task<DateTime> GetUserLastLoginTimeAsync(int userId);
+        Task UpdateUserLastLoginTimeToNowAsync(int userId);
         #endregion
     }
 }
