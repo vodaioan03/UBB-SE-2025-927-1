@@ -4,11 +4,11 @@ using System.Threading.Tasks;
 
 namespace Duo.Services
 {
-    public class ServiceProxy
+    public class CoinsServiceProxy
     {
         private readonly HttpClient httpClient;
 
-        public ServiceProxy(HttpClient httpClient)
+        public CoinsServiceProxy(HttpClient httpClient)
         {
             this.httpClient = httpClient;
         }
