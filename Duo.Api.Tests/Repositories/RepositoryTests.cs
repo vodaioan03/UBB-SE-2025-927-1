@@ -1782,7 +1782,7 @@ namespace Duo.Api.Tests.Repositories
         }
 
         [TestMethod]
-        [ExpectedException(typeof(Exception), "Database context is not initialized.")]
+        [ExpectedException(typeof(NullReferenceException), "Database context is not initialized.")]
         public async Task GetUserLastLoginTimeAsync_ThrowsException_WhenContextIsNull()
         {
             // Arrange
