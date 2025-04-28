@@ -95,5 +95,15 @@ namespace Duo.Api.Controllers
             return Ok(exam);
         }
 
+        /// <summary>
+        /// Retrieves all available exams.
+        /// </summary>
+        /// <returns>A list of available exams.</returns>
+        [HttpGet("get-available")]
+        public async Task<IActionResult> GetAvailableExams()
+        {
+            var exams = await repository.GetAvailableExamsAsync();
+            return Ok(exams);
+        }
     }
 }
