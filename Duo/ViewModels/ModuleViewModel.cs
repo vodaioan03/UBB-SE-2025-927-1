@@ -23,7 +23,7 @@ namespace Duo.ViewModels
         {
             // Corrected initialization: Use the proper concrete service classes
             courseService = courseServiceOverride ?? new CourseService();
-            coinsService = coinsServiceOverride ?? new CoinsService(new ServiceProxy(new System.Net.Http.HttpClient()));
+            coinsService = coinsServiceOverride ?? new CoinsService(new CoinsServiceProxy(new System.Net.Http.HttpClient()));
 
             CurrentModule = module;
             IsCompleted = courseService.IsModuleCompleted(module.ModuleId);

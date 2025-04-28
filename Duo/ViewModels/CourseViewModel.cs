@@ -185,7 +185,7 @@ namespace Duo.ViewModels
                 Difficulty = string.Empty
             };
             courseService = new CourseService();
-            coinsService = new CoinsService(new ServiceProxy(new System.Net.Http.HttpClient()));
+            coinsService = new CoinsService(new CoinsServiceProxy(new System.Net.Http.HttpClient()));
             notificationHelper = null;
         }
 
@@ -201,12 +201,12 @@ namespace Duo.ViewModels
         public CourseViewModel(Course course, ICourseService? courseService = null,
             ICoinsService? coinsService = null, IDispatcherTimerService? timerService = null,
             IDispatcherTimerService? notificationTimerService = null, INotificationHelper? notificationHelper = null,
-            ServiceProxy? serviceProxy = null)
+            CoinsServiceProxy? serviceProxy = null)
         {
             CurrentCourse = course ?? throw new ArgumentNullException(nameof(course));
 
             this.courseService = courseService ?? new CourseService();
-            this.coinsService = coinsService ?? new CoinsService(serviceProxy ?? new ServiceProxy(new System.Net.Http.HttpClient()));
+            this.coinsService = coinsService ?? new CoinsService(serviceProxy ?? new CoinsServiceProxy(new System.Net.Http.HttpClient()));
 
             InitializeTimersAndNotificationHelper(timerService, notificationTimerService, notificationHelper);
 

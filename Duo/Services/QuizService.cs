@@ -19,12 +19,11 @@ namespace Duo.Services
         {
             return await serviceProxy.GetAsync();
         }
-
         public async Task<List<Exam>> GetAllAvailableExams()
         {
-            return await serviceProxy.GetAllAvailableExamsAsync();
+            // return await serviceProxy.GetAllAvailableExamsAsync();
+            throw new System.NotImplementedException();
         }
-
         public async Task<Quiz> GetQuizById(int quizId)
         {
             return await serviceProxy.GetQuizByIdAsync(quizId);
@@ -106,13 +105,13 @@ namespace Duo.Services
             await serviceProxy.CreateExamAsync(exam);
             return exam.Id;
         }
-
+        /*
         public async Task<QuizModel> FetchQuizAsync(int quizId)
         {
             var model = await httpClient.GetFromJsonAsync<QuizModel>($"quiz/fetch?id={quizId}");
             return model!;
         }
-
+        */
         public async Task SubmitQuizAsync(QuizSubmission submission)
         {
             await serviceProxy.SubmitQuizAsync(submission);

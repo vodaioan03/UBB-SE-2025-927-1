@@ -12,9 +12,9 @@ namespace Duo.Services
     /// <param name="serviceProxy">Proxy for accessing backend API services.</param>
     public class CoinsService : ICoinsService
     {
-        private readonly ServiceProxy serviceProxy;
+        private readonly CoinsServiceProxy serviceProxy;
 
-        public CoinsService(ServiceProxy serviceProxy)
+        public CoinsService(CoinsServiceProxy serviceProxy)
         {
             this.serviceProxy = serviceProxy;
         }
