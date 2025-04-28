@@ -1,7 +1,7 @@
-using CourseApp.Models;
 using Duo.Api.Models;
 using Duo.Api.Models.Exercises;
 using Duo.Api.Models.Quizzes;
+using Duo.Api.Models.Sections;
 using Duo.Api.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -13,10 +13,10 @@ namespace Duo.Api.Repositories
 
         public Repository(DataContext context)
         {
-            context = context;
+            this.context = context;
         }
 
-        // Users
+        #region Users
         public async Task<List<User>> GetUsersFromDbAsync()
         {
             return await context.Users.ToListAsync();
@@ -44,8 +44,9 @@ namespace Duo.Api.Repositories
                 await context.SaveChangesAsync();
             }
         }
+        #endregion
 
-        // Tags
+        #region Tags
         public async Task<List<Tag>> GetTagsFromDbAsync()
         {
             return await context.Tags.ToListAsync();
@@ -73,13 +74,14 @@ namespace Duo.Api.Repositories
                 await context.SaveChangesAsync();
             }
         }
+        #endregion
 
-        // Modules
+        #region Modules
         public async Task<List<Module>> GetModulesFromDbAsync()
         {
             return await context.Modules.ToListAsync();
         }
-        public async Task<Module> GetModuleByIdAsync(int id)
+        public async Task<Module?> GetModuleByIdAsync(int id)
         {
             return await context.Modules.FindAsync(id);
         }
@@ -102,8 +104,9 @@ namespace Duo.Api.Repositories
                 await context.SaveChangesAsync();
             }
         }
+        #endregion
 
-        // Exercises
+        #region Exercises
         public async Task<List<Exercise>> GetExercisesFromDbAsync()
         {
             return await context.Exercises.ToListAsync();
@@ -135,8 +138,9 @@ namespace Duo.Api.Repositories
                 await context.SaveChangesAsync();
             }
         }
+        #endregion
 
-        // Quizzes
+        #region Quizzes
         public async Task<List<Quiz>> GetQuizzesFromDbAsync()
         {
             return await context.Quizzes.ToListAsync();
@@ -168,26 +172,31 @@ namespace Duo.Api.Repositories
                 await context.SaveChangesAsync();
             }
         }
-
-        // Courses
+        #endregion
+        
+        #region Courses
         public async Task<List<Course>> GetCoursesFromDbAsync()
         {
             return await context.Courses.ToListAsync();
         }
+        
         public async Task<Course> GetCourseByIdAsync(int id)
         {
             return await context.Courses.FindAsync(id);
         }
+        
         public async Task AddCourseAsync(Course course)
         {
             context.Courses.Add(course);
             await context.SaveChangesAsync();
         }
+        
         public async Task UpdateCourseAsync(Course course)
         {
             context.Courses.Update(course);
             await context.SaveChangesAsync();
         }
+        
         public async Task DeleteCourseAsync(int id)
         {
             var course = await context.Courses.FindAsync(id);
@@ -197,5 +206,66 @@ namespace Duo.Api.Repositories
                 await context.SaveChangesAsync();
             }
         }
+        #endregion
+
+        #region Exams
+        public async Task<List<Exam>> GetExamsFromDbAsync()
+        {
+            return await context.Exams.ToListAsync();
+        }
+        public async Task<Exam> GetExamByIdAsync(int id)
+        {
+            return await context.Exams.FindAsync(id);
+        }
+        public async Task AddExamAsync(Exam exam)
+        {
+            context.Exams.Add(exam);
+            await context.SaveChangesAsync();
+        }
+        public async Task UpdateExamAsync(Exam exam)
+        {
+            context.Exams.Update(exam);
+            await context.SaveChangesAsync();
+        }
+        public async Task DeleteExamAsync(int id)
+        {
+            var exam = await context.Exams.FindAsync(id);
+            if (exam != null)
+            {
+                context.Exams.Remove(exam);
+                await context.SaveChangesAsync();
+            }
+        }
+        #endregion
+
+        #region Sections
+        public async Task<List<Section>> GetSectionsFromDbAsync()
+        {
+            return await context.Sections.ToListAsync();
+        }
+        public async Task<Section> GetSectionByIdAsync(int id)
+        {
+            return await context.Sections.FindAsync(id);
+        }
+        public async Task AddSectionAsync(Section section)
+        {
+            context.Sections.Add(section);
+            await context.SaveChangesAsync();
+        }
+        public async Task UpdateSectionAsync(Section section)
+        {
+            context.Sections.Update(section);
+            await context.SaveChangesAsync();
+        }
+        public async Task DeleteSectionAsync(int id)
+        {
+            var section = await context.Sections.FindAsync(id);
+            if (section != null)
+            {
+                context.Sections.Remove(section);
+                await context.SaveChangesAsync();
+            }
+        }
+        #endregion
     }
 }
