@@ -1,12 +1,17 @@
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Duo.Api.Models
 {
     /// <summary>
-    /// Represents a tag that can be assigned to courses or modules, with support for property change notifications.
+    /// Represents a tag that can be assigned to courses or modules.
+    /// Tags are used to categorize or label content for better organization and searchability.
     /// </summary>
+    [ExcludeFromCodeCoverage]
     public class Tag
     {
+        #region Fields and Properties
+
         /// <summary>
         /// Gets or sets the unique identifier for the tag.
         /// </summary>
@@ -18,5 +23,31 @@ namespace Duo.Api.Models
         /// </summary>
         [Required]
         public string Name { get; set; } = string.Empty;
+
+        #endregion
+
+        #region Constructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Tag"/> class.
+        /// </summary>
+        public Tag()
+        {
+        }
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Returns a string representation of the tag, including its name.
+        /// </summary>
+        /// <returns>A string describing the tag.</returns>
+        public override string ToString()
+        {
+            return $"Tag: {Name}";
+        }
+
+        #endregion
     }
 }
