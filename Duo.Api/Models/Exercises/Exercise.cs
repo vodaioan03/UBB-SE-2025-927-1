@@ -1,7 +1,11 @@
-﻿using Duo.Api.Models.Quizzes;
-using Microsoft.EntityFrameworkCore;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Diagnostics.CodeAnalysis;
+using Duo.Api.Models.Quizzes;
+using Microsoft.EntityFrameworkCore;
+
+#pragma warning disable IDE0079 // Remove unnecessary suppression
+#pragma warning disable SA1010 // Opening square brackets should be spaced correctly
 
 namespace Duo.Api.Models.Exercises
 {
@@ -11,9 +15,10 @@ namespace Duo.Api.Models.Exercises
     /// to share a single database table with a discriminator column.
     /// </summary>
     [Index(nameof(Question))] // Optimizes search queries on the Question field
+    [ExcludeFromCodeCoverage]
     public abstract class Exercise
     {
-        // Fields and Properties
+        #region Properties
 
         /// <summary>
         /// Gets or sets the unique identifier for the exercise.
@@ -46,7 +51,9 @@ namespace Duo.Api.Models.Exercises
         /// </summary>
         public ICollection<Quiz> Quizzes { get; set; } = [];
 
-        // Constructors
+        #endregion
+
+        #region Constructors
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Exercise"/> class with the specified parameters.
@@ -65,9 +72,13 @@ namespace Duo.Api.Models.Exercises
         /// Initializes a new instance of the <see cref="Exercise"/> class.
         /// This parameterless constructor is required for Entity Framework.
         /// </summary>
-        public Exercise() { }
+        public Exercise()
+        {
+        }
 
-        // Methods
+        #endregion
+
+        #region Methods
 
         /// <summary>
         /// Returns a string representation of the exercise, including its ID, question, and difficulty level.
@@ -77,5 +88,7 @@ namespace Duo.Api.Models.Exercises
         {
             return $"Exercise {ExerciseId}: {Question} (Difficulty: {Difficulty})";
         }
+
+        #endregion
     }
 }
