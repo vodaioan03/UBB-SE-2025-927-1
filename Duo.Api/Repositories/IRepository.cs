@@ -1,3 +1,4 @@
+using Duo.Api.DTO;
 using Duo.Api.Models;
 using Duo.Api.Models.Exercises;
 using Duo.Api.Models.Quizzes;
@@ -57,7 +58,7 @@ namespace Duo.Api.Repositories
         Task AddExercisesToQuizAsync(int quizId, List<int> exerciseIds);
         Task AddExerciseToQuizAsync(int quizId, int exerciseId);
         Task RemoveExerciseFromQuizAsync(int quizId, int exerciseId);
-        Task<object> GetQuizResultAsync(int quizId);
+        Task<QuizResultDTO> GetQuizResultAsync(int quizId);
         #endregion
 
         #region Courses
