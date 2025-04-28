@@ -975,5 +975,103 @@ namespace Duo.Api.Tests.Repositories
             Assert.IsTrue(updatedCompletion?.TimedRewardClaimed);
         }
         #endregion
+
+        #region Exam
+        [TestMethod]
+        public async Task GetExamsFromDbAsync_ReturnsAllExams()
+        {
+            // Arrange
+            var context = GetInMemoryDbContext();
+            context.Exams.Add(new Exam { Id = 1, SectionId = 1 });
+            context.Exams.Add(new Exam { Id = 2, SectionId = 2 });
+            await context.SaveChangesAsync();
+
+            var repository = new Repository(context);
+
+            // Act
+            var exams = await repository.GetExamsFromDbAsync();
+
+            // Assert
+            Assert.AreEqual(2, exams.Count);
+            Assert.IsTrue(exams.Any(e => e.Id == 1));
+            Assert.IsTrue(exams.Any(e => e.Id == 2));
+        }
+
+        [TestMethod]
+        public async Task GetExamByIdAsync_ReturnsExam_WhenExamExists()
+        {
+            // Arrange
+            var context = GetInMemoryDbContext();
+            var exam = new Exam { Id = 1, SectionId = 1 };
+            context.Exams.Add(exam);
+            await context.SaveChangesAsync();
+
+            var repository = new Repository(context);
+
+            // Act
+            var result = await repository.GetExamByIdAsync(1);
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(1, result.Id);
+        }
+
+        [TestMethod]
+        public async Task AddExamAsync_AddsExamSuccessfully()
+        {
+            // Arrange
+            var context = GetInMemoryDbContext();
+            var exam = new Exam { SectionId = 1 };
+            var repository = new Repository(context);
+
+            // Act
+            await repository.AddExamAsync(exam);
+            var result = await context.Exams.FindAsync(exam.Id);
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(exam.SectionId, result?.SectionId);
+        }
+
+        [TestMethod]
+        public async Task UpdateExamAsync_UpdatesExamSuccessfully()
+        {
+            // Arrange
+            var context = GetInMemoryDbContext();
+            var exam = new Exam { SectionId = 1 };
+            context.Exams.Add(exam);
+            await context.SaveChangesAsync();
+            var repository = new Repository(context);
+
+            // Act
+            exam.SectionId = 2;
+            await repository.UpdateExamAsync(exam);
+            var updatedExam = await context.Exams.FindAsync(exam.Id);
+
+            // Assert
+            Assert.IsNotNull(updatedExam);
+            Assert.AreEqual(2, updatedExam?.SectionId);
+        }
+
+        [TestMethod]
+        public async Task DeleteExamAsync_DeletesExamSuccessfully()
+        {
+            // Arrange
+            var context = GetInMemoryDbContext();
+            var exam = new Exam { SectionId = 1 };
+            context.Exams.Add(exam);
+            await context.SaveChangesAsync();
+
+            var repository = new Repository(context);
+
+            // Act
+            await repository.DeleteExamAsync(exam.Id);
+            var deletedExam = await context.Exams.FindAsync(exam.Id);
+
+            // Assert
+            Assert.IsNull(deletedExam);
+        }
+        #endregion
+
     }
 }
