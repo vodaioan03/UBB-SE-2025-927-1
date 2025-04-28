@@ -45,8 +45,15 @@ namespace Duo.Api.Repositories
         Task AddQuizAsync(Quiz quiz);
         Task UpdateQuizAsync(Quiz quiz);
         Task DeleteQuizAsync(int id);
+        Task<List<Quiz>> GetAllQuizzesFromSectionAsync(int sectionId);
+        Task<int> CountQuizzesFromSectionAsync(int sectionId);
+        Task<int> GetLastOrderNumberFromSectionAsync(int sectionId);
+        Task AddExercisesToQuizAsync(int quizId, List<int> exerciseIds);
+        Task AddExerciseToQuizAsync(int quizId, int exerciseId);
+        Task RemoveExerciseFromQuizAsync(int quizId, int exerciseId);
+        Task<object> GetQuizResultAsync(int quizId);
         #endregion
-      
+
         #region Courses
         Task<List<Course>> GetCoursesFromDbAsync();
         Task<Course> GetCourseByIdAsync(int id);
