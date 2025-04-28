@@ -66,4 +66,5 @@ public class SectionServiceProxy
     {
         return await httpClient.GetFromJsonAsync<List<SectionDependency>>($"api/sections/dependencies/{sectionId}");
     }
+
 }
