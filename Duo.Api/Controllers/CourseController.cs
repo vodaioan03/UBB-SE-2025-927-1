@@ -3,6 +3,7 @@ using Duo.Api.Models;
 using Duo.Api.Persistence;
 using Duo.Api.Repositories;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace Duo.Api.Controllers
 {
@@ -79,6 +80,136 @@ namespace Duo.Api.Controllers
                 return NotFound();
             await repository.DeleteCourseAsync(id);
             return Ok();
+        }
+
+        /// <summary>
+        /// Enrolls a user in a course.
+        /// </summary>
+        /// <param name="userId">The ID of the user.</param>
+        /// <param name="courseId">The ID of the course.</param>
+        /// <returns>Ok if enrollment is successful.</returns>
+        [HttpPost("enroll")]
+        public async Task<IActionResult> Enroll([FromForm] int userId, [FromForm] int courseId)
+        {
+            await repository.EnrollUserInCourseAsync(userId, courseId);
+            return Ok();
+        }
+
+        /// <summary>
+        /// Checks if a user is enrolled in a course.
+        /// </summary>
+        /// <param name="userId">The ID of the user.</param>
+        /// <param name="courseId">The ID of the course.</param>
+        /// <returns>True if enrolled; otherwise, false.</returns>
+        [HttpGet("is-enrolled")]
+        public async Task<IActionResult> IsEnrolled([FromForm] int userId, [FromForm] int courseId)
+        {
+            var isEnrolled = await repository.IsUserEnrolledInCourseAsync(userId, courseId);
+            return Ok(isEnrolled);
+        }
+
+        /// <summary>
+        /// Checks if a course is completed by a user.
+        /// </summary>
+        /// <param name="userId">The ID of the user.</param>
+        /// <param name="courseId">The ID of the course.</param>
+        /// <returns>True if completed; otherwise, false.</returns>
+        [HttpGet("is-completed")]
+        public async Task<IActionResult> IsCompleted([FromForm] int userId, [FromForm] int courseId)
+        {
+            var isCompleted = await repository.IsCourseCompletedAsync(userId, courseId);
+            return Ok(isCompleted);
+        }
+
+        [HttpGet("get-filtered")]
+        /// <summary>
+        /// Filters courses based on search text, type, enrollment status, and tags.
+        /// </summary>
+        /// <param name="searchText">The text to search for in course titles.</param>
+        /// <param name="filterPremium">Whether to filter premium courses.</param>
+        /// <param name="filterFree">Whether to filter free courses.</param>
+        /// <param name="filterEnrolled">Whether to filter enrolled courses.</param>
+        /// <param name="filterNotEnrolled">Whether to filter not enrolled courses.</param>
+        /// <param name="selectedTagIds">The list of selected tag IDs to filter by.</param>
+        /// <returns>A filtered list of courses.</returns>
+        public async Task<IActionResult> GetFilteredCourses(
+        [FromQuery] string searchText,
+        [FromQuery] bool filterPremium,
+        [FromQuery] bool filterFree,
+        [FromQuery] bool filterEnrolled,
+        [FromQuery] bool filterNotEnrolled)
+        {
+            var userId = 1; // Hardcoded for simplicity, replace this with actual UserId based on your auth system
+            var courses = await repository.GetFilteredCoursesAsync(searchText, filterPremium, filterFree, filterEnrolled, filterNotEnrolled, userId);
+            return Ok(courses);
+        }
+
+        /// <summary>
+        /// Updates the time a user spent on a course.
+        /// </summary>
+        /// <param name="userId">The user ID.</param>
+        /// <param name="courseId">The course ID.</param>
+        /// <param name="timeInSeconds">The time in seconds to add.</param>
+        /// <returns>Ok if updated.</returns>
+        [HttpPut("update-time")]
+        public async Task<IActionResult> UpdateTime([FromForm] int userId, [FromForm] int courseId, [FromForm] int timeInSeconds)
+        {
+            await repository.UpdateTimeSpentAsync(userId, courseId, timeInSeconds);
+            return Ok();
+        }
+
+        /// <summary>
+        /// Claims the completion reward for a course.
+        /// </summary>
+        /// <param name="userId">The user ID.</param>
+        /// <param name="courseId">The course ID.</param>
+        /// <returns>Ok if reward claimed.</returns>
+        [HttpPost("claim-completion")]
+        public async Task<IActionResult> ClaimCompletionReward([FromForm] int userId, [FromForm] int courseId)
+        {
+            await repository.ClaimCompletionRewardAsync(userId, courseId);
+            return Ok();
+        }
+
+        /// <summary>
+        /// Claims the time reward for a course.
+        /// </summary>
+        /// <param name="userId">The user ID.</param>
+        /// <param name="courseId">The course ID.</param>
+        /// <returns>Ok if reward claimed.</returns>
+        [HttpPost("claim-time")]
+        public async Task<IActionResult> ClaimTimeReward([FromForm] int userId, [FromForm] int courseId)
+        {
+            await repository.ClaimTimeRewardAsync(userId, courseId);
+            return Ok();
+        }
+
+        /// <summary>
+        /// Gets the time a user has spent on a course.
+        /// </summary>
+        /// <param name="userId">The user ID.</param>
+        /// <param name="courseId">The course ID.</param>
+        /// <returns>The time spent in seconds.</returns>
+        [HttpGet("get-time")]
+        public async Task<IActionResult> GetTimeSpent([FromForm] int userId, [FromForm] int courseId)
+        {
+            var timeSpent = await repository.GetTimeSpentAsync(userId, courseId);
+            return Ok(timeSpent);
+        }
+
+        /// <summary>
+        /// Gets the time limit of a course.
+        /// </summary>
+        /// <param name="courseId">The course ID.</param>
+        /// <returns>The time limit in seconds.</returns>
+        [HttpGet("get-time-limit")]
+        public async Task<IActionResult> GetTimeLimit([FromForm] int courseId)
+        {
+            var course = await repository.GetCourseByIdAsync(courseId);
+            if (course == null)
+                return NotFound();
+
+            return Ok(course.TimeToComplete);
         }
     }
 }
