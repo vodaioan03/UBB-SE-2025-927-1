@@ -9,7 +9,7 @@
    - every struct must use ``camelCase`` naming convention
 4. Variables:
    - public member variables must use ``camelCase`` naming convention
-   - private member variables must use ``m_camelCase`` naming convention
+   - private member variables must use ``camelCase`` naming convention
    - local variables, parameters must use ``camelCase`` naming convention
 5. Properties
    - properties must use ``PascalCase`` naming convention
