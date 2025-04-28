@@ -11,9 +11,9 @@ namespace Duo.Api.Repositories
     {
         private readonly DataContext context;
 
-        public Repository(DataContext context)
+        public Repository(DataContext dataContext)
         {
-            context = context;
+            context = dataContext;
         }
 
         #region Users
@@ -81,7 +81,7 @@ namespace Duo.Api.Repositories
         {
             return await context.Modules.ToListAsync();
         }
-        public async Task<Module> GetModuleByIdAsync(int id)
+        public async Task<Module?> GetModuleByIdAsync(int id)
         {
             return await context.Modules.FindAsync(id);
         }
@@ -104,6 +104,50 @@ namespace Duo.Api.Repositories
                 await context.SaveChangesAsync();
             }
         }
+
+        public async Task OpenModuleAsync(int userId, int moduleId)
+        {
+            var module = await context.Modules.FindAsync(moduleId);
+
+            if (module == null)
+            {
+                throw new Exception("Module not found");
+            }
+
+            context.Modules.Update(module);
+            await context.SaveChangesAsync();
+        }
+
+        public async Task CompleteModuleAsync(int userId, int moduleId)
+        {
+            await Task.CompletedTask;
+        }
+
+        public async Task<bool> IsModuleOpenAsync(int userId, int moduleId)
+        {
+            return await Task.FromResult(true);
+        }
+
+        public async Task<bool> IsModuleCompletedAsync(int userId, int moduleId)
+        {
+            return await Task.FromResult(false);
+        }
+
+        public async Task<bool> IsModuleAvailableAsync(int userId, int moduleId)
+        {
+            return await Task.FromResult(true);
+        }
+
+        public async Task ClickModuleImageAsync(int userId, int moduleId)
+        {
+            await Task.CompletedTask;
+        }
+
+        public async Task<bool> IsModuleImageClickedAsync(int userId, int moduleId)
+        {
+            return await Task.FromResult(true);
+        }
+
         #endregion
 
         #region Exercises
@@ -143,12 +187,12 @@ namespace Duo.Api.Repositories
         #region Quizzes
         public async Task<List<Quiz>> GetQuizzesFromDbAsync()
         {
-            return await context.Quizzes.ToListAsync();
+            return await context.Quizzes.Include(q => q.Exercises).ToListAsync();
         }
 
         public async Task<Quiz> GetQuizByIdAsync(int id)
         {
-            return await context.Quizzes.FindAsync(id);
+            return await context.Quizzes.Include(q => q.Exercises).FirstOrDefaultAsync(q => q.Id == id);
         }
 
         public async Task AddQuizAsync(Quiz quiz)
@@ -172,6 +216,283 @@ namespace Duo.Api.Repositories
                 await context.SaveChangesAsync();
             }
         }
+
+        /// <summary>
+        /// Retrieves all quizzes from a specific section.
+        /// </summary>
+        public async Task<List<Quiz>> GetAllQuizzesFromSectionAsync(int sectionId)
+        {
+            return await context.Quizzes
+                .Where(q => q.SectionId == sectionId)
+                .ToListAsync();
+        }
+
+        /// <summary>
+        /// Retrieves the number of quizzes in a specific section.
+        /// </summary>
+        public async Task<int> CountQuizzesFromSectionAsync(int sectionId)
+        {
+            return await context.Quizzes
+                .Where(q => q.SectionId == sectionId)
+                .CountAsync();
+        }
+
+        /// <summary>
+        /// Retrieves the last order number in a specific section.
+        /// </summary>
+        public async Task<int> GetLastOrderNumberFromSectionAsync(int sectionId)
+        {
+            var quiz = await context.Quizzes
+                .Where(q => q.SectionId == sectionId && q.OrderNumber.HasValue)
+                .OrderByDescending(q => q.OrderNumber)
+                .FirstOrDefaultAsync();
+
+            return quiz?.OrderNumber ?? 0;
+        }
+
+        /// <summary>
+        /// Adds a list of exercises to a quiz.
+        /// </summary>
+        public async Task AddExercisesToQuizAsync(int quizId, List<int> exerciseIds)
+        {
+            var quiz = await context.Quizzes
+                .Include(q => q.Exercises)
+                .FirstOrDefaultAsync(q => q.Id == quizId);
+
+            if (quiz != null)
+            {
+                var exercises = await context.Exercises
+                    .Where(e => exerciseIds.Contains(e.ExerciseId))
+                    .ToListAsync();
+
+                foreach (var exercise in exercises)
+                {
+                    if (!quiz.Exercises.Contains(exercise))
+                    {
+                        quiz.Exercises.Add(exercise);
+                    }
+                }
+
+                await context.SaveChangesAsync();
+            }
+        }
+
+        /// <summary>
+        /// Adds a single exercise to a quiz.
+        /// </summary>
+        public async Task AddExerciseToQuizAsync(int quizId, int exerciseId)
+        {
+            var quiz = await context.Quizzes
+                .Include(q => q.Exercises)
+                .FirstOrDefaultAsync(q => q.Id == quizId);
+
+            var exercise = await context.Exercises.FindAsync(exerciseId);
+
+            if (quiz != null && exercise != null && !quiz.Exercises.Contains(exercise))
+            {
+                quiz.Exercises.Add(exercise);
+                await context.SaveChangesAsync();
+            }
+        }
+
+        /// <summary>
+        /// Removes an exercise from a quiz.
+        /// </summary>
+        public async Task RemoveExerciseFromQuizAsync(int quizId, int exerciseId)
+        {
+            var quiz = await context.Quizzes
+                .Include(q => q.Exercises)
+                .FirstOrDefaultAsync(q => q.Id == quizId);
+
+            var exercise = await context.Exercises.FindAsync(exerciseId);
+
+            if (quiz != null && exercise != null && quiz.Exercises.Contains(exercise))
+            {
+                quiz.Exercises.Remove(exercise);
+                await context.SaveChangesAsync();
+            }
+        }
+
+        /// <summary>
+        /// Gets the quiz result. (for now just returns the quiz data, adjust if more needed)
+        /// </summary>
+        public async Task<object> GetQuizResultAsync(int quizId)
+        {
+            var quiz = await context.Quizzes
+                .Include(q => q.Exercises)
+                .FirstOrDefaultAsync(q => q.Id == quizId);
+
+            if (quiz == null)
+                return null;
+
+            // Basic mock result, you can change this based on your real app requirements
+            return new
+            {
+                QuizId = quiz.Id,
+                ExerciseCount = quiz.Exercises.Count
+            };
+        }
+        #endregion
+
+
+        #region Courses
+        public async Task<List<Course>> GetCoursesFromDbAsync()
+        {
+            return await context.Courses.ToListAsync();
+        }
+        
+        public async Task<Course> GetCourseByIdAsync(int id)
+        {
+            return await context.Courses.FindAsync(id);
+        }
+        
+        public async Task AddCourseAsync(Course course)
+        {
+            context.Courses.Add(course);
+            await context.SaveChangesAsync();
+        }
+        
+        public async Task UpdateCourseAsync(Course course)
+        {
+            context.Courses.Update(course);
+            await context.SaveChangesAsync();
+        }
+        
+        public async Task DeleteCourseAsync(int id)
+        {
+            var course = await context.Courses.FindAsync(id);
+            if (course != null)
+            {
+                context.Courses.Remove(course);
+                await context.SaveChangesAsync();
+            }
+        }
+
+
+        // ==================
+
+        public async Task EnrollUserInCourseAsync(int userId, int courseId)
+        {
+            var existing = await context.CourseCompletions
+                .FirstOrDefaultAsync(cc => cc.UserId == userId && cc.CourseId == courseId);
+
+            if (existing == null)
+            {
+                var newCompletion = new CourseCompletion
+                {
+                    UserId = userId,
+                    CourseId = courseId,
+                    CompletionRewardClaimed = false,
+                    TimedRewardClaimed = false,
+                    CompletedAt = DateTime.MinValue // not yet completed
+                };
+                context.CourseCompletions.Add(newCompletion);
+                await context.SaveChangesAsync();
+            }
+        }
+
+        public async Task<bool> IsUserEnrolledInCourseAsync(int userId, int courseId)
+        {
+            return await context.CourseCompletions
+                .AnyAsync(cc => cc.UserId == userId && cc.CourseId == courseId);
+        }
+
+        public async Task<bool> IsCourseCompletedAsync(int userId, int courseId)
+        {
+            var completion = await context.CourseCompletions
+                .FirstOrDefaultAsync(cc => cc.UserId == userId && cc.CourseId == courseId);
+
+            return completion != null && completion.CompletedAt != DateTime.MinValue;
+        }
+
+        public async Task UpdateTimeSpentAsync(int userId, int courseId, int timeInSeconds)
+        {
+            var user = await context.Users.FindAsync(userId);
+            if (user != null)
+            {
+                user.NumberOfCompletedSections += timeInSeconds;
+                await context.SaveChangesAsync();
+            }
+        }
+
+        public async Task ClaimCompletionRewardAsync(int userId, int courseId)
+        {
+            var completion = await context.CourseCompletions
+                .FirstOrDefaultAsync(cc => cc.UserId == userId && cc.CourseId == courseId);
+
+            if (completion != null && !completion.CompletionRewardClaimed)
+            {
+                completion.CompletionRewardClaimed = true;
+                await context.SaveChangesAsync();
+            }
+        }
+
+        public async Task ClaimTimeRewardAsync(int userId, int courseId)
+        {
+            var completion = await context.CourseCompletions
+                .FirstOrDefaultAsync(cc => cc.UserId == userId && cc.CourseId == courseId);
+
+            if (completion != null && !completion.TimedRewardClaimed)
+            {
+                completion.TimedRewardClaimed = true;
+                await context.SaveChangesAsync();
+            }
+        }
+
+        public async Task<int> GetTimeSpentAsync(int userId, int courseId)
+        {
+            var user = await context.Users.FindAsync(userId);
+            return user?.NumberOfCompletedSections ?? 0;
+        }
+
+        public async Task<int> GetCourseTimeLimitAsync(int courseId)
+        {
+            var course = await context.Courses.FindAsync(courseId);
+            return course?.TimeToComplete ?? 0;
+        }
+
+        public async Task<List<Course>> GetFilteredCoursesAsync(string searchText, bool filterPremium, bool filterFree, bool filterEnrolled, bool filterNotEnrolled, int userId)
+        {
+            var courses = context.Courses.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(searchText))
+            {
+                courses = courses.Where(c => c.Title.Contains(searchText, StringComparison.OrdinalIgnoreCase));
+            }
+
+            if (filterPremium && filterFree)
+            {
+                // No filter (show all)
+            }
+            else if (filterPremium)
+            {
+                courses = courses.Where(c => c.IsPremium);
+            }
+            else if (filterFree)
+            {
+                courses = courses.Where(c => !c.IsPremium);
+            }
+
+            if (filterEnrolled && filterNotEnrolled)
+            {
+                // No filter (show all)
+            }
+            else if (filterEnrolled)
+            {
+                // User is enrolled in the course
+                courses = courses.Where(c => context.CourseCompletions.Any(cc => cc.UserId == userId && cc.CourseId == c.CourseId));
+            }
+            else if (filterNotEnrolled)
+            {
+                // User is not enrolled in the course
+                courses = courses.Where(c => !context.CourseCompletions.Any(cc => cc.UserId == userId && cc.CourseId == c.CourseId));
+            }
+
+            return await courses.ToListAsync();
+        }
+
+
+
         #endregion
 
         #region Exams
@@ -179,20 +500,24 @@ namespace Duo.Api.Repositories
         {
             return await context.Exams.ToListAsync();
         }
+
         public async Task<Exam> GetExamByIdAsync(int id)
         {
             return await context.Exams.FindAsync(id);
         }
+
         public async Task AddExamAsync(Exam exam)
         {
             context.Exams.Add(exam);
             await context.SaveChangesAsync();
         }
+
         public async Task UpdateExamAsync(Exam exam)
         {
             context.Exams.Update(exam);
             await context.SaveChangesAsync();
         }
+
         public async Task DeleteExamAsync(int id)
         {
             var exam = await context.Exams.FindAsync(id);
@@ -201,6 +526,21 @@ namespace Duo.Api.Repositories
                 context.Exams.Remove(exam);
                 await context.SaveChangesAsync();
             }
+        }
+
+        public async Task<Exam?> GetExamFromSectionAsync(int sectionId)
+        {
+            return await context.Exams
+                .Include(e => e.Exercises)
+                .FirstOrDefaultAsync(e => e.SectionId == sectionId);
+        }
+
+        public async Task<List<Exam>> GetAvailableExamsAsync()
+        {
+            return await context.Exams
+                .Include(e => e.Exercises)
+                .Where(e => e.SectionId == null)
+                .ToListAsync();
         }
         #endregion
 
@@ -232,6 +572,68 @@ namespace Duo.Api.Repositories
                 await context.SaveChangesAsync();
             }
         }
+        #endregion
+
+        #region Coins
+
+        public async Task<int> GetUserCoinBalanceAsync(int userId)
+        {
+            var user = await context.Users.FindAsync(userId);
+            return user?.CoinBalance ?? 0;
+        }
+
+        public async Task<bool> TryDeductCoinsFromUserWalletAsync(int userId, int cost)
+        {
+            var user = await context.Users.FindAsync(userId);
+            if (user != null && user.CoinBalance >= cost)
+            {
+                user.CoinBalance -= cost;
+                await context.SaveChangesAsync();
+                return true;
+            }
+            return false;
+        }
+
+        public async Task AddCoinsToUserWalletAsync(int userId, int amount)
+        {
+            var user = await context.Users.FindAsync(userId);
+            if (user != null)
+            {
+                user.CoinBalance += amount;
+                await context.SaveChangesAsync();
+            }
+        }
+
+        public async Task<DateTime> GetUserLastLoginTimeAsync(int userId)
+        {
+            if (context == null)
+            {
+                throw new Exception("Database context is not initialized.");
+            }
+
+            // Ensure we're awaiting the database call asynchronously.
+            var user = await context.Users.FirstOrDefaultAsync(u => u.UserId == userId);
+
+            // If the user is not found, throw a custom exception.
+            if (user == null)
+            {
+                throw new Exception($"User with ID {userId} not found");
+            }
+
+            // If the user exists, return the LastLoginTime.
+            return user.LastLoginTime;
+        }
+
+        public async Task UpdateUserLastLoginTimeToNowAsync(int userId)
+        {
+            var user = await context.Users.FindAsync(userId);
+            if (user != null)
+            {
+                user.LastLoginTime = DateTime.Now;
+                await context.SaveChangesAsync();
+            }
+        }
+
         #endregion
     }
 }

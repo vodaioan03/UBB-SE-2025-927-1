@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using Duo.Models;
 
@@ -58,5 +59,5 @@ public interface IMainViewModel : IBaseViewModel
     /// <summary>
     /// Tries to award the user a daily login reward.
     /// </summary>
-    bool TryDailyLoginReward();
+    Task<bool> TryDailyLoginReward();
 }

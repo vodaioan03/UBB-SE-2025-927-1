@@ -4,6 +4,7 @@ using Duo.Api.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Duo.Api.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20250428131507_AddCourseCompletions")]
+    partial class AddCourseCompletions
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -215,23 +218,6 @@ namespace Duo.Api.Migrations
                     b.ToTable("Quizzes");
                 });
 
-            modelBuilder.Entity("Duo.Api.Models.Roadmaps.Roadmap", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Roadmaps");
-                });
-
             modelBuilder.Entity("Duo.Api.Models.Sections.Section", b =>
                 {
                     b.Property<int>("Id")
@@ -258,8 +244,6 @@ namespace Duo.Api.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("RoadmapId");
 
                     b.ToTable("Sections");
                 });
@@ -439,17 +423,6 @@ namespace Duo.Api.Migrations
                     b.Navigation("Section");
                 });
 
-            modelBuilder.Entity("Duo.Api.Models.Sections.Section", b =>
-                {
-                    b.HasOne("Duo.Api.Models.Roadmaps.Roadmap", "Roadmap")
-                        .WithMany("Sections")
-                        .HasForeignKey("RoadmapId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Roadmap");
-                });
-
             modelBuilder.Entity("ExamExercise", b =>
                 {
                     b.HasOne("Duo.Api.Models.Quizzes.Exam", null)
@@ -478,11 +451,6 @@ namespace Duo.Api.Migrations
                         .HasForeignKey("QuizzesId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("Duo.Api.Models.Roadmaps.Roadmap", b =>
-                {
-                    b.Navigation("Sections");
                 });
 
             modelBuilder.Entity("Duo.Api.Models.Sections.Section", b =>

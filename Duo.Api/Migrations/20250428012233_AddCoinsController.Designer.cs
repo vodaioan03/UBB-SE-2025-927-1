@@ -4,6 +4,7 @@ using Duo.Api.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Duo.Api.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20250428012233_AddCoinsController")]
+    partial class AddCoinsController
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,68 +24,6 @@ namespace Duo.Api.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
-
-            modelBuilder.Entity("Duo.Api.Models.Course", b =>
-                {
-                    b.Property<int>("CourseId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CourseId"));
-
-                    b.Property<int>("Cost")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Difficulty")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ImageUrl")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsPremium")
-                        .HasColumnType("bit");
-
-                    b.Property<int>("TimeToComplete")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("CourseId");
-
-                    b.ToTable("Courses");
-                });
-
-            modelBuilder.Entity("Duo.Api.Models.CourseCompletion", b =>
-                {
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("CourseId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("CompletedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("CompletionRewardClaimed")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("TimedRewardClaimed")
-                        .HasColumnType("bit");
-
-                    b.HasKey("UserId", "CourseId");
-
-                    b.HasIndex("CourseId");
-
-                    b.ToTable("CourseCompletions");
-                });
 
             modelBuilder.Entity("Duo.Api.Models.Exercises.Exercise", b =>
                 {
@@ -148,7 +89,7 @@ namespace Duo.Api.Migrations
                     b.Property<int>("Cost")
                         .HasColumnType("int");
 
-                    b.Property<int?>("CourseId")
+                    b.Property<int>("CourseId")
                         .HasColumnType("int");
 
                     b.Property<string>("Description")
@@ -215,23 +156,6 @@ namespace Duo.Api.Migrations
                     b.ToTable("Quizzes");
                 });
 
-            modelBuilder.Entity("Duo.Api.Models.Roadmaps.Roadmap", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Roadmaps");
-                });
-
             modelBuilder.Entity("Duo.Api.Models.Sections.Section", b =>
                 {
                     b.Property<int>("Id")
@@ -258,8 +182,6 @@ namespace Duo.Api.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("RoadmapId");
 
                     b.ToTable("Sections");
                 });
@@ -389,25 +311,6 @@ namespace Duo.Api.Migrations
                     b.HasDiscriminator().HasValue("Multiple Choice");
                 });
 
-            modelBuilder.Entity("Duo.Api.Models.CourseCompletion", b =>
-                {
-                    b.HasOne("Duo.Api.Models.Course", "Course")
-                        .WithMany()
-                        .HasForeignKey("CourseId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Duo.Api.Models.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Course");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("Duo.Api.Models.Exercises.MultipleChoiceAnswerModel", b =>
                 {
                     b.HasOne("Duo.Api.Models.Exercises.MultipleChoiceExercise", "Exercise")
@@ -439,17 +342,6 @@ namespace Duo.Api.Migrations
                     b.Navigation("Section");
                 });
 
-            modelBuilder.Entity("Duo.Api.Models.Sections.Section", b =>
-                {
-                    b.HasOne("Duo.Api.Models.Roadmaps.Roadmap", "Roadmap")
-                        .WithMany("Sections")
-                        .HasForeignKey("RoadmapId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Roadmap");
-                });
-
             modelBuilder.Entity("ExamExercise", b =>
                 {
                     b.HasOne("Duo.Api.Models.Quizzes.Exam", null)
@@ -478,11 +370,6 @@ namespace Duo.Api.Migrations
                         .HasForeignKey("QuizzesId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("Duo.Api.Models.Roadmaps.Roadmap", b =>
-                {
-                    b.Navigation("Sections");
                 });
 
             modelBuilder.Entity("Duo.Api.Models.Sections.Section", b =>
