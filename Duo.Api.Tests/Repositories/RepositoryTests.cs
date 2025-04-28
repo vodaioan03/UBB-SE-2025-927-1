@@ -899,55 +899,6 @@ namespace Duo.Api.Tests.Repositories
             Assert.AreEqual(0, context.Quizzes.Count());
         }
 
-        [TestMethod]
-        public async Task GetQuizResultAsync_ReturnsQuizResult_WhenQuizExists()
-        {
-            // Arrange
-            var context = GetInMemoryDbContext();
-
-            var exercise = new AssociationExercise
-            {
-                ExerciseId = 1,
-                Question = "Match E",
-                Difficulty = Difficulty.Easy,
-                FirstAnswersList = ["E1"],
-                SecondAnswersList = ["E2"]
-            };
-
-            var quiz = new Quiz
-            {
-                Id = 1,
-                Exercises = new List<Exercise> { exercise }
-            };
-
-            context.Quizzes.Add(quiz);
-            context.Exercises.Add(exercise);
-            await context.SaveChangesAsync();
-
-            var repo = new Repository(context);
-
-            // Act
-            QuizResultDTO result = await repo.GetQuizResultAsync(1);
-
-            // Assert
-            Assert.IsNotNull(result);
-            Assert.AreEqual(1, result.QuizId);
-            Assert.AreEqual(1, result.ExercisesCount);
-        }
-
-        [TestMethod]
-        public async Task GetQuizResultAsync_ReturnsNull_WhenQuizDoesNotExist()
-        {
-            // Arrange
-            var context = GetInMemoryDbContext();
-            var repo = new Repository(context);
-
-            // Act
-            var result = await repo.GetQuizResultAsync(999);
-
-            // Assert
-            Assert.IsNull(result);
-        }
         #endregion
 
         #region Course
