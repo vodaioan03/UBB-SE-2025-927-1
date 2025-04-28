@@ -4,6 +4,7 @@ using Duo.Api.Models.Quizzes;
 using Duo.Api.Models.Sections;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
+using Duo.Api.Models.Roadmaps;
 
 namespace Duo.Api.Persistence
 {
@@ -23,6 +24,8 @@ namespace Duo.Api.Persistence
         public DbSet<Section> Sections {get;set;}
 
         public DbSet<Exercise> Exercises { get; set; }
+
+        public DbSet<Roadmap> Roadmaps { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -106,6 +109,12 @@ namespace Duo.Api.Persistence
                 .HasForeignKey(c => c.ExerciseId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            // Roadmap -> Sections (one-to-many)
+            modelBuilder.Entity<Roadmap>()
+                .HasMany(r => r.Sections)
+                .WithOne(s => s.Roadmap)
+                .HasForeignKey(s => s.RoadmapId)
+                .OnDelete(DeleteBehavior.Cascade);
             // Course -> CourseCompleion (one-to-many)
             modelBuilder.Entity<CourseCompletion>()
                 .HasKey(cc => new { cc.UserId, cc.CourseId });

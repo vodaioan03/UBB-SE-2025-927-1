@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Duo.Api.Models.Quizzes;
 using Duo.Api.Models.Exercises;
+using Duo.Api.Models.Roadmaps;
 
 namespace Duo.Api.Models.Sections;
 
@@ -16,4 +17,5 @@ public class Section
     public ICollection<Quiz> Quizzes { get; set; }
 
     public Exam? Exam { get; set; }
+    public Roadmap Roadmap { get; internal set; }
 }
