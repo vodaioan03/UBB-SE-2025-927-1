@@ -1,21 +1,38 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace Duo.Api.Models.Exercises
 {
     /// <summary>
     /// Represents a flashcard exercise used for studying and memorization.
     /// This class allows defining a flashcard exercise with a question, answer, and time constraints.
     /// </summary>
+    [ExcludeFromCodeCoverage]
     public class FlashcardExercise : Exercise
     {
-        // Static, const, and readonly fields
+        #region Constants
 
         /// <summary>
-        /// Gets the type of the exercise.
+        /// Represents the type of the exercise as a constant string.
         /// </summary>
         public const string Type = "Flashcard";
 
-        // Fields and properties
+        #endregion
 
+        #region Fields
+
+        /// <summary>
+        /// Backing field for the <see cref="Answer"/> property.
+        /// </summary>
         private string? mAnswer;
+
+        /// <summary>
+        /// Backing field for the <see cref="ElapsedTime"/> property.
+        /// </summary>
+        private TimeSpan mElapsedTime;
+
+        #endregion
+
+        #region Properties
 
         /// <summary>
         /// Gets or sets the answer for the flashcard exercise.
@@ -25,8 +42,6 @@ namespace Duo.Api.Models.Exercises
             get => mAnswer!;
             set => mAnswer = value;
         }
-
-        private TimeSpan mElapsedTime;
 
         /// <summary>
         /// Gets or sets the elapsed time for the flashcard exercise.
@@ -47,7 +62,9 @@ namespace Duo.Api.Models.Exercises
         /// </summary>
         public int TimeInSeconds { get; }
 
-        // Constructors
+        #endregion
+
+        #region Constructors
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FlashcardExercise"/> class with the specified parameters.
@@ -73,7 +90,9 @@ namespace Duo.Api.Models.Exercises
         /// Initializes a new instance of the <see cref="FlashcardExercise"/> class.
         /// This parameterless constructor is required for Entity Framework.
         /// </summary>
-        public FlashcardExercise() { }
+        public FlashcardExercise()
+        {
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FlashcardExercise"/> class with additional parameters.
@@ -96,7 +115,9 @@ namespace Duo.Api.Models.Exercises
             TimeInSeconds = timeInSeconds;
         }
 
-        // Methods
+        #endregion
+
+        #region Methods
 
         /// <summary>
         /// Gets the correct answer for the flashcard exercise.
@@ -146,5 +167,7 @@ namespace Duo.Api.Models.Exercises
                 _ => 30
             };
         }
+
+        #endregion
     }
 }
