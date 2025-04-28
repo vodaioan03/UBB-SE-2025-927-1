@@ -10,41 +10,41 @@ namespace Duo.Services
 {
     public class ExerciseService : IExerciseService
     {
-        private readonly IExerciseRepository exerciseRepository;
+        private readonly IExerciseService exerciseServiceProxy;
 
-        public ExerciseService(IExerciseRepository exerciseRepository)
+        public ExerciseService(IExerciseService exerciseServiceProxy)
         {
-            this.exerciseRepository = exerciseRepository ?? throw new ArgumentNullException(nameof(exerciseRepository));
+            this.exerciseServiceProxy = exerciseServiceProxy ?? throw new ArgumentNullException(nameof(exerciseServiceProxy));
         }
 
         public async Task<List<Exercise>> GetAllExercises()
         {
-            return await exerciseRepository.GetAllExercisesAsync();
+            return await exerciseServiceProxy.GetAllExercises();
         }
 
         public async Task<Exercise> GetExerciseById(int exerciseId)
         {
-            return await exerciseRepository.GetByIdAsync(exerciseId);
+            return await exerciseServiceProxy.GetExerciseById(exerciseId);
         }
 
         public async Task<List<Exercise>> GetAllExercisesFromQuiz(int quizId)
         {
-            return await exerciseRepository.GetQuizExercisesAsync(quizId);
+            return await exerciseServiceProxy.GetAllExercisesFromQuiz(quizId);
         }
         public async Task<List<Exercise>> GetAllExercisesFromExam(int examId)
         {
-            return await exerciseRepository.GetExamExercisesAsync(examId);
+            return await exerciseServiceProxy.GetAllExercisesFromExam(examId);
         }
 
         public async Task DeleteExercise(int exerciseId)
         {
-            await exerciseRepository.DeleteExerciseAsync(exerciseId);
+            await exerciseServiceProxy.DeleteExercise(exerciseId);
         }
 
         public async Task CreateExercise(Exercise exercise)
         {
             ValidationHelper.ValidateGenericExercise(exercise);
-            await exerciseRepository.AddExerciseAsync(exercise);
+            await exerciseServiceProxy.CreateExercise(exercise);
         }
     }
 }
