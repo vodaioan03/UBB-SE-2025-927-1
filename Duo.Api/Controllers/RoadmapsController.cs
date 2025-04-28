@@ -42,6 +42,20 @@ namespace Duo.Api.Controllers
             return roadmap;
         }
 
+        // GET: api/Roadmaps?name=example
+        [HttpGet("search")]
+        public async Task<ActionResult<IEnumerable<Roadmap>>> GetRoadmapsByName(string name)
+        {
+            var roadmaps = await _context.Roadmaps
+                .Where(r => r.Name.Contains(name))
+                .ToListAsync();
+            if (roadmaps == null || !roadmaps.Any())
+            {
+                return NotFound();
+            }
+            return roadmaps;
+        }
+
         // PUT: api/Roadmaps/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
