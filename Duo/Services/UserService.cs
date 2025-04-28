@@ -4,69 +4,76 @@ using Duo.Data;
 using Duo.Models;
 using Duo.Repositories;
 
-namespace Duo.Services;
-
-public class UserService : IUserService
+namespace Duo.Services
 {
-    private readonly IUserRepository userRepository;
-
-    public UserService(IUserRepository userRepository)
+    public class UserService : IUserService
     {
-        this.userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
-    }
+        private readonly IUserRepository userRepository;
 
-    public async Task<User> GetByIdAsync(int userId)
-    {
-        if (userId <= 0)
+        public UserService(IUserRepository userRepository)
         {
-            throw new ArgumentException("User ID must be greater than 0.", nameof(userId));
+            this.userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
         }
 
-        return await userRepository.GetByIdAsync(userId);
-    }
-
-    public async Task<User> GetByUsernameAsync(string username)
-    {
-        if (string.IsNullOrWhiteSpace(username))
+        public async Task<User> GetByIdAsync(int userId)
         {
-            throw new ArgumentException("Username cannot be null or empty.", nameof(username));
+            if (userId <= 0)
+            {
+                throw new ArgumentException("User ID must be greater than 0.", nameof(userId));
+            }
+
+            return await userRepository.GetByIdAsync(userId);
         }
 
-        return await userRepository.GetByUsernameAsync(username);
-    }
-
-    public async Task<int> CreateUserAsync(User user)
-    {
-        if (user == null)
+        public async Task<User> GetByUsernameAsync(string username)
         {
-            throw new ArgumentNullException(nameof(user));
+            if (string.IsNullOrWhiteSpace(username))
+            {
+                throw new ArgumentException("Username cannot be null or empty.", nameof(username));
+            }
+
+            return await userRepository.GetByUsernameAsync(username);
         }
 
-        if (string.IsNullOrWhiteSpace(user.Username))
+        public async Task<int> CreateUserAsync(User user)
         {
-            throw new ArgumentException("Username cannot be null or empty.", nameof(user));
+            if (user == null)
+            {
+                throw new ArgumentNullException(nameof(user));
+            }
+
+            if (string.IsNullOrWhiteSpace(user.Username))
+            {
+                throw new ArgumentException("Username cannot be null or empty.", nameof(user));
+            }
+
+            return await userRepository.CreateUserAsync(user);
         }
 
-        return await userRepository.CreateUserAsync(user);
-    }
-
-    public async Task UpdateUserSectionProgressAsync(int userId, int newNrOfSectionsCompleted, int newNrOfQuizzesInSectionCompleted)
-    {
-        if (userId <= 0)
+        public async Task UpdateUserSectionProgressAsync(int userId, int newNrOfSectionsCompleted, int newNrOfQuizzesInSectionCompleted)
         {
-            throw new ArgumentException("User ID must be greater than 0.", nameof(userId));
+            if (userId <= 0)
+            {
+                throw new ArgumentException("User ID must be greater than 0.", nameof(userId));
+            }
+
+            await userRepository.UpdateUserProgressAsync(
+                userId,
+                newNrOfSectionsCompleted,
+                newNrOfQuizzesInSectionCompleted);
         }
 
-        await userRepository.UpdateUserProgressAsync(userId, newNrOfSectionsCompleted, newNrOfQuizzesInSectionCompleted);
-    }
-
-    public async Task IncrementUserProgressAsync(int userId)
-    {
-        if (userId <= 0)
+        public async Task IncrementUserProgressAsync(int userId)
         {
-            throw new ArgumentException("User ID must be greater than 0.", nameof(userId));
-        }
+            if (userId <= 0)
+            {
+                throw new ArgumentException("User ID must be greater than 0.", nameof(userId));
+            }
 
-        await userRepository.IncrementUserProgressAsync(userId);
+            var user = await GetByIdAsync(userId);
+            user.NumberOfCompletedQuizzesInSection++;
+
+            await userRepository.UpdateUserAsync(user);
+        }
     }
 }

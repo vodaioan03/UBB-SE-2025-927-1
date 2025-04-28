@@ -73,6 +73,10 @@ public class UserController : BaseController
             return Unauthorized("Invalid email.");
         }
 
+        // log in time
+        user.LastLoginTime = DateTime.UtcNow;
+        await this.repository.UpdateUserAsync(user);
+
         return Ok(user);
     }
 
