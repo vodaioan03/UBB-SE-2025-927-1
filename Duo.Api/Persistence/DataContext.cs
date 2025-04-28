@@ -1,37 +1,101 @@
-﻿using Duo.Api.Models;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
+using Duo.Api.Models;
 using Duo.Api.Models.Exercises;
 using Duo.Api.Models.Quizzes;
 using Duo.Api.Models.Sections;
 using Microsoft.EntityFrameworkCore;
-using System.Text.Json;
+
+#pragma warning disable IDE0079 // Remove unnecessary suppression
+#pragma warning disable SA1009 // Closing parenthesis should be spaced correctly
 
 namespace Duo.Api.Persistence
 {
-    public class DataContext : DbContext
+    /// <summary>
+    /// Represents the database context for the application.
+    /// This class is responsible for configuring the database schema and relationships.
+    /// </summary>
+    /// <remarks>
+    /// Initializes a new instance of the <see cref="DataContext"/> class with the specified options.
+    /// </remarks>
+    /// <param name="options">The options to configure the database context.</param>
+    [ExcludeFromCodeCoverage]
+    public class DataContext(DbContextOptions options) : DbContext(options)
     {
-        public DataContext(DbContextOptions options) : base(options) { }
+        #region DbSets
+
+        /// <summary>
+        /// Gets or sets the users in the database.
+        /// </summary>
         public DbSet<User> Users { get; set; }
+
+        /// <summary>
+        /// Gets or sets the tags in the database.
+        /// </summary>
         public DbSet<Tag> Tags { get; set; }
+
+        /// <summary>
+        /// Gets or sets the modules in the database.
+        /// </summary>
         public DbSet<Module> Modules { get; set; }
 
+        /// <summary>
+        /// Gets or sets the course completions in the database.
+        /// </summary>
         public DbSet<CourseCompletion> CourseCompletions { get; set; }
+
+        /// <summary>
+        /// Gets or sets the courses in the database.
+        /// </summary>
         public DbSet<Course> Courses { get; set; }
 
+        /// <summary>
+        /// Gets or sets the exams in the database.
+        /// </summary>
         public DbSet<Exam> Exams { get; set; }
-        public DbSet<Quiz> Quizzes { get; set; }
-        
-        public DbSet<Section> Sections {get;set;}
 
+        /// <summary>
+        /// Gets or sets the quizzes in the database.
+        /// </summary>
+        public DbSet<Quiz> Quizzes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the sections in the database.
+        /// </summary>
+        public DbSet<Section> Sections { get; set; }
+
+        /// <summary>
+        /// Gets or sets the exercises in the database.
+        /// </summary>
         public DbSet<Exercise> Exercises { get; set; }
 
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Configures the database schema and relationships.
+        /// </summary>
+        /// <param name="modelBuilder">The model builder used to configure the database schema.</param>
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-            // ================================
-            // Section and Quiz Relationships
-            // ================================
+            ConfigureSectionRelationships(modelBuilder);
+            ConfigureExerciseHierarchy(modelBuilder);
+            ConfigureExerciseSpecificProperties(modelBuilder);
+        }
 
+        #endregion
+
+        #region Private Methods
+
+        /// <summary>
+        /// Configures relationships between sections, quizzes, and exams.
+        /// </summary>
+        /// <param name="modelBuilder">The model builder used to configure relationships.</param>
+        private static void ConfigureSectionRelationships(ModelBuilder modelBuilder)
+        {
             // Section -> Quizzes (one-to-many)
             modelBuilder.Entity<Section>()
                 .HasMany(s => s.Quizzes)
@@ -57,12 +121,14 @@ namespace Duo.Api.Persistence
                 .HasMany(e => e.Exercises)
                 .WithMany(e => e.Exams)
                 .UsingEntity(j => j.ToTable("ExamExercises"));
+        }
 
-            // ================================
-            // Exercise Hierarchy and Configuration
-            // ================================
-
-            // Table-Per-Hierarchy (TPH) for Exercises
+        /// <summary>
+        /// Configures the table-per-hierarchy (TPH) inheritance for exercises.
+        /// </summary>
+        /// <param name="modelBuilder">The model builder used to configure inheritance.</param>
+        private static void ConfigureExerciseHierarchy(ModelBuilder modelBuilder)
+        {
             modelBuilder.Entity<Exercise>()
                 .HasDiscriminator<string>("ExerciseType")
                 .HasValue<AssociationExercise>("Association")
@@ -74,30 +140,33 @@ namespace Duo.Api.Persistence
             modelBuilder.Entity<Exercise>()
                 .HasIndex(e => e.Question)
                 .HasDatabaseName("IX_Exercise_Question");
+        }
 
-            // ================================
-            // Exercise Specific Properties
-            // ================================
-
+        /// <summary>
+        /// Configures specific properties for exercises, such as JSON serialization.
+        /// </summary>
+        /// <param name="modelBuilder">The model builder used to configure properties.</param>
+        private static void ConfigureExerciseSpecificProperties(ModelBuilder modelBuilder)
+        {
             // AssociationExercise -> FirstAnswersList and SecondAnswersList (stored as JSON)
             modelBuilder.Entity<AssociationExercise>()
                 .Property(a => a.FirstAnswersList)
                 .HasConversion(
                     v => JsonSerializer.Serialize(v, (JsonSerializerOptions)null!),
-                    v => JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions)null));
+                    v => JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions)null!)!);
 
             modelBuilder.Entity<AssociationExercise>()
                 .Property(a => a.SecondAnswersList)
                 .HasConversion(
                     v => JsonSerializer.Serialize(v, (JsonSerializerOptions)null!),
-                    v => JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions)null));
+                    v => JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions)null!)!);
 
             // FillInTheBlankExercise -> PossibleCorrectAnswers (stored as JSON)
             modelBuilder.Entity<FillInTheBlankExercise>()
                 .Property(a => a.PossibleCorrectAnswers)
                 .HasConversion(
                     v => JsonSerializer.Serialize(v, (JsonSerializerOptions)null!),
-                    v => JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions)null));
+                    v => JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions)null!)!);
 
             // MultipleChoiceExercise -> MultipleChoiceAnswerModel (real one-to-many)
             modelBuilder.Entity<MultipleChoiceExercise>()
@@ -106,9 +175,11 @@ namespace Duo.Api.Persistence
                 .HasForeignKey(c => c.ExerciseId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // Course -> CourseCompleion (one-to-many)
+            // Course -> CourseCompletion (one-to-many)
             modelBuilder.Entity<CourseCompletion>()
                 .HasKey(cc => new { cc.UserId, cc.CourseId });
         }
+
+        #endregion
     }
 }
