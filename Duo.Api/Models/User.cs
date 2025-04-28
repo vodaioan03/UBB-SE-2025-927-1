@@ -1,12 +1,17 @@
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Duo.Api.Models
 {
     /// <summary>
     /// Represents a user of the platform.
+    /// A user can complete sections, quizzes, and interact with various platform features.
     /// </summary>
+    [ExcludeFromCodeCoverage]
     public class User
     {
+        #region Fields and Properties
+
         /// <summary>
         /// Gets or sets the unique identifier of the user.
         /// </summary>
@@ -33,9 +38,19 @@ namespace Duo.Api.Models
         /// </summary>
         public string? Email { get; set; }
 
+        /// <summary>
+        /// Gets or sets the coin balance of the user.
+        /// </summary>
         public int CoinBalance { get; set; }
 
+        /// <summary>
+        /// Gets or sets the last login time of the user.
+        /// </summary>
         public DateTime LastLoginTime { get; set; }
+
+        #endregion
+
+        #region Constructors
 
         /// <summary>
         /// Initializes a new instance of the <see cref="User"/> class.
@@ -43,5 +58,20 @@ namespace Duo.Api.Models
         public User()
         {
         }
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Returns a string representation of the user, including their username and coin balance.
+        /// </summary>
+        /// <returns>A string describing the user.</returns>
+        public override string ToString()
+        {
+            return $"User: {Username}, Coin Balance: {CoinBalance}, Last Login: {LastLoginTime}";
+        }
+
+        #endregion
     }
 }
