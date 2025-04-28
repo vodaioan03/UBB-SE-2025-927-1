@@ -27,6 +27,9 @@ namespace Duo.Api.Persistence
 
         public DbSet<Roadmap> Roadmaps { get; set; }
 
+        public DbSet<UserProgress> UserProgresses { get; set; }
+
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -118,6 +121,22 @@ namespace Duo.Api.Persistence
             // Course -> CourseCompleion (one-to-many)
             modelBuilder.Entity<CourseCompletion>()
                 .HasKey(cc => new { cc.UserId, cc.CourseId });
+
+            modelBuilder.Entity<UserProgress>()
+            .HasKey(up => new { up.UserId, up.ModuleId }); 
+
+            modelBuilder.Entity<UserProgress>()
+                .HasOne(up => up.User)
+                .WithMany() 
+                .HasForeignKey(up => up.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<UserProgress>()
+                .HasOne(up => up.Module)
+                .WithMany() 
+                .HasForeignKey(up => up.ModuleId)
+                .OnDelete(DeleteBehavior.Cascade);
+
         }
     }
 }

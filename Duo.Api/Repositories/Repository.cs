@@ -108,46 +108,101 @@ namespace Duo.Api.Repositories
 
         public async Task OpenModuleAsync(int userId, int moduleId)
         {
-            var module = await context.Modules.FindAsync(moduleId);
+            var progress = await context.UserProgresses
+                .FirstOrDefaultAsync(up => up.UserId == userId && up.ModuleId == moduleId);
 
-            if (module == null)
+            if (progress == null)
             {
-                throw new Exception("Module not found");
+                var newProgress = new UserProgress
+                {
+                    UserId = userId,
+                    ModuleId = moduleId,
+                    Status = "not_completed",
+                    ImageClicked = false
+                };
+                context.UserProgresses.Add(newProgress);
+                await context.SaveChangesAsync();
             }
-
-            context.Modules.Update(module);
-            await context.SaveChangesAsync();
         }
 
         public async Task CompleteModuleAsync(int userId, int moduleId)
         {
-            await Task.CompletedTask;
+            var progress = await context.UserProgresses
+                .FirstOrDefaultAsync(up => up.UserId == userId && up.ModuleId == moduleId);
+
+            if (progress != null)
+            {
+                progress.Status = "completed";
+            }
+            else
+            {
+                var newProgress = new UserProgress
+                {
+                    UserId = userId,
+                    ModuleId = moduleId,
+                    Status = "completed",
+                    ImageClicked = false
+                };
+                context.UserProgresses.Add(newProgress);
+            }
+
+            await context.SaveChangesAsync();
         }
 
         public async Task<bool> IsModuleOpenAsync(int userId, int moduleId)
         {
-            return await Task.FromResult(true);
+            return await context.UserProgresses
+                .AnyAsync(up => up.UserId == userId && up.ModuleId == moduleId);
         }
 
         public async Task<bool> IsModuleCompletedAsync(int userId, int moduleId)
         {
-            return await Task.FromResult(false);
+            return await context.UserProgresses
+                .AnyAsync(up => up.UserId == userId && up.ModuleId == moduleId && up.Status == "completed");
         }
 
         public async Task<bool> IsModuleAvailableAsync(int userId, int moduleId)
         {
-            return await Task.FromResult(true);
+            var module = await context.Modules.FindAsync(moduleId);
+
+            if (module == null)
+                return false;
+
+            if (module.Position == 1 || module.IsBonus)
+                return true;
+
+            var previousModule = await context.Modules
+                .FirstOrDefaultAsync(m => m.CourseId == module.CourseId && m.Position == module.Position - 1);
+
+            if (previousModule == null)
+                return false;
+
+            return await context.UserProgresses
+                .AnyAsync(up => up.UserId == userId
+                                && up.ModuleId == previousModule.ModuleId
+                                && up.Status == "completed");
         }
 
         public async Task ClickModuleImageAsync(int userId, int moduleId)
         {
-            await Task.CompletedTask;
+            var progress = await context.UserProgresses
+                .FirstOrDefaultAsync(up => up.UserId == userId && up.ModuleId == moduleId);
+
+            if (progress != null)
+            {
+                progress.ImageClicked = true;
+                await context.SaveChangesAsync();
+            }
         }
 
         public async Task<bool> IsModuleImageClickedAsync(int userId, int moduleId)
         {
-            return await Task.FromResult(true);
+            var progress = await context.UserProgresses
+                .FirstOrDefaultAsync(up => up.UserId == userId && up.ModuleId == moduleId);
+
+            return progress?.ImageClicked ?? false;
         }
+
 
         #endregion
 
