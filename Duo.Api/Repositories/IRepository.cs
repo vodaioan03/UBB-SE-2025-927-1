@@ -1,3 +1,4 @@
+using Duo.Api.DTO;
 using Duo.Api.Models;
 using Duo.Api.Models.Exercises;
 using Duo.Api.Models.Quizzes;
@@ -293,7 +294,7 @@ namespace Duo.Api.Repositories
         /// </summary>
         /// <param name="quizId">The unique identifier of the quiz whose result is to be retrieved.</param>
         /// <returns>An object representing the quiz result, which can be customized as needed.</returns>
-        public Task<object?> GetQuizResultAsync(int quizId);
+        public Task<QuizResultDTO?> GetQuizResultAsync(int quizId);
 
         #endregion
 

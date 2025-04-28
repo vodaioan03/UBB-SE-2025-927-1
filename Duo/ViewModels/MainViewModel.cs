@@ -150,7 +150,7 @@ namespace Duo.ViewModels
         /// <summary>
         /// Initializes a new instance of the <see cref="MainViewModel"/> class.
         /// </summary>
-        public MainViewModel(ServiceProxy serviceProxy, ICourseService? courseService = null, ICoinsService? coinsService = null)
+        public MainViewModel(CoinsServiceProxy serviceProxy, ICourseService? courseService = null, ICoinsService? coinsService = null)
         {
             this.courseService = courseService ?? new CourseService();
             this.coinsService = coinsService ?? new CoinsService(serviceProxy);

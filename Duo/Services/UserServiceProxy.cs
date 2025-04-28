@@ -1,0 +1,93 @@
+using System;
+using System.Net.Http;
+using System.Net.Http.Json;
+using System.Threading.Tasks;
+using Duo.Models;
+
+namespace Duo.Services
+{
+    public class UserServiceProxy : IUserService
+    {
+        private readonly HttpClient _httpClient;
+        private const string BaseUrl = "api/user";
+
+        public UserServiceProxy(HttpClient httpClient)
+        {
+            _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
+        }
+
+        public async Task<User> GetByIdAsync(int userId)
+        {
+            if (userId <= 0)
+            {
+                throw new ArgumentException("User ID must be greater than 0.", nameof(userId));
+            }
+
+            return await _httpClient.GetFromJsonAsync<User>($"{BaseUrl}/{userId}");
+        }
+
+        public async Task<User> GetByUsernameAsync(string username)
+        {
+            if (string.IsNullOrWhiteSpace(username))
+            {
+                throw new ArgumentException("Username cannot be null or empty.", nameof(username));
+            }
+
+            var users = await _httpClient.GetFromJsonAsync<List<User>>(BaseUrl);
+            return users.Find(u => u.Username.Equals(username, StringComparison.OrdinalIgnoreCase));
+        }
+
+        public async Task<int> CreateUserAsync(User user)
+        {
+            if (user == null)
+            {
+                throw new ArgumentNullException(nameof(user));
+            }
+
+            var response = await _httpClient.PostAsJsonAsync($"{BaseUrl}/register", user);
+            response.EnsureSuccessStatusCode();
+
+            var createdUser = await response.Content.ReadFromJsonAsync<User>();
+            return createdUser.UserId;
+        }
+
+        public async Task UpdateUserSectionProgressAsync(int userId, int newNrOfSectionsCompleted, int newNrOfQuizzesInSectionCompleted)
+        {
+            if (userId <= 0)
+            {
+                throw new ArgumentException("User ID must be greater than 0.", nameof(userId));
+            }
+
+            var user = await GetByIdAsync(userId);
+            user.NumberOfCompletedSections = newNrOfSectionsCompleted;
+            user.NumberOfCompletedQuizzesInSection = newNrOfQuizzesInSectionCompleted;
+
+            await _httpClient.PutAsJsonAsync($"{BaseUrl}/update", user);
+        }
+
+        public async Task UpdateUserSectionProgressAsync(int userId, int newNrOfSectionsCompleted, int newNrOfQuizzesInSectionCompleted)
+        {
+            if (userId <= 0)
+            {
+                throw new ArgumentException("User ID must be greater than 0.", nameof(userId));
+            }
+            var user = await GetByIdAsync(userId);
+            user.NumberOfCompletedSections = newNrOfSectionsCompleted;
+            user.NumberOfCompletedQuizzesInSection = newNrOfQuizzesInSectionCompleted;
+            await _httpClient.PutAsJsonAsync($"{BaseUrl}/update", user);
+        }
+
+        public async Task IncrementUserProgressAsync(int userId)
+        {
+            if (userId <= 0)
+            {
+                throw new ArgumentException("User ID must be greater than 0.", nameof(userId));
+            }
+
+            var user = await GetByIdAsync(userId);
+            user.NumberOfCompletedQuizzesInSection++;
+
+            await _httpClient.PutAsJsonAsync($"{BaseUrl}/update", user);
+        }
+    }
+}

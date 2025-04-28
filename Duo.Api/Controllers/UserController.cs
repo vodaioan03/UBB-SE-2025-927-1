@@ -90,8 +90,12 @@ namespace Duo.Api.Controllers
                 return Unauthorized("Invalid email.");
             }
 
+            // Log in time
+            user.LastLoginTime = DateTime.UtcNow;
+            await this.repository.UpdateUserAsync(user);
+
             return Ok(user);
-        }
+    }
 
         /// <summary>
         /// Retrieves a user by their ID.

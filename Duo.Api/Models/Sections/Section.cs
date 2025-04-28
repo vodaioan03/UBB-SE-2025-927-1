@@ -1,5 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Duo.Api.Models.Quizzes;
+using Duo.Api.Models.Exercises;
+using Duo.Api.Models.Roadmaps;
 
 #pragma warning disable IDE0079 // Remove unnecessary suppression
 #pragma warning disable SA1010 // Opening square brackets should be spaced correctly
@@ -55,6 +57,8 @@ namespace Duo.Api.Models.Sections
         /// Gets or sets the exam associated with this section (optional).
         /// </summary>
         public Exam? Exam { get; set; }
+
+        public Roadmap? Roadmap { get; internal set; }
 
         #endregion
 

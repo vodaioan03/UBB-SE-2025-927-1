@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Duo.Api.Models.Exercises;
 using Duo.Api.Models.Quizzes;
 using Duo.Api.Models.Sections;
+using Duo.Api.DTO;
 
 namespace Duo.Api.Tests.Repositories
 {
@@ -425,6 +426,8 @@ namespace Duo.Api.Tests.Repositories
 
             // Act
             await repository.OpenModuleAsync(userId: 1, moduleId: 999);
+
+            // Expect exception
         }
         #endregion
 
@@ -660,6 +663,290 @@ namespace Duo.Api.Tests.Repositories
             // Assert
             var deletedQuiz = await context.Quizzes.FindAsync(1);
             Assert.IsNull(deletedQuiz);
+        }
+
+        [TestMethod]
+        public async Task GetAllQuizzesFromSectionAsync_ReturnsQuizzes_WhenQuizzesExist()
+        {
+            // Arrange
+            var context = GetInMemoryDbContext();
+            context.Quizzes.Add(new Quiz { Id = 1, SectionId = 5 });
+            context.Quizzes.Add(new Quiz { Id = 2, SectionId = 5 });
+            context.Quizzes.Add(new Quiz { Id = 3, SectionId = 6 });
+            await context.SaveChangesAsync();
+
+            var repo = new Repository(context);
+
+            // Act
+            var result = await repo.GetAllQuizzesFromSectionAsync(5);
+
+            // Assert
+            Assert.AreEqual(2, result.Count);
+        }
+
+        [TestMethod]
+        public async Task CountQuizzesFromSectionAsync_ReturnsCorrectCount()
+        {
+            // Arrange
+            var context = GetInMemoryDbContext();
+            context.Quizzes.Add(new Quiz { Id = 1, SectionId = 10 });
+            context.Quizzes.Add(new Quiz { Id = 2, SectionId = 10 });
+            await context.SaveChangesAsync();
+
+            var repo = new Repository(context);
+
+            // Act
+            var result = await repo.CountQuizzesFromSectionAsync(10);
+
+            // Assert
+            Assert.AreEqual(2, result);
+        }
+
+        [TestMethod]
+        public async Task CountQuizzesFromSectionAsync_ReturnsZero_WhenNoQuizzes()
+        {
+            // Arrange
+            var context = GetInMemoryDbContext();
+            var repo = new Repository(context);
+
+            // Act
+            var result = await repo.CountQuizzesFromSectionAsync(999);
+
+            // Assert
+            Assert.AreEqual(0, result);
+        }
+
+        [TestMethod]
+        public async Task GetLastOrderNumberFromSectionAsync_ReturnsHighestOrderNumber()
+        {
+            // Arrange
+            var context = GetInMemoryDbContext();
+            context.Quizzes.Add(new Quiz { Id = 1, SectionId = 20, OrderNumber = 2 });
+            context.Quizzes.Add(new Quiz { Id = 2, SectionId = 20, OrderNumber = 5 });
+            context.Quizzes.Add(new Quiz { Id = 3, SectionId = 20, OrderNumber = 3 });
+            await context.SaveChangesAsync();
+
+            var repo = new Repository(context);
+
+            // Act
+            var result = await repo.GetLastOrderNumberFromSectionAsync(20);
+
+            // Assert
+            Assert.AreEqual(5, result);
+        }
+
+        [TestMethod]
+        public async Task GetLastOrderNumberFromSectionAsync_ReturnsZero_WhenNoOrderNumbers()
+        {
+            // Arrange
+            var context = GetInMemoryDbContext();
+            context.Quizzes.Add(new Quiz { Id = 1, SectionId = 30 });
+            await context.SaveChangesAsync();
+
+            var repo = new Repository(context);
+
+            // Act
+            var result = await repo.GetLastOrderNumberFromSectionAsync(30);
+
+            // Assert
+            Assert.AreEqual(0, result);
+        }
+
+        [TestMethod]
+        public async Task AddExercisesToQuizAsync_AddsExercises_WhenQuizExists()
+        {
+            // Arrange
+            var context = GetInMemoryDbContext();
+
+            var quiz = new Quiz { Id = 1, Exercises = new List<Exercise>() };
+            var exercise1 = new AssociationExercise
+            {
+                ExerciseId = 1,
+                Question = "Match A",
+                Difficulty = Difficulty.Easy,
+                FirstAnswersList = ["A1"],
+                SecondAnswersList = ["A2"]
+            };
+            var exercise2 = new AssociationExercise
+            {
+                ExerciseId = 2,
+                Question = "Match B",
+                Difficulty = Difficulty.Normal,
+                FirstAnswersList = ["B1"],
+                SecondAnswersList = ["B2"]
+            };
+
+            context.Quizzes.Add(quiz);
+            context.Exercises.AddRange(exercise1, exercise2);
+            await context.SaveChangesAsync();
+
+            var repo = new Repository(context);
+
+            // Act
+            await repo.AddExercisesToQuizAsync(1, new List<int> { 1, 2 });
+
+            // Assert
+            var updatedQuiz = await context.Quizzes.Include(q => q.Exercises).FirstAsync(q => q.Id == 1);
+            Assert.AreEqual(2, updatedQuiz.Exercises.Count);
+        }
+
+        [TestMethod]
+        public async Task AddExercisesToQuizAsync_DoesNothing_WhenQuizNotFound()
+        {
+            // Arrange
+            var context = GetInMemoryDbContext();
+            var repo = new Repository(context);
+
+            // Act
+            await repo.AddExercisesToQuizAsync(99, new List<int> { 1, 2 }); // QuizId does not exist
+
+            // Assert
+            // No exception should occur and database remains empty
+            Assert.AreEqual(0, context.Quizzes.Count());
+        }
+
+        [TestMethod]
+        public async Task AddExerciseToQuizAsync_AddsSingleExercise()
+        {
+            // Arrange
+            var context = GetInMemoryDbContext();
+
+            var quiz = new Quiz { Id = 1, Exercises = new List<Exercise>() };
+            var exercise = new AssociationExercise
+            {
+                ExerciseId = 1,
+                Question = "Match C",
+                Difficulty = Difficulty.Easy,
+                FirstAnswersList = ["C1"],
+                SecondAnswersList = ["C2"]
+            };
+
+            context.Quizzes.Add(quiz);
+            context.Exercises.Add(exercise);
+            await context.SaveChangesAsync();
+
+            var repo = new Repository(context);
+
+            // Act
+            await repo.AddExerciseToQuizAsync(1, 1);
+
+            // Assert
+            var updatedQuiz = await context.Quizzes.Include(q => q.Exercises).FirstAsync(q => q.Id == 1);
+            Assert.AreEqual(1, updatedQuiz.Exercises.Count);
+        }
+
+        [TestMethod]
+        public async Task AddExerciseToQuizAsync_DoesNothing_WhenQuizOrExerciseNotFound()
+        {
+            // Arrange
+            var context = GetInMemoryDbContext();
+            var repo = new Repository(context);
+
+            // Act
+            await repo.AddExerciseToQuizAsync(999, 999); // Nonexistent quiz and exercise
+
+            // Assert
+            // Should not throw or modify database
+            Assert.AreEqual(0, context.Quizzes.Count());
+        }
+
+        [TestMethod]
+        public async Task RemoveExerciseFromQuizAsync_RemovesExercise_WhenExists()
+        {
+            // Arrange
+            var context = GetInMemoryDbContext();
+
+            var exercise = new AssociationExercise
+            {
+                ExerciseId = 1,
+                Question = "Match D",
+                Difficulty = Difficulty.Hard,
+                FirstAnswersList = ["D1"],
+                SecondAnswersList = ["D2"]
+            };
+
+            var quiz = new Quiz
+            {
+                Id = 1,
+                Exercises = new List<Exercise> { exercise }
+            };
+
+            context.Quizzes.Add(quiz);
+            context.Exercises.Add(exercise);
+            await context.SaveChangesAsync();
+
+            var repo = new Repository(context);
+
+            // Act
+            await repo.RemoveExerciseFromQuizAsync(1, 1);
+
+            // Assert
+            var updatedQuiz = await context.Quizzes.Include(q => q.Exercises).FirstAsync(q => q.Id == 1);
+            Assert.AreEqual(0, updatedQuiz.Exercises.Count);
+        }
+
+        [TestMethod]
+        public async Task RemoveExerciseFromQuizAsync_DoesNothing_WhenQuizOrExerciseNotFound()
+        {
+            // Arrange
+            var context = GetInMemoryDbContext();
+            var repo = new Repository(context);
+
+            // Act
+            await repo.RemoveExerciseFromQuizAsync(999, 999);
+
+            // Assert
+            Assert.AreEqual(0, context.Quizzes.Count());
+        }
+
+        [TestMethod]
+        public async Task GetQuizResultAsync_ReturnsQuizResult_WhenQuizExists()
+        {
+            // Arrange
+            var context = GetInMemoryDbContext();
+
+            var exercise = new AssociationExercise
+            {
+                ExerciseId = 1,
+                Question = "Match E",
+                Difficulty = Difficulty.Easy,
+                FirstAnswersList = ["E1"],
+                SecondAnswersList = ["E2"]
+            };
+
+            var quiz = new Quiz
+            {
+                Id = 1,
+                Exercises = new List<Exercise> { exercise }
+            };
+
+            context.Quizzes.Add(quiz);
+            context.Exercises.Add(exercise);
+            await context.SaveChangesAsync();
+
+            var repo = new Repository(context);
+
+            // Act
+            QuizResultDTO result = await repo.GetQuizResultAsync(1);
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(1, result.QuizId);
+            Assert.AreEqual(1, result.ExercisesCount);
+        }
+
+        [TestMethod]
+        public async Task GetQuizResultAsync_ReturnsNull_WhenQuizDoesNotExist()
+        {
+            // Arrange
+            var context = GetInMemoryDbContext();
+            var repo = new Repository(context);
+
+            // Act
+            var result = await repo.GetQuizResultAsync(999);
+
+            // Assert
+            Assert.IsNull(result);
         }
         #endregion
 
@@ -1577,6 +1864,128 @@ namespace Duo.Api.Tests.Repositories
 
             // Assert
             Assert.IsNull(deletedExam);
+        }
+
+        [TestMethod]
+        public async Task GetExamFromSectionAsync_ReturnsExam_WhenExamExistsForSection()
+        {
+            // Arrange
+            var context = GetInMemoryDbContext();
+
+            var exam = new Exam
+            {
+                Id = 1,
+                SectionId = 10,
+                Exercises = new List<Exercise>
+            {
+                new AssociationExercise
+                {
+                    ExerciseId = 1,
+                    Question = "Match countries with capitals",
+                    Difficulty = Difficulty.Easy,
+                    FirstAnswersList = new List<string> { "France", "Germany" },
+                    SecondAnswersList = new List<string> { "Paris", "Berlin" }
+                }
+            }
+            };
+
+            context.Exams.Add(exam);
+            await context.SaveChangesAsync();
+
+            var repository = new Repository(context);
+
+            // Act
+            var result = await repository.GetExamFromSectionAsync(10);
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(10, result.SectionId);
+            Assert.AreEqual(1, result.Exercises.Count);
+            Assert.IsInstanceOfType(result.Exercises.First(), typeof(AssociationExercise));
+        }
+
+        [TestMethod]
+        public async Task GetExamFromSectionAsync_ReturnsNull_WhenNoExamForSection()
+        {
+            // Arrange
+            var context = GetInMemoryDbContext();
+            var repository = new Repository(context);
+
+            // Act
+            var result = await repository.GetExamFromSectionAsync(99); // SectionId that doesn't exist
+
+            // Assert
+            Assert.IsNull(result);
+        }
+
+        [TestMethod]
+        public async Task GetAvailableExamsAsync_ReturnsExamsWithNullSectionId()
+        {
+            // Arrange
+            var context = GetInMemoryDbContext();
+
+            var availableExam = new Exam
+            {
+                Id = 1,
+                SectionId = null,
+                Exercises = new List<Exercise>
+            {
+                new AssociationExercise
+                {
+                    ExerciseId = 2,
+                    Question = "Match fruits with colors",
+                    Difficulty = Difficulty.Normal,
+                    FirstAnswersList = new List<string> { "Apple", "Banana" },
+                    SecondAnswersList = new List<string> { "Red", "Yellow" }
+                }
+            }
+            };
+
+            var unavailableExam = new Exam
+            {
+                Id = 2,
+                SectionId = 20,
+                Exercises = new List<Exercise>
+            {
+                new AssociationExercise
+                {
+                    ExerciseId = 3,
+                    Question = "Match animals with sounds",
+                    Difficulty = Difficulty.Hard,
+                    FirstAnswersList = new List<string> { "Dog", "Cat" },
+                    SecondAnswersList = new List<string> { "Bark", "Meow" }
+                }
+            }
+            };
+
+            context.Exams.AddRange(availableExam, unavailableExam);
+            await context.SaveChangesAsync();
+
+            var repository = new Repository(context);
+
+            // Act
+            var result = await repository.GetAvailableExamsAsync();
+
+            // Assert
+            Assert.AreEqual(1, result.Count);
+            Assert.IsNull(result.First().SectionId);
+            Assert.AreEqual(1, result.First().Exercises.Count);
+            Assert.IsInstanceOfType(result.First().Exercises.First(), typeof(AssociationExercise));
+        }
+
+        [TestMethod]
+        public async Task GetAvailableExamsAsync_ReturnsEmptyList_WhenNoAvailableExams()
+        {
+            // Arrange
+            var context = GetInMemoryDbContext();
+            var repository = new Repository(context);
+
+            // Act
+            var result = await repository.GetAvailableExamsAsync();
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(0, result.Count);
         }
         #endregion
 

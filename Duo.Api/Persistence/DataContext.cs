@@ -4,6 +4,7 @@ using Duo.Api.Models;
 using Duo.Api.Models.Exercises;
 using Duo.Api.Models.Quizzes;
 using Duo.Api.Models.Sections;
+using Duo.Api.Models.Roadmaps;
 using Microsoft.EntityFrameworkCore;
 
 #pragma warning disable IDE0079 // Remove unnecessary suppression
@@ -68,6 +69,10 @@ namespace Duo.Api.Persistence
         /// Gets or sets the exercises in the database.
         /// </summary>
         public DbSet<Exercise> Exercises { get; set; }
+
+        public DbSet<Roadmap> Roadmaps { get; set; }
+
+        public DbSet<UserProgress> UserProgresses { get; set; }
 
         #endregion
 
@@ -175,9 +180,30 @@ namespace Duo.Api.Persistence
                 .HasForeignKey(c => c.ExerciseId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // Course -> CourseCompletion (one-to-many)
+            // Roadmap -> Sections (one-to-many)
+            modelBuilder.Entity<Roadmap>()
+                .HasMany(r => r.Sections)
+                .WithOne(s => s.Roadmap)
+                .HasForeignKey(s => s.RoadmapId)
+                .OnDelete(DeleteBehavior.Cascade);
+            // Course -> CourseCompleion (one-to-many)
             modelBuilder.Entity<CourseCompletion>()
                 .HasKey(cc => new { cc.UserId, cc.CourseId });
+
+            modelBuilder.Entity<UserProgress>()
+            .HasKey(up => new { up.UserId, up.ModuleId });
+
+            modelBuilder.Entity<UserProgress>()
+                .HasOne(up => up.User)
+                .WithMany()
+                .HasForeignKey(up => up.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<UserProgress>()
+                .HasOne(up => up.Module)
+                .WithMany()
+                .HasForeignKey(up => up.ModuleId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
 
         #endregion

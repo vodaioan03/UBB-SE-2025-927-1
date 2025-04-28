@@ -10,36 +10,36 @@ namespace Duo.Services
 {
     public class RoadmapService : IRoadmapService
     {
-        private IRoadmapRepository roadmapRepository;
+        private RoadmapServiceProxy serviceProxy;
 
-        public RoadmapService(IRoadmapRepository roadmapRepository)
+        public RoadmapService(RoadmapServiceProxy serviceProxy)
         {
-            this.roadmapRepository = roadmapRepository;
+            this.serviceProxy = serviceProxy;
         }
 
-        public Task<List<Roadmap>> GetAllRoadmaps()
+        public async Task<List<Roadmap>> GetAllRoadmaps()
         {
-            return roadmapRepository.GetAllAsync();
+            return await serviceProxy.GetAllAsync();
         }
 
-        public Task<Roadmap> GetRoadmapById(int roadmapId)
+        public async Task<Roadmap> GetRoadmapById(int roadmapId)
         {
-            return roadmapRepository.GetByIdAsync(roadmapId);
+            return await serviceProxy.GetByIdAsync(roadmapId);
         }
 
-        public Task<Roadmap> GetByName(string roadmapName)
+        public async Task<Roadmap> GetByName(string roadmapName)
         {
-            return roadmapRepository.GetByNameAsync(roadmapName);
+            return await serviceProxy.GetByNameAsync(roadmapName);
         }
 
-        public Task<int> AddRoadmap(Roadmap roadmap)
+        public async Task<int> AddRoadmap(Roadmap roadmap)
         {
-            return roadmapRepository.AddAsync(roadmap);
+            return await serviceProxy.AddAsync(roadmap);
         }
 
-        public Task DeleteRoadmap(Roadmap roadmap)
+        public async Task DeleteRoadmap(Roadmap roadmap)
         {
-            return roadmapRepository.DeleteAsync(roadmap.Id);
+            await serviceProxy.DeleteAsync(roadmap.Id);
         }
     }
 }

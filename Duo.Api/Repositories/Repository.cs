@@ -1,3 +1,4 @@
+using Duo.Api.DTO;
 using Duo.Api.Models;
 using Duo.Api.Models.Exercises;
 using Duo.Api.Models.Quizzes;
@@ -229,6 +230,25 @@ namespace Duo.Api.Repositories
         /// <returns>A task that represents the asynchronous operation.</returns>
         public async Task CompleteModuleAsync(int userId, int moduleId)
         {
+            var progress = await context.UserProgresses
+                .FirstOrDefaultAsync(up => up.UserId == userId && up.ModuleId == moduleId);
+
+            if (progress != null)
+            {
+                progress.Status = "completed";
+            }
+            else
+            {
+                var newProgress = new UserProgress
+                {
+                    UserId = userId,
+                    ModuleId = moduleId,
+                    Status = "completed",
+                    ImageClicked = false
+                };
+                context.UserProgresses.Add(newProgress);
+            }
+
             await Task.CompletedTask;
         }
 
@@ -240,7 +260,8 @@ namespace Duo.Api.Repositories
         /// <returns>A boolean indicating whether the module is open for the user.</returns>
         public async Task<bool> IsModuleOpenAsync(int userId, int moduleId)
         {
-            return await Task.FromResult(true);
+            return await context.UserProgresses
+                .AnyAsync(up => up.UserId == userId && up.ModuleId == moduleId);
         }
 
         /// <summary>
@@ -251,7 +272,8 @@ namespace Duo.Api.Repositories
         /// <returns>A boolean indicating whether the module is completed by the user.</returns>
         public async Task<bool> IsModuleCompletedAsync(int userId, int moduleId)
         {
-            return await Task.FromResult(false);
+            return await context.UserProgresses
+                .AnyAsync(up => up.UserId == userId && up.ModuleId == moduleId && up.Status == "completed");
         }
 
         /// <summary>
@@ -262,7 +284,30 @@ namespace Duo.Api.Repositories
         /// <returns>A boolean indicating whether the module is available to the user.</returns>
         public async Task<bool> IsModuleAvailableAsync(int userId, int moduleId)
         {
-            return await Task.FromResult(true);
+            var module = await context.Modules.FindAsync(moduleId);
+
+            if (module == null)
+            {
+                return false;
+            }
+
+            if (module.Position == 1 || module.IsBonus)
+            {
+                return true;
+            }
+
+            var previousModule = await context.Modules
+                .FirstOrDefaultAsync(m => m.CourseId == module.CourseId && m.Position == module.Position - 1);
+
+            if (previousModule == null)
+            {
+                return false;
+            }
+
+            return await context.UserProgresses
+                .AnyAsync(up => up.UserId == userId
+                                && up.ModuleId == previousModule.ModuleId
+                                && up.Status == "completed");
         }
 
         /// <summary>
@@ -273,7 +318,14 @@ namespace Duo.Api.Repositories
         /// <returns>A task that represents the asynchronous operation.</returns>
         public async Task ClickModuleImageAsync(int userId, int moduleId)
         {
-            await Task.CompletedTask;
+            var progress = await context.UserProgresses
+                .FirstOrDefaultAsync(up => up.UserId == userId && up.ModuleId == moduleId);
+
+            if (progress != null)
+            {
+                progress.ImageClicked = true;
+                await context.SaveChangesAsync();
+            }
         }
 
         /// <summary>
@@ -284,7 +336,10 @@ namespace Duo.Api.Repositories
         /// <returns>A boolean indicating whether the module image has been clicked by the user.</returns>
         public async Task<bool> IsModuleImageClickedAsync(int userId, int moduleId)
         {
-            return await Task.FromResult(true);
+            var progress = await context.UserProgresses
+                .FirstOrDefaultAsync(up => up.UserId == userId && up.ModuleId == moduleId);
+
+            return progress?.ImageClicked ?? false;
         }
 
         #endregion
@@ -525,7 +580,7 @@ namespace Duo.Api.Repositories
         /// </summary>
         /// <param name="quizId">The unique identifier of the quiz.</param>
         /// <returns>An object containing the quiz ID and the count of exercises, or <c>null</c> if the quiz does not exist.</returns>
-        public async Task<object?> GetQuizResultAsync(int quizId)
+        public async Task<QuizResultDTO?> GetQuizResultAsync(int quizId)
         {
             var quiz = await context.Quizzes
                 .Include(q => q.Exercises)
@@ -536,11 +591,10 @@ namespace Duo.Api.Repositories
                 return null;
             }
 
-            return new
-            {
-                QuizId = quiz.Id,
-                ExerciseCount = quiz.Exercises.Count
-            };
+            // Basic mock result
+            return new QuizResultDTO(
+                quiz.Id,
+                quiz.Exercises.Count);
         }
 
         #endregion

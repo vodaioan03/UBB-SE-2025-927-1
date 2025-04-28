@@ -1,50 +1,41 @@
-using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Duo.Models;
 
 namespace Duo.Services
 {
     /// <summary>
-    /// Interface for course-related operations
+    /// Interface for course-related operations.
     /// </summary>
     public interface ICourseService
     {
-        // Course operations
-        List<Course> GetCourses();
-        List<Course> GetFilteredCourses(string searchText, bool filterPremium, bool filterFree,
-                                      bool filterEnrolled, bool filterNotEnrolled, List<int> selectedTagIds);
+        Task<List<Course>> GetCoursesAsync();
+        Task<List<Course>> GetFilteredCoursesAsync(string searchText, bool filterPremium, bool filterFree,
+                                      bool filterEnrolled, bool filterNotEnrolled, List<int> selectedTagIds, int userId);
+        Task<List<Module>> GetModulesAsync(int courseId);
+        Task<List<Module>> GetNormalModulesAsync(int courseId);
+        Task OpenModuleAsync(int userId, int moduleId);
+        Task CompleteModuleAsync(int userId, int moduleId, int courseId);
+        Task<bool> IsModuleAvailableAsync(int userId, int moduleId);
+        Task<bool> IsModuleCompletedAsync(int userId, int moduleId);
+        Task<bool> IsModuleInProgressAsync(int userId, int moduleId);
+        Task<bool> ClickModuleImageAsync(int userId, int moduleId);
 
-        // Module operations
-        List<Module> GetModules(int courseId);
-        List<Module> GetNormalModules(int courseId);
-        void OpenModule(int moduleId);
-        void CompleteModule(int moduleId, int courseId);
-        bool IsModuleAvailable(int moduleId);
-        bool IsModuleCompleted(int moduleId);
-        bool IsModuleInProgress(int moduleId);
-        bool ClickModuleImage(int moduleId);
-        bool BuyBonusModule(int moduleId, int courseId);
+        Task<bool> IsUserEnrolledAsync(int userId, int courseId);
+        Task<bool> EnrollInCourseAsync(int userId, int courseId);
 
-        // Enrollment operations
-        bool IsUserEnrolled(int courseId);
-        bool EnrollInCourse(int courseId);
+        Task UpdateTimeSpentAsync(int userId, int courseId, int seconds);
+        Task<int> GetTimeSpentAsync(int userId, int courseId);
 
-        // Progress tracking
-        void UpdateTimeSpent(int courseId, int seconds);
-        int GetTimeSpent(int courseId);
+        Task<bool> IsCourseCompletedAsync(int userId, int courseId);
+        Task<int> GetCompletedModulesCountAsync(int userId, int courseId);
+        Task<int> GetRequiredModulesCountAsync(int courseId);
 
-        // Completion tracking
-        bool IsCourseCompleted(int courseId);
-        int GetCompletedModulesCount(int courseId);
-        int GetRequiredModulesCount(int courseId);
+        Task<bool> ClaimCompletionRewardAsync(int userId, int courseId);
+        Task<bool> ClaimTimedRewardAsync(int userId, int courseId, int timeSpent);
+        Task<int> GetCourseTimeLimitAsync(int courseId);
 
-        // Reward operations
-        bool ClaimCompletionReward(int courseId);
-        bool ClaimTimedReward(int courseId, int timeSpent);
-        int GetCourseTimeLimit(int courseId);
-
-        // Tag operations
-        List<Tag> GetTags();
-        List<Tag> GetCourseTags(int courseId);
+        Task<List<Tag>> GetTagsAsync();
+        Task<List<Tag>> GetCourseTagsAsync(int courseId);
     }
 }

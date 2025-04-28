@@ -5,7 +5,7 @@ using Duo.Api.Models.Sections;
 #pragma warning disable IDE0079 // Remove unnecessary suppression
 #pragma warning disable SA1010 // Opening square brackets should be spaced correctly
 
-namespace Duo.Api.Models.Roadmap
+namespace Duo.Api.Models.Roadmaps
 {
     /// <summary>
     /// Represents a roadmap consisting of multiple sections.

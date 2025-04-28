@@ -25,7 +25,7 @@ namespace Duo.Views
             HttpClient httpClient = new HttpClient();
 
             // Create an instance of ServiceProxy
-            var serviceProxy = new ServiceProxy(httpClient);
+            var serviceProxy = new CoinsServiceProxy(httpClient);
 
             // Create a CourseService instance (you can replace with your existing service)
             var courseService = new CourseService();
