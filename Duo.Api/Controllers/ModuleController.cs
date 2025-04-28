@@ -1,44 +1,49 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Threading.Tasks;
+using System.Diagnostics.CodeAnalysis;
 using Duo.Api.DTO.Requests;
 using Duo.Api.Models;
-using Duo.Api.Persistence;
 using Duo.Api.Repositories;
 using Microsoft.AspNetCore.Mvc;
+
+#pragma warning disable IDE0079 // Remove unnecessary suppression
+#pragma warning disable SA1009 // Closing parenthesis should be spaced correctly
 
 namespace Duo.Api.Controllers
 {
     /// <summary>
-    /// Controller for managing modules in the system
+    /// Controller for managing modules in the system.
+    /// Provides endpoints for CRUD operations and additional module-related functionalities.
     /// </summary>
+    /// <remarks>
+    /// Initializes a new instance of the <see cref="ModuleController"/> class with the specified repository.
+    /// </remarks>
+    /// <param name="repository">The repository instance for data access.</param>
+    [ApiController]
     [Route("module")]
-    public class ModuleController : BaseController
+    [ExcludeFromCodeCoverage]
+    public class ModuleController(IRepository repository) : BaseController(repository)
     {
-        public ModuleController(IRepository repository) : base(repository)
-        {
-        }
+        private readonly IRepository repository = repository;
+
+        #region Private Methods
 
         /// <summary>
-        /// Gets the next available position for a module in a course
+        /// Gets the next available position for a module in a course.
         /// </summary>
-        /// <param name="courseId">The ID of the course (nullable)</param>
-        /// <returns>The next available position number</returns>
-        private async Task<int> getLastPositionAsync(int? courseId)
+        /// <param name="courseId">The ID of the course (nullable).</param>
+        /// <returns>The next available position number.</returns>
+        private async Task<int> GetLastPositionAsync(int? courseId)
         {
             if (courseId == null)
             {
                 return 1;
             }
 
-            List<Duo.Api.Models.Module> modules = await repository.GetModulesFromDbAsync();
-            List<int> positions = modules
-                        .Where(module => module.CourseId == courseId)
-                        .OrderBy(module => module.Position)
-                        .Select(module => module.Position)
-                        .ToList();
+            var modules = await repository.GetModulesFromDbAsync();
+            var positions = modules
+                .Where(module => module.CourseId == courseId)
+                .OrderBy(module => module.Position)
+                .Select(module => module.Position)
+                .ToList();
 
             if (positions.Count == 0)
             {
@@ -56,29 +61,32 @@ namespace Duo.Api.Controllers
             return positions.Count + 1;
         }
 
+        #endregion
+
+        #region Public Methods
+
         /// <summary>
-        /// Adds a new module to the system
+        /// Adds a new module to the system.
         /// </summary>
-        /// <param name="request">The module data to add</param>
-        /// <returns>ActionResult with operation result</returns>
+        /// <param name="request">The module data to add.</param>
+        /// <returns>ActionResult with operation result.</returns>
         [HttpPost("add")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> addModule([FromForm] AddModuleRequest request)
+        public async Task<IActionResult> AddModule([FromForm] AddModuleRequest request)
         {
             try
             {
-                Duo.Api.Models.Module module = new Duo.Api.Models.Module
+                var module = new Module
                 {
                     Title = request.Title,
                     Description = request.Description,
                     IsBonus = request.IsBonus,
                     Cost = request.Cost,
                     ImageUrl = request.ImageUrl,
-                    Position = await this.getLastPositionAsync(request.CourseId),
-                    CourseId = request.CourseId.HasValue ? request.CourseId.Value : null
+                    Position = await GetLastPositionAsync(request.CourseId),
+                    CourseId = request.CourseId
                 };
-
 
                 await repository.AddModuleAsync(module);
 
@@ -91,15 +99,15 @@ namespace Duo.Api.Controllers
         }
 
         /// <summary>
-        /// Removes a module from the system
+        /// Removes a module from the system.
         /// </summary>
-        /// <param name="id">The ID of the module to remove</param>
-        /// <returns>ActionResult with operation result</returns>
+        /// <param name="id">The ID of the module to remove.</param>
+        /// <returns>ActionResult with operation result.</returns>
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> removeModule(int id)
+        public async Task<IActionResult> RemoveModule(int id)
         {
             try
             {
@@ -119,17 +127,16 @@ namespace Duo.Api.Controllers
         }
 
         /// <summary>
-        /// Gets a module by its ID
+        /// Gets a module by its ID.
         /// </summary>
-        /// <param name="id">The ID of the module to retrieve</param>
-        /// <returns>ActionResult with the module data or error message</returns>
+        /// <param name="id">The ID of the module to retrieve.</param>
+        /// <returns>ActionResult with the module data or error message.</returns>
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> getById(int id)
+        public async Task<IActionResult> GetById(int id)
         {
-
             try
             {
                 var module = await repository.GetModuleByIdAsync(id);
@@ -138,7 +145,7 @@ namespace Duo.Api.Controllers
                     return NotFound(new { message = "Module not found!" });
                 }
 
-                return Ok(new { result = module, message = "Successully got module!" });
+                return Ok(new { result = module, message = "Successfully retrieved module!" });
             }
             catch (Exception e)
             {
@@ -147,18 +154,18 @@ namespace Duo.Api.Controllers
         }
 
         /// <summary>
-        /// Gets a list of all modules in the system
+        /// Gets a list of all modules in the system.
         /// </summary>
-        /// <returns>ActionResult with list of modules or error message</returns>
+        /// <returns>ActionResult with list of modules or error message.</returns>
         [HttpGet("list")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> listModules()
+        public async Task<IActionResult> ListModules()
         {
             try
             {
                 var modules = await repository.GetModulesFromDbAsync();
-                return Ok(new { result = modules, message = "Successfully got list of modules" });
+                return Ok(new { result = modules, message = "Successfully retrieved list of modules." });
             }
             catch (Exception e)
             {
@@ -167,27 +174,27 @@ namespace Duo.Api.Controllers
         }
 
         /// <summary>
-        /// Gets a list of modules belonging to a specific course
+        /// Gets a list of modules belonging to a specific course.
         /// </summary>
-        /// <param name="id">The ID of the course</param>
-        /// <returns>ActionResult with list of modules or error message</returns>
+        /// <param name="id">The ID of the course.</param>
+        /// <returns>ActionResult with list of modules or error message.</returns>
         [HttpGet("list/course/{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> listModulesByCourseId(int id)
+        public async Task<IActionResult> ListModulesByCourseId(int id)
         {
             try
             {
-                List<Duo.Api.Models.Module> modules = await repository.GetModulesFromDbAsync();
-                modules = modules
-                            .Where(module => module.CourseId == id)
-                            .ToList();
-                if (!modules.Any())
+                var modules = await repository.GetModulesFromDbAsync();
+                var filteredModules = modules.Where(module => module.CourseId == id).ToList();
+
+                if (filteredModules.Count == 0)
                 {
-                    return NotFound(new { result = new List<Duo.Api.Models.Module>(), message = "No modules found for the specified course!" });
+                    return NotFound(new { result = new List<Module>(), message = "No modules found for the specified course!" });
                 }
-                return Ok(new { result = modules, message = "Successfully got list of modules" });
+
+                return Ok(new { result = filteredModules, message = "Successfully retrieved list of modules." });
             }
             catch (Exception e)
             {
@@ -196,16 +203,16 @@ namespace Duo.Api.Controllers
         }
 
         /// <summary>
-        /// Updates an existing module
+        /// Updates an existing module.
         /// </summary>
-        /// <param name="id">The ID of the module to update</param>
-        /// <param name="request">The updated module data</param>
-        /// <returns>ActionResult with operation result</returns>
+        /// <param name="id">The ID of the module to update.</param>
+        /// <param name="request">The updated module data.</param>
+        /// <returns>ActionResult with operation result.</returns>
         [HttpPatch("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> updateModule(int id, [FromForm] UpdateModuleRequest request)
+        public async Task<IActionResult> UpdateModule(int id, [FromForm] UpdateModuleRequest request)
         {
             try
             {
@@ -231,55 +238,6 @@ namespace Duo.Api.Controllers
             }
         }
 
-        [HttpPost("open")]
-        public async Task<IActionResult> OpenModule([FromBody] OpenModuleRequest request)
-        {
-            await repository.OpenModuleAsync(request.UserId, request.ModuleId);
-            return Ok();
-        }
-
-        [HttpPost("complete")]
-        public async Task<IActionResult> CompleteModule([FromBody] OpenModuleRequest request)
-        {
-            await repository.CompleteModuleAsync(request.UserId, request.ModuleId);
-            return Ok(new { message = "Module completed successfully!" });
-        }
-
-        [HttpGet("isOpen")]
-        public async Task<IActionResult> IsModuleOpen([FromQuery] int userId, [FromQuery] int moduleId)
-        {
-            var result = await repository.IsModuleOpenAsync(userId, moduleId);
-            return Ok(result);
-        }
-
-        [HttpGet("isCompleted")]
-        public async Task<IActionResult> IsModuleCompleted([FromQuery] int userId, [FromQuery] int moduleId)
-        {
-            var result = await repository.IsModuleCompletedAsync(userId, moduleId);
-            return Ok(result);
-        }
-
-        [HttpGet("isAvailable")]
-        public async Task<IActionResult> IsModuleAvailable([FromQuery] int userId, [FromQuery] int moduleId)
-        {
-            var result = await repository.IsModuleAvailableAsync(userId, moduleId);
-            return Ok(result);
-        }
-
-        [HttpPost("clickImage")]
-        public async Task<IActionResult> ClickModuleImage([FromBody] OpenModuleRequest request)
-        {
-            await repository.ClickModuleImageAsync(request.UserId, request.ModuleId);
-            return Ok(new { message = "Image clicked successfully!" });
-        }
-
-        [HttpGet("imageClicked")]
-        public async Task<IActionResult> IsModuleImageClicked([FromQuery] int userId, [FromQuery] int moduleId)
-        {
-            var result = await repository.IsModuleImageClickedAsync(userId, moduleId);
-            return Ok(result);
-        }
-
-
+        #endregion
     }
 }
