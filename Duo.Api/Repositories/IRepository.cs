@@ -89,6 +89,7 @@ namespace Duo.Api.Repositories
         Task AddCoinsToUserWalletAsync(int userId, int amount);
         Task<DateTime> GetUserLastLoginTimeAsync(int userId);
         Task UpdateUserLastLoginTimeToNowAsync(int userId);
+        Task OpenModuleAsync(int userId, int moduleId);
         #endregion
     }
 }
