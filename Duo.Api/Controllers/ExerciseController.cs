@@ -1,67 +1,41 @@
-using Duo.Api.Models;
+using System.Diagnostics.CodeAnalysis;
 using Duo.Api.Models.Exercises;
 using Duo.Api.Repositories;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Data.SqlClient;
+
+#pragma warning disable IDE0079 // Remove unnecessary suppression
+#pragma warning disable SA1009 // Closing parenthesis should be spaced correctly
+#pragma warning disable SA1010 // Opening square brackets should be spaced correctly
 
 namespace Duo.Api.Controllers
 {
+    /// <summary>
+    /// Provides endpoints for managing exercises, including CRUD operations and retrieval by quiz or exam.
+    /// </summary>
+    /// <remarks>
+    /// Initializes a new instance of the <see cref="ExerciseController"/> class with the specified repository.
+    /// </remarks>
+    /// <param name="repository">The repository instance for data access.</param>
     [ApiController]
     [Route("api/[controller]")]
-    public class ExerciseController : ControllerBase
+    [ExcludeFromCodeCoverage]
+    public class ExerciseController(IRepository repository) : BaseController(repository)
     {
-        private readonly IRepository repository;
+        #region Fields
 
-        public ExerciseController(IRepository repository)
-        {
-            this.repository = repository;
-        }
+        /// <summary>
+        /// The repository instance used for data access.
+        /// </summary>
+        private readonly IRepository repository = repository;
 
-        private List<Exercise> MergeExercises(List<Exercise> exercises)
-        {
-            var mergedExercises = new List<Exercise>();
-            var exerciseMap = new Dictionary<int, Exercise>();
+        #endregion
 
-            foreach (var exercise in exercises)
-            {
-                if (!exerciseMap.TryGetValue(exercise.ExerciseId, out var existingExercise))
-                {
-                    exerciseMap[exercise.ExerciseId] = exercise switch
-                    {
-                        MultipleChoiceExercise mc => new MultipleChoiceExercise(mc.ExerciseId, mc.Question, mc.Difficulty, new List<MultipleChoiceAnswerModel>(mc.Choices)),
-                        FillInTheBlankExercise fb => new FillInTheBlankExercise(fb.ExerciseId, fb.Question, fb.Difficulty, new List<string>(fb.PossibleCorrectAnswers)),
-                        AssociationExercise assoc => new AssociationExercise(assoc.ExerciseId, assoc.Question, assoc.Difficulty, new List<string>(assoc.FirstAnswersList), new List<string>(assoc.SecondAnswersList)),
-                        FlashcardExercise flash => new FlashcardExercise(flash.ExerciseId, flash.Question, flash.Answer, flash.Difficulty),
-                        _ => exercise
-                    };
-                }
-                else
-                {
-                    // Merge the data
-                    switch (existingExercise)
-                    {
-                        case MultipleChoiceExercise existingMC when exercise is MultipleChoiceExercise newMC:
-                            newMC.Choices.RemoveAll(c => c.IsCorrect);
-                            existingMC.Choices.AddRange(newMC.Choices);
-                            break;
+        #region Methods
 
-                        case FillInTheBlankExercise existingFB when exercise is FillInTheBlankExercise newFB:
-                            existingFB.PossibleCorrectAnswers.AddRange(newFB.PossibleCorrectAnswers);
-                            break;
-
-                        case AssociationExercise existingAssoc when exercise is AssociationExercise newAssoc:
-                            existingAssoc.FirstAnswersList.AddRange(newAssoc.FirstAnswersList);
-                            existingAssoc.SecondAnswersList.AddRange(newAssoc.SecondAnswersList);
-                            break;
-                    }
-                }
-            }
-
-            mergedExercises.AddRange(exerciseMap.Values);
-
-            return mergedExercises;
-        }
-
+        /// <summary>
+        /// Retrieves all exercises from the database.
+        /// </summary>
+        /// <returns>A list of all exercises.</returns>
         [HttpGet]
         public async Task<ActionResult<List<Exercise>>> GetAllExercisesAsync()
         {
@@ -77,6 +51,11 @@ namespace Duo.Api.Controllers
             }
         }
 
+        /// <summary>
+        /// Retrieves an exercise by its ID.
+        /// </summary>
+        /// <param name="id">The ID of the exercise to retrieve.</param>
+        /// <returns>The exercise if found; otherwise, NotFound.</returns>
         [HttpGet("{id}")]
         public async Task<ActionResult<Exercise>> GetByIdAsync(int id)
         {
@@ -88,7 +67,7 @@ namespace Duo.Api.Controllers
             try
             {
                 var exercise = await repository.GetExerciseByIdAsync(id);
-                List<Exercise> exercises = [exercise];
+                var exercises = new List<Exercise> { exercise };
                 var mergedExercises = MergeExercises(exercises);
 
                 if (mergedExercises == null || mergedExercises.Count == 0)
@@ -104,6 +83,11 @@ namespace Duo.Api.Controllers
             }
         }
 
+        /// <summary>
+        /// Retrieves all exercises associated with a specific quiz.
+        /// </summary>
+        /// <param name="quizId">The ID of the quiz.</param>
+        /// <returns>A list of exercises associated with the quiz.</returns>
         [HttpGet("quiz/{quizId}")]
         public async Task<ActionResult<List<Exercise>>> GetQuizExercises(int quizId)
         {
@@ -118,10 +102,15 @@ namespace Duo.Api.Controllers
                 return NotFound();
             }
 
-            var exercises = quiz.Exercises?.ToList() ?? new List<Exercise>();
+            var exercises = quiz.Exercises?.ToList() ?? [];
             return Ok(exercises);
         }
 
+        /// <summary>
+        /// Retrieves all exercises associated with a specific exam.
+        /// </summary>
+        /// <param name="examId">The ID of the exam.</param>
+        /// <returns>A list of exercises associated with the exam.</returns>
         [HttpGet("exam/{examId}")]
         public async Task<ActionResult<List<Exercise>>> GetExamExercises(int examId)
         {
@@ -136,10 +125,15 @@ namespace Duo.Api.Controllers
                 return NotFound();
             }
 
-            var exercises = exam.Exercises?.ToList() ?? new List<Exercise>();
+            var exercises = exam.Exercises?.ToList() ?? [];
             return Ok(exercises);
         }
 
+        /// <summary>
+        /// Adds a new exercise to the database.
+        /// </summary>
+        /// <param name="exercise">The exercise to add.</param>
+        /// <returns>The created exercise.</returns>
         [HttpPost]
         public async Task<ActionResult> AddExercise([FromBody] Exercise exercise)
         {
@@ -152,6 +146,11 @@ namespace Duo.Api.Controllers
             return CreatedAtAction(nameof(GetByIdAsync), new { id = exercise.ExerciseId }, exercise);
         }
 
+        /// <summary>
+        /// Deletes an exercise by its ID.
+        /// </summary>
+        /// <param name="id">The ID of the exercise to delete.</param>
+        /// <returns>NoContent if deleted; otherwise, NotFound.</returns>
         [HttpDelete("{id}")]
         public async Task<ActionResult> DeleteExercise(int id)
         {
@@ -169,5 +168,57 @@ namespace Duo.Api.Controllers
             await repository.DeleteExerciseAsync(id);
             return NoContent();
         }
+
+        /// <summary>
+        /// Merges duplicate exercises into a single instance.
+        /// </summary>
+        /// <param name="exercises">The list of exercises to merge.</param>
+        /// <returns>A list of merged exercises.</returns>
+        private static List<Exercise> MergeExercises(List<Exercise> exercises)
+        {
+            var mergedExercises = new List<Exercise>();
+            var exerciseMap = new Dictionary<int, Exercise>();
+
+            foreach (var exercise in exercises)
+            {
+                if (!exerciseMap.TryGetValue(exercise.ExerciseId, out var existingExercise))
+                {
+                    exerciseMap[exercise.ExerciseId] = exercise switch
+                    {
+                        MultipleChoiceExercise mc => new MultipleChoiceExercise(mc.ExerciseId, mc.Question!, mc.Difficulty, [.. mc.Choices!]),
+                        FillInTheBlankExercise fb => new FillInTheBlankExercise(fb.ExerciseId, fb.Question!, fb.Difficulty, [.. fb.PossibleCorrectAnswers!]),
+                        AssociationExercise assoc => new AssociationExercise(assoc.ExerciseId, assoc.Question!, assoc.Difficulty, [.. assoc.FirstAnswersList], [.. assoc.SecondAnswersList]),
+                        FlashcardExercise flash => new FlashcardExercise(flash.ExerciseId, flash.Question!, flash.Answer, flash.Difficulty),
+                        _ => exercise
+                    };
+                }
+                else
+                {
+                    // Merge the data
+                    switch (existingExercise)
+                    {
+                        case MultipleChoiceExercise existingMC when exercise is MultipleChoiceExercise newMC:
+                            newMC.Choices!.RemoveAll(c => c.IsCorrect);
+                            existingMC.Choices!.AddRange(newMC.Choices);
+                            break;
+
+                        case FillInTheBlankExercise existingFB when exercise is FillInTheBlankExercise newFB:
+                            existingFB.PossibleCorrectAnswers!.AddRange(newFB.PossibleCorrectAnswers!);
+                            break;
+
+                        case AssociationExercise existingAssoc when exercise is AssociationExercise newAssoc:
+                            existingAssoc.FirstAnswersList.AddRange(newAssoc.FirstAnswersList);
+                            existingAssoc.SecondAnswersList.AddRange(newAssoc.SecondAnswersList);
+                            break;
+                    }
+                }
+            }
+
+            mergedExercises.AddRange(exerciseMap.Values);
+
+            return mergedExercises;
+        }
+
+        #endregion
     }
 }
