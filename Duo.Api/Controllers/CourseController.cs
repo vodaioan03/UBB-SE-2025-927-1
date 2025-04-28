@@ -121,7 +121,7 @@ namespace Duo.Api.Controllers
             return Ok(isCompleted);
         }
 
-        [HttpGet("get-filtered")]
+        
         /// <summary>
         /// Filters courses based on search text, type, enrollment status, and tags.
         /// </summary>
@@ -132,6 +132,7 @@ namespace Duo.Api.Controllers
         /// <param name="filterNotEnrolled">Whether to filter not enrolled courses.</param>
         /// <param name="selectedTagIds">The list of selected tag IDs to filter by.</param>
         /// <returns>A filtered list of courses.</returns>
+        [HttpGet("get-filtered")]
         public async Task<IActionResult> GetFilteredCourses(
         [FromQuery] string searchText,
         [FromQuery] bool filterPremium,
