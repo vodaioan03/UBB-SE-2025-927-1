@@ -20,14 +20,14 @@ namespace Duo.Api.Controllers
 
         private async Task<int> GetLastOrderNumberAsync(int roadmapId)
         {
-            List<Section> sections = await repository.GetSectionsFromDbAsync();
-            List<int> orderNumbers = sections
+            var sections = await repository.GetSectionsFromDbAsync();
+            var orderNumbers = sections
                         .Where(section => section.RoadmapId == roadmapId)
                         .OrderBy(section => section.OrderNumber)
                         .Select(section => section.OrderNumber ?? 0)
                         .ToList();
 
-            if (orderNumbers.Count == 0)
+            if (!orderNumbers.Any())
             {
                 return 1;
             }
@@ -57,11 +57,9 @@ namespace Duo.Api.Controllers
                     Description = request.Description,
                     RoadmapId = request.RoadmapId,
                     OrderNumber = request.OrderNumber ?? await this.GetLastOrderNumberAsync(request.RoadmapId)
-                    // Quizzes and Exam are left as null
                 };
 
                 await repository.AddSectionAsync(section);
-
                 return Ok(new { message = "Section added successfully!" });
             }
             catch (Exception e)
@@ -139,7 +137,7 @@ namespace Duo.Api.Controllers
         {
             try
             {
-                List<Section> sections = await repository.GetSectionsFromDbAsync();
+                var sections = await repository.GetSectionsFromDbAsync();
                 sections = sections
                             .Where(section => section.RoadmapId == roadmapId)
                             .ToList();
@@ -183,5 +181,60 @@ namespace Duo.Api.Controllers
                 return BadRequest(new { message = e.Message });
             }
         }
+
+        [HttpGet("by-roadmap")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetSectionsByRoadmap([FromQuery] int roadmapId)
+        {
+            try
+            {
+                var sections = await repository.GetSectionsFromDbAsync();
+                var filtered = sections.Where(s => s.RoadmapId == roadmapId).ToList();
+                return Ok(new { result = filtered, message = "Successfully got sections by roadmap" });
+            }
+            catch (Exception e)
+            {
+                return BadRequest(new { message = e.Message });
+            }
+        }
+
+        [HttpGet("count-on-roadmap")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetSectionCountOnRoadmap([FromQuery] int roadmapId)
+        {
+            try
+            {
+                var sections = await repository.GetSectionsFromDbAsync();
+                var count = sections.Count(s => s.RoadmapId == roadmapId);
+                return Ok(new { result = count, message = "Successfully counted sections" });
+            }
+            catch (Exception e)
+            {
+                return BadRequest(new { message = e.Message });
+            }
+        }
+
+        [HttpGet("last-from-roadmap")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetLastOrderNumberFromRoadmap([FromQuery] int roadmapId)
+        {
+            try
+            {
+                var sections = await repository.GetSectionsFromDbAsync();
+                var sectionsInRoadmap = sections.Where(s => s.RoadmapId == roadmapId);
+                var lastOrderNumber = sectionsInRoadmap.Any()
+                    ? sectionsInRoadmap.Max(s => s.OrderNumber)
+                    : 0;
+                return Ok(new { result = lastOrderNumber, message = "Successfully got last order number" });
+            }
+            catch (Exception e)
+            {
+                return BadRequest(new { message = e.Message });
+            }
+        }
+
     }
 }
