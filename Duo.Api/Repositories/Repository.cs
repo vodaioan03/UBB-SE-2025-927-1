@@ -353,20 +353,24 @@ namespace Duo.Api.Repositories
         {
             return await context.Exams.ToListAsync();
         }
+
         public async Task<Exam> GetExamByIdAsync(int id)
         {
             return await context.Exams.FindAsync(id);
         }
+
         public async Task AddExamAsync(Exam exam)
         {
             context.Exams.Add(exam);
             await context.SaveChangesAsync();
         }
+
         public async Task UpdateExamAsync(Exam exam)
         {
             context.Exams.Update(exam);
             await context.SaveChangesAsync();
         }
+
         public async Task DeleteExamAsync(int id)
         {
             var exam = await context.Exams.FindAsync(id);
@@ -375,6 +379,21 @@ namespace Duo.Api.Repositories
                 context.Exams.Remove(exam);
                 await context.SaveChangesAsync();
             }
+        }
+
+        public async Task<Exam?> GetExamFromSectionAsync(int sectionId)
+        {
+            return await context.Exams
+                .Include(e => e.Exercises)
+                .FirstOrDefaultAsync(e => e.SectionId == sectionId);
+        }
+
+        public async Task<List<Exam>> GetAvailableExamsAsync()
+        {
+            return await context.Exams
+                .Include(e => e.Exercises)
+                .Where(e => e.SectionId == null)
+                .ToListAsync();
         }
         #endregion
 
