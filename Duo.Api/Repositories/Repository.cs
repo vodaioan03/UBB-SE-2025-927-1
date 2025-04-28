@@ -195,6 +195,19 @@ namespace Duo.Api.Repositories
         {
             return await context.Quizzes.Include(q => q.Exercises).FirstOrDefaultAsync(q => q.Id == id);
         }
+        public async Task SaveQuizSubmissionAsync(QuizSubmissionEntity submission)
+        {
+            context.QuizSubmissions.Add(submission);
+            await context.SaveChangesAsync();
+        }
+
+        public async Task<QuizSubmissionEntity?> GetSubmissionByQuizIdAsync(int quizId)
+        {
+            return await context.QuizSubmissions
+                .Include(q => q.Answers)
+                .FirstOrDefaultAsync(q => q.QuizId == quizId);
+        }
+
 
         public async Task AddQuizAsync(Quiz quiz)
         {

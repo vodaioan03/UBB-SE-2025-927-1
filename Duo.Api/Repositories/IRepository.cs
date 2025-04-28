@@ -59,6 +59,9 @@ namespace Duo.Api.Repositories
         Task AddExerciseToQuizAsync(int quizId, int exerciseId);
         Task RemoveExerciseFromQuizAsync(int quizId, int exerciseId);
         Task<QuizResultDTO> GetQuizResultAsync(int quizId);
+        Task SaveQuizSubmissionAsync(QuizSubmissionEntity submission);
+        Task<QuizSubmissionEntity?> GetSubmissionByQuizIdAsync(int quizId);
+
         #endregion
 
         #region Courses
