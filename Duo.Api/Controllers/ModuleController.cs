@@ -230,5 +230,13 @@ namespace Duo.Api.Controllers
                 return BadRequest(new { message = e.Message });
             }
         }
+
+        [HttpPost("open")]
+        public async Task<IActionResult> OpenModule([FromBody] OpenModuleRequest request)
+        {
+            await repository.OpenModuleAsync(request.UserId, request.ModuleId);
+            return Ok();
+        }
+
     }
 }
