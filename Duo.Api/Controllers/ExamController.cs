@@ -1,18 +1,31 @@
-using Microsoft.AspNetCore.Mvc;
+using System.Diagnostics.CodeAnalysis;
 using Duo.Api.Models.Quizzes;
-using Duo.Api.Persistence;
 using Duo.Api.Repositories;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+
+#pragma warning disable IDE0079 // Remove unnecessary suppression
+#pragma warning disable SA1009 // Closing parenthesis should be spaced correctly
 
 namespace Duo.Api.Controllers
 {
+    /// <summary>
+    /// Provides endpoints for managing exams, including CRUD operations and additional functionalities.
+    /// </summary>
+    /// <remarks>
+    /// Initializes a new instance of the <see cref="ExamController"/> class with the specified repository.
+    /// </remarks>
+    /// <remarks>
+    /// Initializes a new instance of the <see cref="ExamController"/> class.
+    /// </remarks>
+    /// <param name="repository">The repository instance for data access.</param>
     [ApiController]
     [Route("exam")]
-    public class ExamController : BaseController
+    [ExcludeFromCodeCoverage]
+    public class ExamController(IRepository repository) : BaseController(repository)
     {
-        public ExamController(IRepository repository) : base(repository)
-        {
-        }
+        private readonly IRepository repository = repository;
+
+        #region Methods
 
         /// <summary>
         /// Adds a new exam to the database.
@@ -36,7 +49,10 @@ namespace Duo.Api.Controllers
         {
             var exam = await repository.GetExamByIdAsync(id);
             if (exam == null)
+            {
                 return NotFound();
+            }
+
             return Ok(exam);
         }
 
@@ -61,7 +77,10 @@ namespace Duo.Api.Controllers
         {
             var exam = await repository.GetExamByIdAsync(updatedExam.Id);
             if (exam == null)
+            {
                 return NotFound();
+            }
+
             await repository.UpdateExamAsync(updatedExam);
             return Ok(updatedExam);
         }
@@ -76,7 +95,10 @@ namespace Duo.Api.Controllers
         {
             var exam = await repository.GetExamByIdAsync(id);
             if (exam == null)
+            {
                 return NotFound();
+            }
+
             await repository.DeleteExamAsync(id);
             return Ok();
         }
@@ -91,7 +113,10 @@ namespace Duo.Api.Controllers
         {
             var exam = await repository.GetExamFromSectionAsync(sectionId);
             if (exam == null)
+            {
                 return NotFound();
+            }
+
             return Ok(exam);
         }
 
@@ -105,5 +130,7 @@ namespace Duo.Api.Controllers
             var exams = await repository.GetAvailableExamsAsync();
             return Ok(exams);
         }
+
+        #endregion
     }
 }
