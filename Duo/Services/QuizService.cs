@@ -1,140 +1,126 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Net.Http;
-using System.Net.Http.Json;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Duo.Models.Exercises;
 using Duo.Models.Quizzes;
 using Duo.Models.Quizzes.API;
-using Duo.Repositories;
 
 namespace Duo.Services
 {
     public class QuizService : IQuizService
     {
-        private readonly IQuizRepository quizRepository;
-        private readonly IExamRepository examRepository;
-        private readonly HttpClient httpClient;
+        private readonly QuizServiceProxy serviceProxy;
 
-        public QuizService(IQuizRepository quizRepository, IExamRepository examRepository, HttpClient httpClient)
+        public QuizService(QuizServiceProxy serviceProxy)
         {
-            this.quizRepository = quizRepository;
-            this.examRepository = examRepository;
-            this.httpClient = httpClient;
+            this.serviceProxy = serviceProxy;
         }
 
         public async Task<List<Quiz>> Get()
         {
-            return await quizRepository.GetAllAsync();
+            return await serviceProxy.GetAsync();
         }
 
         public async Task<List<Exam>> GetAllAvailableExams()
         {
-            return (List<Exam>)await examRepository.GetUnassignedAsync();
+            return await serviceProxy.GetAllAvailableExamsAsync();
         }
 
         public async Task<Quiz> GetQuizById(int quizId)
         {
-            return await quizRepository.GetByIdAsync(quizId);
+            return await serviceProxy.GetQuizByIdAsync(quizId);
         }
 
         public async Task<Exam> GetExamById(int examId)
         {
-            return await examRepository.GetByIdAsync(examId);
+            return await serviceProxy.GetExamByIdAsync(examId);
         }
 
         public async Task<List<Quiz>> GetAllQuizzesFromSection(int sectionId)
         {
-            return await quizRepository.GetBySectionIdAsync(sectionId);
+            return await serviceProxy.GetAllQuizzesFromSectionAsync(sectionId);
         }
 
         public async Task<int> CountQuizzesFromSection(int sectionId)
         {
-            return await quizRepository.CountBySectionIdAsync(sectionId);
+            return await serviceProxy.CountQuizzesFromSectionAsync(sectionId);
         }
 
         public async Task<int> LastOrderNumberFromSection(int sectionId)
         {
-            return await quizRepository.LastOrderNumberBySectionIdAsync(sectionId);
+            return await serviceProxy.LastOrderNumberFromSectionAsync(sectionId);
         }
 
         public async Task<Exam?> GetExamFromSection(int sectionId)
         {
-            return await examRepository.GetBySectionIdAsync(sectionId);
+            return await serviceProxy.GetExamFromSectionAsync(sectionId);
         }
 
         public async Task DeleteQuiz(int quizId)
         {
-            await quizRepository.DeleteAsync(quizId);
+            await serviceProxy.DeleteQuizAsync(quizId);
         }
 
         public async Task UpdateQuiz(Quiz quiz)
         {
-            ValidationHelper.ValidateQuiz(quiz);
-            await quizRepository.UpdateAsync(quiz);
+            await serviceProxy.UpdateQuizAsync(quiz);
         }
 
-        public Task<int> CreateQuiz(Quiz quiz)
+        public async Task<int> CreateQuiz(Quiz quiz)
         {
-            ValidationHelper.ValidateQuiz(quiz);
-            return quizRepository.AddAsync(quiz);
+            await serviceProxy.CreateQuizAsync(quiz);
+            return quiz.Id;
         }
 
         public async Task AddExercisesToQuiz(int quizId, List<Exercise> exercises)
         {
-            foreach (Exercise exercise in exercises)
+            var exerciseIds = new List<int>();
+            foreach (var exercise in exercises)
             {
-                await quizRepository.AddExerciseToQuiz(quizId, exercise.Id);
+                exerciseIds.Add(exercise.Id);
             }
+            await serviceProxy.AddExercisesToQuizAsync(quizId, exerciseIds);
         }
 
-        public Task AddExerciseToQuiz(int quizId, int exerciseId)
+        public async Task AddExerciseToQuiz(int quizId, int exerciseId)
         {
-            return quizRepository.AddExerciseToQuiz(quizId, exerciseId);
+            await serviceProxy.AddExerciseToQuizAsync(quizId, exerciseId);
         }
 
-        public Task RemoveExerciseFromQuiz(int quizId, int exerciseId)
+        public async Task RemoveExerciseFromQuiz(int quizId, int exerciseId)
         {
-            return quizRepository.RemoveExerciseFromQuiz(quizId, exerciseId);
+            await serviceProxy.RemoveExerciseFromQuizAsync(quizId, exerciseId);
         }
 
         public async Task DeleteExam(int examId)
         {
-            await examRepository.DeleteAsync(examId);
+            await serviceProxy.DeleteExamAsync(examId);
         }
 
         public async Task UpdateExam(Exam exam)
         {
-            ValidationHelper.ValidateExam(exam);
-            await examRepository.UpdateAsync(exam);
+            await serviceProxy.UpdateExamAsync(exam);
         }
 
-        public Task<int> CreateExam(Exam exam)
+        public async Task<int> CreateExam(Exam exam)
         {
-            ValidationHelper.ValidateExam(exam);
-            return examRepository.AddAsync(exam);
+            await serviceProxy.CreateExamAsync(exam);
+            return exam.Id;
         }
 
         public async Task<QuizModel> FetchQuizAsync(int quizId)
         {
-            var response = await httpClient.GetAsync($"api/quizzes/{quizId}");
-            response.EnsureSuccessStatusCode();
-            var quiz = await response.Content.ReadFromJsonAsync<QuizModel>();
-            return quiz!;
+            var model = await httpClient.GetFromJsonAsync<QuizModel>($"quiz/fetch?id={quizId}");
+            return model!;
         }
 
         public async Task SubmitQuizAsync(QuizSubmission submission)
         {
-            var response = await httpClient.PostAsJsonAsync("api/quizzes/submit", submission);
-            response.EnsureSuccessStatusCode();
+            await serviceProxy.SubmitQuizAsync(submission);
         }
 
         public async Task<QuizResult> GetResultAsync(int quizId)
         {
-            var response = await httpClient.GetAsync($"api/quizzes/{quizId}/result");
-            response.EnsureSuccessStatusCode();
-            var result = await response.Content.ReadFromJsonAsync<QuizResult>();
-            return result!;
+            return await serviceProxy.GetResultAsync(quizId);
         }
     }
 }
