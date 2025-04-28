@@ -17,6 +17,8 @@ namespace Duo.Api.Persistence
 
         public DbSet<CourseCompletion> CourseCompletions { get; set; }
         public DbSet<Course> Courses { get; set; }
+        public DbSet<QuizSubmissionEntity> QuizSubmissions { get; set; }
+        public DbSet<AnswerSubmissionEntity> AnswerSubmissions { get; set; }
 
         public DbSet<Exam> Exams { get; set; }
         public DbSet<Quiz> Quizzes { get; set; }
