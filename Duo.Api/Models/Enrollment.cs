@@ -1,6 +1,5 @@
-﻿using System;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Duo.Api.Models
 {
@@ -10,6 +9,8 @@ namespace Duo.Api.Models
     [ExcludeFromCodeCoverage]
     public class Enrollment
     {
+        #region Fields and Properties
+
         /// <summary>
         /// Gets or sets the unique identifier of the enrolled user.
         /// </summary>
@@ -36,5 +37,42 @@ namespace Duo.Api.Models
         /// Gets or sets a value indicating whether the course has been completed by the user.
         /// </summary>
         public bool IsCompleted { get; set; }
+
+        /// <summary>
+        /// Navigation property to the related user.
+        /// </summary>
+        public User User { get; set; } = null!;
+
+        /// <summary>
+        /// Navigation property to the related course.
+        /// </summary>
+        public Course Course { get; set; } = null!;
+
+        #endregion
+
+        #region Constructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Enrollment"/> class.
+        /// </summary>
+        public Enrollment()
+        {
+        }
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Returns a string representation of the enrollment, including the user ID, course ID, and enrollment status.
+        /// </summary>
+        /// <returns>A string describing the enrollment.</returns>
+        public override string ToString()
+        {
+            return $"User ID: {UserId}, Course ID: {CourseId}, Enrolled At: {EnrolledAt}, " +
+                   $"Time Spent: {TimeSpent} seconds, Completed: {IsCompleted}";
+        }
+
+        #endregion
     }
 }
