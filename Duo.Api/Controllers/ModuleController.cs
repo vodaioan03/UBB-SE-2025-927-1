@@ -17,9 +17,8 @@ namespace Duo.Api.Controllers
     [Route("module")]
     public class ModuleController : BaseController
     {
-        public ModuleController(DataContext dataContext, IRepository repository) : base(dataContext, repository)
+        public ModuleController(IRepository repository) : base(repository)
         {
-
         }
 
         /// <summary>

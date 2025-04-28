@@ -10,11 +10,8 @@ namespace Duo.Api.Controllers
     [Route("quiz")]
     public class QuizController : BaseController
     {
-        private readonly IRepository repository;
-
-        public QuizController(DataContext dataContext, IRepository repository) : base(dataContext)
+        public QuizController(IRepository repository) : base(repository)
         {
-            this.repository = repository;
         }
 
         /// <summary>

@@ -14,7 +14,7 @@ namespace Duo.Api.Controllers
     [Route("section")]
     public class SectionController : BaseController
     {
-        public SectionController(DataContext dataContext, IRepository repository) : base(dataContext, repository)
+        public SectionController(IRepository repository) : base(repository)
         {
         }
 

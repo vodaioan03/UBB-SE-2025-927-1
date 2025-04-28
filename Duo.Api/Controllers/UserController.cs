@@ -11,17 +11,13 @@ using System.Threading.Tasks;
 [Route("[controller]")]
 public class UserController : BaseController
 {
-    private readonly IRepository repository;
-
     /// <summary>
     /// Initializes a new instance of the UserController class.
     /// </summary>
     /// <param name="repository"></param>
     /// <param name="dataContext"></param>
-    public UserController(IRepository repository, DataContext dataContext)
-        : base(dataContext)
+    public UserController(IRepository repository): base(repository)
     {
-        this.repository = repository;
     }
 
     // POST: /register
