@@ -104,6 +104,20 @@ namespace Duo.Api.Repositories
                 await context.SaveChangesAsync();
             }
         }
+
+        public async Task OpenModuleAsync(int userId, int moduleId)
+        {
+            var module = await context.Modules.FindAsync(moduleId);
+
+            if (module == null)
+            {
+                throw new Exception("Module not found");
+            }
+
+            context.Modules.Update(module);
+            await context.SaveChangesAsync();
+        }
+
         #endregion
 
         #region Exercises
