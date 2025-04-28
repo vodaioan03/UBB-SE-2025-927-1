@@ -1,12 +1,13 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.UI.Xaml.Controls;
+using System.Net.Http;
 using Duo.Models;
-using Duo.ViewModels;
-using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Navigation;
 using Duo.Repository;
 using Duo.Services;
+using Duo.ViewModels;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Navigation;
 
 namespace Duo.Views
 {
@@ -19,11 +20,26 @@ namespace Duo.Views
         public MainPage()
         {
             this.InitializeComponent();
+
+            // Create an HttpClient instance (assuming you're not using Dependency Injection)
+            HttpClient httpClient = new HttpClient();
+
+            // Create an instance of ServiceProxy
+            var serviceProxy = new ServiceProxy(httpClient);
+
+            // Create a CourseService instance (you can replace with your existing service)
             var courseService = new CourseService();
+
+            // Create a CoinsService instance, passing ServiceProxy
+            var coinsService = new CoinsService(serviceProxy);
+
+            // Set the DataContext with the updated MainViewModel constructor
             this.DataContext = new MainViewModel(
-                courseService,
-                new CoinsService(),
-                courseService); // as ICourseFilterService
+                serviceProxy, // Pass the ServiceProxy
+                courseService, // Pass the CourseService
+                coinsService);
+
+            // Set up the ItemClick event handler
             CoursesListView.ItemClick += CoursesListView_ItemClick;
         }
 
@@ -34,7 +50,9 @@ namespace Duo.Views
             {
                 isDialogShown = true;
 
-                bool dailyLoginRewardEligible = (this.DataContext as MainViewModel) !.TryDailyLoginReward();
+#pragma warning disable SA1009 // Closing parenthesis should be spaced correctly
+                bool dailyLoginRewardEligible = await (this.DataContext as MainViewModel)!.TryDailyLoginReward();
+#pragma warning restore SA1009 // Closing parenthesis should be spaced correctly
 
                 if (dailyLoginRewardEligible)
                 {
