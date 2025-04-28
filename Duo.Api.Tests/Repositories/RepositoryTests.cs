@@ -1073,5 +1073,106 @@ namespace Duo.Api.Tests.Repositories
         }
         #endregion
 
+        #region Section
+        [TestMethod]
+        public async Task GetSectionsFromDbAsync_ReturnsAllSections()
+        {
+            // Arrange
+            var context = GetInMemoryDbContext();
+            context.Sections.Add(new Section { Id = 1, Title = "Section 1", Description = "Description 1", RoadmapId = 1 });
+            context.Sections.Add(new Section { Id = 2, Title = "Section 2", Description = "Description 2", RoadmapId = 1 });
+            await context.SaveChangesAsync();
+
+            var repository = new Repository(context);
+
+            // Act
+            var sections = await repository.GetSectionsFromDbAsync();
+
+            // Assert
+            Assert.AreEqual(2, sections.Count);
+            Assert.IsTrue(sections.Any(s => s.Id == 1));
+            Assert.IsTrue(sections.Any(s => s.Id == 2));
+        }
+
+        [TestMethod]
+        public async Task GetSectionByIdAsync_ReturnsSection_WhenSectionExists()
+        {
+            // Arrange
+            var context = GetInMemoryDbContext();
+            var section = new Section { Id = 1, Title = "Section 1", Description = "Description 1", RoadmapId = 1 };
+            context.Sections.Add(section);
+            await context.SaveChangesAsync();
+
+            var repository = new Repository(context);
+
+            // Act
+            var result = await repository.GetSectionByIdAsync(1);
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(1, result.Id);
+            Assert.AreEqual("Section 1", result.Title);
+        }
+
+        [TestMethod]
+        public async Task AddSectionAsync_AddsSectionSuccessfully()
+        {
+            // Arrange
+            var context = GetInMemoryDbContext();
+            var section = new Section { Title = "New Section", Description = "Description of new section", RoadmapId = 1 };
+            var repository = new Repository(context);
+
+            // Act
+            await repository.AddSectionAsync(section);
+            var result = await context.Sections.FindAsync(section.Id);
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual("New Section", result?.Title);
+            Assert.AreEqual("Description of new section", result?.Description);
+        }
+
+        [TestMethod]
+        public async Task UpdateSectionAsync_UpdatesSectionSuccessfully()
+        {
+            // Arrange
+            var context = GetInMemoryDbContext();
+            var section = new Section { Id = 1, Title = "Old Section", Description = "Old Description", RoadmapId = 1 };
+            context.Sections.Add(section);
+            await context.SaveChangesAsync();
+            var repository = new Repository(context);
+
+            // Act
+            section.Title = "Updated Section";  // Update title
+            section.Description = "Updated Description";  // Update description
+            await repository.UpdateSectionAsync(section);
+            var updatedSection = await context.Sections.FindAsync(section.Id);
+
+            // Assert
+            Assert.IsNotNull(updatedSection);
+            Assert.AreEqual("Updated Section", updatedSection?.Title);
+            Assert.AreEqual("Updated Description", updatedSection?.Description);
+        }
+
+        [TestMethod]
+        public async Task DeleteSectionAsync_DeletesSectionSuccessfully()
+        {
+            // Arrange
+            var context = GetInMemoryDbContext();
+            var section = new Section { Id = 1, Title = "Section to Delete", Description = "Description to Delete", RoadmapId = 1 };
+            context.Sections.Add(section);
+            await context.SaveChangesAsync();
+
+            var repository = new Repository(context);
+
+            // Act
+            await repository.DeleteSectionAsync(section.Id);
+            var deletedSection = await context.Sections.FindAsync(section.Id);
+
+            // Assert
+            Assert.IsNull(deletedSection);
+        }
+        #endregion
+
     }
 }
