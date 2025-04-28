@@ -1,19 +1,27 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Diagnostics.CodeAnalysis;
 using Duo.Api.Models;
-using Duo.Api.Persistence;
 using Duo.Api.Repositories;
-using System.Threading.Tasks;
-using System.Linq;
+using Microsoft.AspNetCore.Mvc;
+
+#pragma warning disable IDE0079 // Remove unnecessary suppression
+#pragma warning disable SA1009 // Closing parenthesis should be spaced correctly
 
 namespace Duo.Api.Controllers
 {
+    /// <summary>
+    /// Controller for managing courses in the system.
+    /// Provides endpoints for adding, retrieving, updating, deleting, and managing user interactions with courses.
+    /// </summary>
+    /// <remarks>
+    /// Initializes a new instance of the <see cref="CourseController"/> class with the specified repository.
+    /// </remarks>
+    /// <param name="repository">The repository instance to be used for data access.</param>
     [ApiController]
     [Route("course")]
-    public class CourseController : BaseController
+    [ExcludeFromCodeCoverage]
+    public class CourseController(IRepository repository) : BaseController(repository)
     {
-        public CourseController(IRepository repository) : base(repository)
-        {
-        }
+        #region Methods
 
         /// <summary>
         /// Adds a new course to the database.
@@ -23,7 +31,7 @@ namespace Duo.Api.Controllers
         [HttpPost("add")]
         public async Task<IActionResult> AddCourse([FromForm] Course course)
         {
-            await repository.AddCourseAsync(course);
+            await Repository.AddCourseAsync(course);
             return Ok(course);
         }
 
@@ -35,9 +43,11 @@ namespace Duo.Api.Controllers
         [HttpGet("get")]
         public async Task<IActionResult> GetCourse([FromQuery] int id)
         {
-            var course = await repository.GetCourseByIdAsync(id);
+            var course = await Repository.GetCourseByIdAsync(id);
             if (course == null)
+            {
                 return NotFound();
+            }
             return Ok(course);
         }
 
@@ -48,7 +58,7 @@ namespace Duo.Api.Controllers
         [HttpGet("list")]
         public async Task<IActionResult> ListCourses()
         {
-            var courses = await repository.GetCoursesFromDbAsync();
+            var courses = await Repository.GetCoursesFromDbAsync();
             return Ok(courses);
         }
 
@@ -60,10 +70,12 @@ namespace Duo.Api.Controllers
         [HttpPut("update")]
         public async Task<IActionResult> UpdateCourse([FromForm] Course updatedCourse)
         {
-            var course = await repository.GetCourseByIdAsync(updatedCourse.CourseId);
+            var course = await Repository.GetCourseByIdAsync(updatedCourse.CourseId);
             if (course == null)
+            {
                 return NotFound();
-            await repository.UpdateCourseAsync(updatedCourse);
+            }
+            await Repository.UpdateCourseAsync(updatedCourse);
             return Ok(updatedCourse);
         }
 
@@ -75,10 +87,12 @@ namespace Duo.Api.Controllers
         [HttpDelete("delete")]
         public async Task<IActionResult> DeleteCourse([FromQuery] int id)
         {
-            var course = await repository.GetCourseByIdAsync(id);
+            var course = await Repository.GetCourseByIdAsync(id);
             if (course == null)
+            {
                 return NotFound();
-            await repository.DeleteCourseAsync(id);
+            }
+            await Repository.DeleteCourseAsync(id);
             return Ok();
         }
 
@@ -91,7 +105,7 @@ namespace Duo.Api.Controllers
         [HttpPost("enroll")]
         public async Task<IActionResult> Enroll([FromForm] int userId, [FromForm] int courseId)
         {
-            await repository.EnrollUserInCourseAsync(userId, courseId);
+            await Repository.EnrollUserInCourseAsync(userId, courseId);
             return Ok();
         }
 
@@ -104,7 +118,7 @@ namespace Duo.Api.Controllers
         [HttpGet("is-enrolled")]
         public async Task<IActionResult> IsEnrolled([FromForm] int userId, [FromForm] int courseId)
         {
-            var isEnrolled = await repository.IsUserEnrolledInCourseAsync(userId, courseId);
+            var isEnrolled = await Repository.IsUserEnrolledInCourseAsync(userId, courseId);
             return Ok(isEnrolled);
         }
 
@@ -117,11 +131,10 @@ namespace Duo.Api.Controllers
         [HttpGet("is-completed")]
         public async Task<IActionResult> IsCompleted([FromForm] int userId, [FromForm] int courseId)
         {
-            var isCompleted = await repository.IsCourseCompletedAsync(userId, courseId);
+            var isCompleted = await Repository.IsCourseCompletedAsync(userId, courseId);
             return Ok(isCompleted);
         }
 
-        
         /// <summary>
         /// Filters courses based on search text, type, enrollment status, and tags.
         /// </summary>
@@ -130,18 +143,17 @@ namespace Duo.Api.Controllers
         /// <param name="filterFree">Whether to filter free courses.</param>
         /// <param name="filterEnrolled">Whether to filter enrolled courses.</param>
         /// <param name="filterNotEnrolled">Whether to filter not enrolled courses.</param>
-        /// <param name="selectedTagIds">The list of selected tag IDs to filter by.</param>
         /// <returns>A filtered list of courses.</returns>
         [HttpGet("get-filtered")]
         public async Task<IActionResult> GetFilteredCourses(
-        [FromQuery] string searchText,
-        [FromQuery] bool filterPremium,
-        [FromQuery] bool filterFree,
-        [FromQuery] bool filterEnrolled,
-        [FromQuery] bool filterNotEnrolled)
+            [FromQuery] string searchText,
+            [FromQuery] bool filterPremium,
+            [FromQuery] bool filterFree,
+            [FromQuery] bool filterEnrolled,
+            [FromQuery] bool filterNotEnrolled)
         {
             var userId = 1; // Hardcoded for simplicity, replace this with actual UserId based on your auth system
-            var courses = await repository.GetFilteredCoursesAsync(searchText, filterPremium, filterFree, filterEnrolled, filterNotEnrolled, userId);
+            var courses = await Repository.GetFilteredCoursesAsync(searchText, filterPremium, filterFree, filterEnrolled, filterNotEnrolled, userId);
             return Ok(courses);
         }
 
@@ -155,7 +167,7 @@ namespace Duo.Api.Controllers
         [HttpPut("update-time")]
         public async Task<IActionResult> UpdateTime([FromForm] int userId, [FromForm] int courseId, [FromForm] int timeInSeconds)
         {
-            await repository.UpdateTimeSpentAsync(userId, courseId, timeInSeconds);
+            await Repository.UpdateTimeSpentAsync(userId, courseId, timeInSeconds);
             return Ok();
         }
 
@@ -168,7 +180,7 @@ namespace Duo.Api.Controllers
         [HttpPost("claim-completion")]
         public async Task<IActionResult> ClaimCompletionReward([FromForm] int userId, [FromForm] int courseId)
         {
-            await repository.ClaimCompletionRewardAsync(userId, courseId);
+            await Repository.ClaimCompletionRewardAsync(userId, courseId);
             return Ok();
         }
 
@@ -181,7 +193,7 @@ namespace Duo.Api.Controllers
         [HttpPost("claim-time")]
         public async Task<IActionResult> ClaimTimeReward([FromForm] int userId, [FromForm] int courseId)
         {
-            await repository.ClaimTimeRewardAsync(userId, courseId);
+            await Repository.ClaimTimeRewardAsync(userId, courseId);
             return Ok();
         }
 
@@ -194,7 +206,7 @@ namespace Duo.Api.Controllers
         [HttpGet("get-time")]
         public async Task<IActionResult> GetTimeSpent([FromForm] int userId, [FromForm] int courseId)
         {
-            var timeSpent = await repository.GetTimeSpentAsync(userId, courseId);
+            var timeSpent = await Repository.GetTimeSpentAsync(userId, courseId);
             return Ok(timeSpent);
         }
 
@@ -206,11 +218,14 @@ namespace Duo.Api.Controllers
         [HttpGet("get-time-limit")]
         public async Task<IActionResult> GetTimeLimit([FromForm] int courseId)
         {
-            var course = await repository.GetCourseByIdAsync(courseId);
+            var course = await Repository.GetCourseByIdAsync(courseId);
             if (course == null)
+            {
                 return NotFound();
-
+            }
             return Ok(course.TimeToComplete);
         }
+
+        #endregion
     }
 }

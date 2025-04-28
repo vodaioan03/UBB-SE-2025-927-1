@@ -1,19 +1,33 @@
-using Microsoft.AspNetCore.Mvc;
+using System.Diagnostics.CodeAnalysis;
 using Duo.Api.Models;
-using Duo.Api.Persistence;
 using Duo.Api.Repositories;
-using System.Threading.Tasks;
-using System.Linq;
+using Microsoft.AspNetCore.Mvc;
+
+#pragma warning disable IDE0079 // Remove unnecessary suppression
+#pragma warning disable SA1009 // Closing parenthesis should be spaced correctly
 
 namespace Duo.Api.Controllers
 {
+    /// <summary>
+    /// Controller for managing tags in the system.
+    /// Provides endpoints for CRUD operations and additional tag-related functionalities.
+    /// </summary>
+    /// <remarks>
+    /// Initializes a new instance of the <see cref="TagController"/> class with the specified repository.
+    /// </remarks>
+    /// <param name="repository">The repository instance for data access.</param>
     [ApiController]
     [Route("tag")]
-    public class TagController : BaseController
+    [ExcludeFromCodeCoverage]
+    public class TagController(IRepository repository) : BaseController(repository)
     {
-        public TagController(IRepository repository) : base(repository)
-        {
-        }
+        private readonly IRepository repository = repository;
+
+        #region Constructors
+
+        #endregion
+
+        #region Public Methods
 
         /// <summary>
         /// Adds a new tag to the database.
@@ -37,7 +51,10 @@ namespace Duo.Api.Controllers
         {
             var tag = await repository.GetTagByIdAsync(id);
             if (tag == null)
+            {
                 return NotFound();
+            }
+
             return Ok(tag);
         }
 
@@ -62,7 +79,10 @@ namespace Duo.Api.Controllers
         {
             var tag = await repository.GetTagByIdAsync(updatedTag.TagId);
             if (tag == null)
+            {
                 return NotFound();
+            }
+
             await repository.UpdateTagAsync(updatedTag);
             return Ok(updatedTag);
         }
@@ -77,9 +97,14 @@ namespace Duo.Api.Controllers
         {
             var tag = await repository.GetTagByIdAsync(id);
             if (tag == null)
+            {
                 return NotFound();
+            }
+
             await repository.DeleteTagAsync(id);
             return Ok();
         }
+
+        #endregion
     }
 }

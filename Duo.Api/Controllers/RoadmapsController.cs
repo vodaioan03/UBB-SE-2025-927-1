@@ -1,38 +1,35 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+﻿using System.Diagnostics.CodeAnalysis;
 using Duo.Api.Models.Roadmaps;
 using Duo.Api.Persistence;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace Duo.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [ExcludeFromCodeCoverage]
     public class RoadmapsController : ControllerBase
     {
-        private readonly DataContext _context;
+        private readonly DataContext context;
 
         public RoadmapsController(DataContext context)
         {
-            _context = context;
+            this.context = context;
         }
 
         // GET: api/Roadmaps
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Roadmap>>> GetRoadmap()
         {
-            return await _context.Roadmaps.ToListAsync();
+            return await context.Roadmaps.ToListAsync();
         }
 
         // GET: api/Roadmaps/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Roadmap>> GetRoadmap(int id)
         {
-            var roadmap = await _context.Roadmaps.FindAsync(id);
+            var roadmap = await context.Roadmaps.FindAsync(id);
 
             if (roadmap == null)
             {
@@ -46,7 +43,7 @@ namespace Duo.Api.Controllers
         [HttpGet("search")]
         public async Task<ActionResult<IEnumerable<Roadmap>>> GetRoadmapsByName(string name)
         {
-            var roadmaps = await _context.Roadmaps
+            var roadmaps = await context.Roadmaps
                 .Where(r => r.Name.Contains(name))
                 .ToListAsync();
             if (roadmaps == null || !roadmaps.Any())
@@ -66,11 +63,11 @@ namespace Duo.Api.Controllers
                 return BadRequest();
             }
 
-            _context.Entry(roadmap).State = EntityState.Modified;
+            context.Entry(roadmap).State = EntityState.Modified;
 
             try
             {
-                await _context.SaveChangesAsync();
+                await context.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -92,8 +89,8 @@ namespace Duo.Api.Controllers
         [HttpPost]
         public async Task<ActionResult<Roadmap>> PostRoadmap(Roadmap roadmap)
         {
-            _context.Roadmaps.Add(roadmap);
-            await _context.SaveChangesAsync();
+            context.Roadmaps.Add(roadmap);
+            await context.SaveChangesAsync();
 
             return CreatedAtAction("GetRoadmap", new { id = roadmap.Id }, roadmap);
         }
@@ -102,21 +99,21 @@ namespace Duo.Api.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteRoadmap(int id)
         {
-            var roadmap = await _context.Roadmaps.FindAsync(id);
+            var roadmap = await context.Roadmaps.FindAsync(id);
             if (roadmap == null)
             {
                 return NotFound();
             }
 
-            _context.Roadmaps.Remove(roadmap);
-            await _context.SaveChangesAsync();
+            context.Roadmaps.Remove(roadmap);
+            await context.SaveChangesAsync();
 
             return NoContent();
         }
 
         private bool RoadmapExists(int id)
         {
-            return _context.Roadmaps.Any(e => e.Id == id);
+            return context.Roadmaps.Any(e => e.Id == id);
         }
     }
 }

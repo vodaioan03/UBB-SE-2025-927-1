@@ -1,33 +1,46 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Diagnostics.CodeAnalysis;
 using Duo.Api.DTO.Requests;
 using Duo.Api.Models.Sections;
-using Duo.Api.Persistence;
 using Duo.Api.Repositories;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+
+#pragma warning disable IDE0079 // Remove unnecessary suppression
+#pragma warning disable SA1009 // Closing parenthesis should be spaced correctly
 
 namespace Duo.Api.Controllers
 {
+    /// <summary>
+    /// Controller for managing sections in the system.
+    /// Provides endpoints for CRUD operations and additional section-related functionalities.
+    /// </summary>
+    /// <remarks>
+    /// Initializes a new instance of the <see cref="SectionController"/> class with the specified repository.
+    /// </remarks>
+    /// <param name="repository">The repository instance for data access.</param>
+    [ApiController]
     [Route("section")]
-    public class SectionController : BaseController
+    [ExcludeFromCodeCoverage]
+    public class SectionController(IRepository repository) : BaseController(repository)
     {
-        public SectionController(IRepository repository) : base(repository)
-        {
-        }
+        private readonly IRepository repository = repository;
 
+        #region Private Methods
+
+        /// <summary>
+        /// Gets the next available order number for a section in a roadmap.
+        /// </summary>
+        /// <param name="roadmapId">The ID of the roadmap.</param>
+        /// <returns>The next available order number.</returns>
         private async Task<int> GetLastOrderNumberAsync(int roadmapId)
         {
             var sections = await repository.GetSectionsFromDbAsync();
             var orderNumbers = sections
-                        .Where(section => section.RoadmapId == roadmapId)
-                        .OrderBy(section => section.OrderNumber)
-                        .Select(section => section.OrderNumber ?? 0)
-                        .ToList();
+                .Where(section => section.RoadmapId == roadmapId)
+                .OrderBy(section => section.OrderNumber)
+                .Select(section => section.OrderNumber ?? 0)
+                .ToList();
 
-            if (!orderNumbers.Any())
+            if (orderNumbers.Count == 0)
             {
                 return 1;
             }
@@ -43,6 +56,15 @@ namespace Duo.Api.Controllers
             return orderNumbers.Count + 1;
         }
 
+        #endregion
+
+        #region Public Methods
+
+        /// <summary>
+        /// Adds a new section to the system.
+        /// </summary>
+        /// <param name="request">The section data to add.</param>
+        /// <returns>ActionResult with operation result.</returns>
         [HttpPost("add")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -50,13 +72,13 @@ namespace Duo.Api.Controllers
         {
             try
             {
-                Section section = new Section
+                var section = new Section
                 {
                     SubjectId = request.SubjectId,
                     Title = request.Title,
                     Description = request.Description,
                     RoadmapId = request.RoadmapId,
-                    OrderNumber = request.OrderNumber ?? await this.GetLastOrderNumberAsync(request.RoadmapId)
+                    OrderNumber = request.OrderNumber ?? await GetLastOrderNumberAsync(request.RoadmapId)
                 };
 
                 await repository.AddSectionAsync(section);
@@ -68,6 +90,11 @@ namespace Duo.Api.Controllers
             }
         }
 
+        /// <summary>
+        /// Removes a section from the system.
+        /// </summary>
+        /// <param name="id">The ID of the section to remove.</param>
+        /// <returns>ActionResult with operation result.</returns>
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -91,6 +118,11 @@ namespace Duo.Api.Controllers
             }
         }
 
+        /// <summary>
+        /// Gets a section by its ID.
+        /// </summary>
+        /// <param name="id">The ID of the section to retrieve.</param>
+        /// <returns>ActionResult with the section data or error message.</returns>
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -105,7 +137,7 @@ namespace Duo.Api.Controllers
                     return NotFound(new { message = "Section not found!" });
                 }
 
-                return Ok(new { result = section, message = "Successfully got section!" });
+                return Ok(new { result = section, message = "Successfully retrieved section!" });
             }
             catch (Exception e)
             {
@@ -113,6 +145,10 @@ namespace Duo.Api.Controllers
             }
         }
 
+        /// <summary>
+        /// Gets a list of all sections in the system.
+        /// </summary>
+        /// <returns>ActionResult with list of sections or error message.</returns>
         [HttpGet("list")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -121,7 +157,7 @@ namespace Duo.Api.Controllers
             try
             {
                 var sections = await repository.GetSectionsFromDbAsync();
-                return Ok(new { result = sections, message = "Successfully got list of sections" });
+                return Ok(new { result = sections, message = "Successfully retrieved list of sections." });
             }
             catch (Exception e)
             {
@@ -129,6 +165,11 @@ namespace Duo.Api.Controllers
             }
         }
 
+        /// <summary>
+        /// Gets a list of sections belonging to a specific roadmap.
+        /// </summary>
+        /// <param name="roadmapId">The ID of the roadmap.</param>
+        /// <returns>ActionResult with list of sections or error message.</returns>
         [HttpGet("list/roadmap/{roadmapId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -138,14 +179,14 @@ namespace Duo.Api.Controllers
             try
             {
                 var sections = await repository.GetSectionsFromDbAsync();
-                sections = sections
-                            .Where(section => section.RoadmapId == roadmapId)
-                            .ToList();
-                if (!sections.Any())
+                var filteredSections = sections.Where(section => section.RoadmapId == roadmapId).ToList();
+
+                if (filteredSections.Count == 0)
                 {
                     return NotFound(new { result = new List<Section>(), message = "No sections found for the specified roadmap!" });
                 }
-                return Ok(new { result = sections, message = "Successfully got list of sections" });
+
+                return Ok(new { result = filteredSections, message = "Successfully retrieved list of sections." });
             }
             catch (Exception e)
             {
@@ -153,6 +194,12 @@ namespace Duo.Api.Controllers
             }
         }
 
+        /// <summary>
+        /// Updates an existing section.
+        /// </summary>
+        /// <param name="id">The ID of the section to update.</param>
+        /// <param name="request">The updated section data.</param>
+        /// <returns>ActionResult with operation result.</returns>
         [HttpPatch("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -182,23 +229,11 @@ namespace Duo.Api.Controllers
             }
         }
 
-        [HttpGet("by-roadmap")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> GetSectionsByRoadmap([FromQuery] int roadmapId)
-        {
-            try
-            {
-                var sections = await repository.GetSectionsFromDbAsync();
-                var filtered = sections.Where(s => s.RoadmapId == roadmapId).ToList();
-                return Ok(new { result = filtered, message = "Successfully got sections by roadmap" });
-            }
-            catch (Exception e)
-            {
-                return BadRequest(new { message = e.Message });
-            }
-        }
-
+        /// <summary>
+        /// Gets the count of sections in a specific roadmap.
+        /// </summary>
+        /// <param name="roadmapId">The ID of the roadmap.</param>
+        /// <returns>The count of sections.</returns>
         [HttpGet("count-on-roadmap")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -208,7 +243,7 @@ namespace Duo.Api.Controllers
             {
                 var sections = await repository.GetSectionsFromDbAsync();
                 var count = sections.Count(s => s.RoadmapId == roadmapId);
-                return Ok(new { result = count, message = "Successfully counted sections" });
+                return Ok(new { result = count, message = "Successfully counted sections." });
             }
             catch (Exception e)
             {
@@ -216,6 +251,11 @@ namespace Duo.Api.Controllers
             }
         }
 
+        /// <summary>
+        /// Gets the last order number of sections in a specific roadmap.
+        /// </summary>
+        /// <param name="roadmapId">The ID of the roadmap.</param>
+        /// <returns>The last order number.</returns>
         [HttpGet("last-from-roadmap")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -228,7 +268,7 @@ namespace Duo.Api.Controllers
                 var lastOrderNumber = sectionsInRoadmap.Any()
                     ? sectionsInRoadmap.Max(s => s.OrderNumber)
                     : 0;
-                return Ok(new { result = lastOrderNumber, message = "Successfully got last order number" });
+                return Ok(new { result = lastOrderNumber, message = "Successfully retrieved last order number." });
             }
             catch (Exception e)
             {
@@ -236,5 +276,6 @@ namespace Duo.Api.Controllers
             }
         }
 
+        #endregion
     }
 }

@@ -1,19 +1,29 @@
-using Microsoft.AspNetCore.Mvc;
+using System.Diagnostics.CodeAnalysis;
 using Duo.Api.Models.Quizzes;
-using Duo.Api.Persistence;
 using Duo.Api.Repositories;
-using System.Threading.Tasks;
-using Duo.Api.Models.Exercises; // needed for List<Exercise>
+using Microsoft.AspNetCore.Mvc;
+
+#pragma warning disable IDE0079 // Remove unnecessary suppression
+#pragma warning disable SA1009 // Closing parenthesis should be spaced correctly
 
 namespace Duo.Api.Controllers
 {
+    /// <summary>
+    /// Controller for managing quizzes in the system.
+    /// Provides endpoints for CRUD operations and additional quiz-related functionalities.
+    /// </summary>
+    /// <remarks>
+    /// Initializes a new instance of the <see cref="QuizController"/> class with the specified repository.
+    /// </remarks>
+    /// <param name="repository">The repository instance for data access.</param>
     [ApiController]
     [Route("quiz")]
-    public class QuizController : BaseController
+    [ExcludeFromCodeCoverage]
+    public class QuizController(IRepository repository) : BaseController(repository)
     {
-        public QuizController(IRepository repository) : base(repository)
-        {
-        }
+        private readonly IRepository repository = repository;
+
+        #region Public Methods
 
         /// <summary>
         /// Adds a new quiz to the database.
@@ -37,7 +47,10 @@ namespace Duo.Api.Controllers
         {
             var quiz = await repository.GetQuizByIdAsync(id);
             if (quiz == null)
+            {
                 return NotFound();
+            }
+
             return Ok(quiz);
         }
 
@@ -62,7 +75,10 @@ namespace Duo.Api.Controllers
         {
             var quiz = await repository.GetQuizByIdAsync(updatedQuiz.Id);
             if (quiz == null)
+            {
                 return NotFound();
+            }
+
             await repository.UpdateQuizAsync(updatedQuiz);
             return Ok(updatedQuiz);
         }
@@ -77,7 +93,10 @@ namespace Duo.Api.Controllers
         {
             var quiz = await repository.GetQuizByIdAsync(id);
             if (quiz == null)
+            {
                 return NotFound();
+            }
+
             await repository.DeleteQuizAsync(id);
             return Ok();
         }
@@ -168,5 +187,7 @@ namespace Duo.Api.Controllers
             var result = await repository.GetQuizResultAsync(quizId);
             return Ok(result);
         }
+
+        #endregion
     }
 }

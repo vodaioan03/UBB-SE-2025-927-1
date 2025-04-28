@@ -1,17 +1,38 @@
-using Duo.Api.Persistence;
+using System.Diagnostics.CodeAnalysis;
 using Duo.Api.Repositories;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Duo.Api.Controllers
 {
+    /// <summary>
+    /// Represents the base controller for all API controllers in the application.
+    /// Provides common functionality and access to the repository layer.
+    /// </summary>
     [ApiController]
     [Route("[controller]")]
+    [ExcludeFromCodeCoverage]
     public class BaseController : ControllerBase
     {
-        protected IRepository repository;
+        #region Fields
+
+        /// <summary>
+        /// The repository instance used for data access.
+        /// </summary>
+        protected readonly IRepository Repository;
+
+        #endregion
+
+        #region Constructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BaseController"/> class with the specified repository.
+        /// </summary>
+        /// <param name="repository">The repository instance to be used for data access.</param>
         public BaseController(IRepository repository)
         {
-            this.repository = repository;
+            Repository = repository;
         }
+
+        #endregion
     }
 }

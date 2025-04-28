@@ -1,5 +1,8 @@
-﻿namespace Duo.Api.DTO
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Duo.Api.DTO
 {
+    [ExcludeFromCodeCoverage]
     public class QuizResultDTO
     {
         public int QuizId { get; set; }

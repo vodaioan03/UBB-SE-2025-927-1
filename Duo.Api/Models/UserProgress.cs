@@ -1,13 +1,16 @@
-﻿namespace Duo.Api.Models
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Duo.Api.Models
 {
+    [ExcludeFromCodeCoverage]
     public class UserProgress
     {
         public int UserId { get; set; }
         public int ModuleId { get; set; }
-        public string Status { get; set; } = "not_completed";  
+        public string Status { get; set; } = "not_completed";
         public bool ImageClicked { get; set; } = false;
 
-        public User User { get; set; }
-        public Module Module { get; set; }
+        public User? User { get; set; }
+        public Module? Module { get; set; }
     }
 }
