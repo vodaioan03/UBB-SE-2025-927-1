@@ -162,7 +162,9 @@ namespace Duo.Api.Repositories
 
         public async Task<Quiz> GetQuizByIdAsync(int id)
         {
-            return await context.Quizzes.FindAsync(id);
+            return await context.Quizzes
+                .Include(q => q.Exercises)
+                .FirstOrDefaultAsync(q => q.Id == id);
         }
 
         public async Task AddQuizAsync(Quiz quiz)
@@ -186,8 +188,125 @@ namespace Duo.Api.Repositories
                 await context.SaveChangesAsync();
             }
         }
+
+        /// <summary>
+        /// Retrieves all quizzes from a specific section.
+        /// </summary>
+        public async Task<List<Quiz>> GetAllQuizzesFromSectionAsync(int sectionId)
+        {
+            return await context.Quizzes
+                .Where(q => q.SectionId == sectionId)
+                .ToListAsync();
+        }
+
+        /// <summary>
+        /// Retrieves the number of quizzes in a specific section.
+        /// </summary>
+        public async Task<int> CountQuizzesFromSectionAsync(int sectionId)
+        {
+            return await context.Quizzes
+                .Where(q => q.SectionId == sectionId)
+                .CountAsync();
+        }
+
+        /// <summary>
+        /// Retrieves the last order number in a specific section.
+        /// </summary>
+        public async Task<int> GetLastOrderNumberFromSectionAsync(int sectionId)
+        {
+            var quiz = await context.Quizzes
+                .Where(q => q.SectionId == sectionId && q.OrderNumber.HasValue)
+                .OrderByDescending(q => q.OrderNumber)
+                .FirstOrDefaultAsync();
+
+            return quiz?.OrderNumber ?? 0;
+        }
+
+        /// <summary>
+        /// Adds a list of exercises to a quiz.
+        /// </summary>
+        public async Task AddExercisesToQuizAsync(int quizId, List<int> exerciseIds)
+        {
+            var quiz = await context.Quizzes
+                .Include(q => q.Exercises)
+                .FirstOrDefaultAsync(q => q.Id == quizId);
+
+            if (quiz != null)
+            {
+                var exercises = await context.Exercises
+                    .Where(e => exerciseIds.Contains(e.ExerciseId))
+                    .ToListAsync();
+
+                foreach (var exercise in exercises)
+                {
+                    if (!quiz.Exercises.Contains(exercise))
+                    {
+                        quiz.Exercises.Add(exercise);
+                    }
+                }
+
+                await context.SaveChangesAsync();
+            }
+        }
+
+        /// <summary>
+        /// Adds a single exercise to a quiz.
+        /// </summary>
+        public async Task AddExerciseToQuizAsync(int quizId, int exerciseId)
+        {
+            var quiz = await context.Quizzes
+                .Include(q => q.Exercises)
+                .FirstOrDefaultAsync(q => q.Id == quizId);
+
+            var exercise = await context.Exercises.FindAsync(exerciseId);
+
+            if (quiz != null && exercise != null && !quiz.Exercises.Contains(exercise))
+            {
+                quiz.Exercises.Add(exercise);
+                await context.SaveChangesAsync();
+            }
+        }
+
+        /// <summary>
+        /// Removes an exercise from a quiz.
+        /// </summary>
+        public async Task RemoveExerciseFromQuizAsync(int quizId, int exerciseId)
+        {
+            var quiz = await context.Quizzes
+                .Include(q => q.Exercises)
+                .FirstOrDefaultAsync(q => q.Id == quizId);
+
+            var exercise = await context.Exercises.FindAsync(exerciseId);
+
+            if (quiz != null && exercise != null && quiz.Exercises.Contains(exercise))
+            {
+                quiz.Exercises.Remove(exercise);
+                await context.SaveChangesAsync();
+            }
+        }
+
+        /// <summary>
+        /// Gets the quiz result. (for now just returns the quiz data, adjust if more needed)
+        /// </summary>
+        public async Task<object> GetQuizResultAsync(int quizId)
+        {
+            var quiz = await context.Quizzes
+                .Include(q => q.Exercises)
+                .FirstOrDefaultAsync(q => q.Id == quizId);
+
+            if (quiz == null)
+                return null;
+
+            // Basic mock result, you can change this based on your real app requirements
+            return new
+            {
+                QuizId = quiz.Id,
+                ExerciseCount = quiz.Exercises.Count
+            };
+        }
         #endregion
-        
+
+
         #region Courses
         public async Task<List<Course>> GetCoursesFromDbAsync()
         {
