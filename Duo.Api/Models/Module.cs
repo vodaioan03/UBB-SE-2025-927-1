@@ -18,7 +18,7 @@ namespace Duo.Api.Models
         /// Gets or sets the identifier of the course to which this module belongs.
         /// </summary>
         [ForeignKey(nameof(Course))]
-        public int CourseId { get; set; }
+        public int? CourseId { get; set; }
 
         /// <summary>
         /// Gets or sets the title of the module.

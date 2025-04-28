@@ -25,7 +25,7 @@ namespace Duo.Api.Repositories
 
         #region Modules
         Task<List<Module>> GetModulesFromDbAsync();
-        Task<Module> GetModuleByIdAsync(int id);
+        Task<Module?> GetModuleByIdAsync(int id);
         Task AddModuleAsync(Module module);
         Task UpdateModuleAsync(Module module);
         Task DeleteModuleAsync(int id);
@@ -45,6 +45,14 @@ namespace Duo.Api.Repositories
         Task AddQuizAsync(Quiz quiz);
         Task UpdateQuizAsync(Quiz quiz);
         Task DeleteQuizAsync(int id);
+        #endregion
+      
+        #region Courses
+        Task<List<Course>> GetCoursesFromDbAsync();
+        Task<Course> GetCourseByIdAsync(int id);
+        Task AddCourseAsync(Course course);
+        Task UpdateCourseAsync(Course course);
+        Task DeleteCourseAsync(int id);
         #endregion
 
         #region Exams
