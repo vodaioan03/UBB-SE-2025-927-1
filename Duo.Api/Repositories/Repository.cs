@@ -81,7 +81,7 @@ namespace Duo.Api.Repositories
         {
             return await context.Modules.ToListAsync();
         }
-        public async Task<Module> GetModuleByIdAsync(int id)
+        public async Task<Module?> GetModuleByIdAsync(int id)
         {
             return await context.Modules.FindAsync(id);
         }
@@ -169,6 +169,40 @@ namespace Duo.Api.Repositories
             if (quiz != null)
             {
                 context.Quizzes.Remove(quiz);
+                await context.SaveChangesAsync();
+            }
+        }
+        #endregion
+        
+        #region Courses
+        public async Task<List<Course>> GetCoursesFromDbAsync()
+        {
+            return await context.Courses.ToListAsync();
+        }
+        
+        public async Task<Course> GetCourseByIdAsync(int id)
+        {
+            return await context.Courses.FindAsync(id);
+        }
+        
+        public async Task AddCourseAsync(Course course)
+        {
+            context.Courses.Add(course);
+            await context.SaveChangesAsync();
+        }
+        
+        public async Task UpdateCourseAsync(Course course)
+        {
+            context.Courses.Update(course);
+            await context.SaveChangesAsync();
+        }
+        
+        public async Task DeleteCourseAsync(int id)
+        {
+            var course = await context.Courses.FindAsync(id);
+            if (course != null)
+            {
+                context.Courses.Remove(course);
                 await context.SaveChangesAsync();
             }
         }
