@@ -17,29 +17,29 @@ namespace Duo.Services
             this.serviceProxy = serviceProxy;
         }
 
-        public Task<List<Roadmap>> GetAllRoadmaps()
+        public async Task<List<Roadmap>> GetAllRoadmaps()
         {
-            return serviceProxy.GetAllAsync();
+            return await serviceProxy.GetAllAsync();
         }
 
-        public Task<Roadmap> GetRoadmapById(int roadmapId)
+        public async Task<Roadmap> GetRoadmapById(int roadmapId)
         {
-            return serviceProxy.GetByIdAsync(roadmapId);
+            return await serviceProxy.GetByIdAsync(roadmapId);
         }
 
-        public Task<Roadmap> GetByName(string roadmapName)
+        public async Task<Roadmap> GetByName(string roadmapName)
         {
-            return serviceProxy.GetByNameAsync(roadmapName);
+            return await serviceProxy.GetByNameAsync(roadmapName);
         }
 
-        public Task<int> AddRoadmap(Roadmap roadmap)
+        public async Task<int> AddRoadmap(Roadmap roadmap)
         {
-            return serviceProxy.AddAsync(roadmap);
+            return await serviceProxy.AddAsync(roadmap);
         }
 
-        public Task DeleteRoadmap(Roadmap roadmap)
+        public async Task DeleteRoadmap(Roadmap roadmap)
         {
-            return serviceProxy.DeleteAsync(roadmap.Id);
+            await serviceProxy.DeleteAsync(roadmap.Id);
         }
     }
 }
