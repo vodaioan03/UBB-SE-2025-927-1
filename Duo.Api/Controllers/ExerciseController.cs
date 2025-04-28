@@ -26,14 +26,13 @@ namespace Duo.Api.Controllers
             {
                 if (!exerciseMap.TryGetValue(exercise.ExerciseId, out var existingExercise))
                 {
-                    // First occurrence of this exercise ID
                     exerciseMap[exercise.ExerciseId] = exercise switch
                     {
                         MultipleChoiceExercise mc => new MultipleChoiceExercise(mc.ExerciseId, mc.Question, mc.Difficulty, new List<MultipleChoiceAnswerModel>(mc.Choices)),
                         FillInTheBlankExercise fb => new FillInTheBlankExercise(fb.ExerciseId, fb.Question, fb.Difficulty, new List<string>(fb.PossibleCorrectAnswers)),
                         AssociationExercise assoc => new AssociationExercise(assoc.ExerciseId, assoc.Question, assoc.Difficulty, new List<string>(assoc.FirstAnswersList), new List<string>(assoc.SecondAnswersList)),
                         FlashcardExercise flash => new FlashcardExercise(flash.ExerciseId, flash.Question, flash.Answer, flash.Difficulty),
-                        _ => exercise // Keep other types unchanged
+                        _ => exercise
                     };
                 }
                 else
@@ -42,7 +41,6 @@ namespace Duo.Api.Controllers
                     switch (existingExercise)
                     {
                         case MultipleChoiceExercise existingMC when exercise is MultipleChoiceExercise newMC:
-                            // remove from the choicesthe correct choice, as it was previously added
                             newMC.Choices.RemoveAll(c => c.IsCorrect);
                             existingMC.Choices.AddRange(newMC.Choices);
                             break;
@@ -59,7 +57,6 @@ namespace Duo.Api.Controllers
                 }
             }
 
-            // Add the merged multiple-choice exercises to the final list
             mergedExercises.AddRange(exerciseMap.Values);
 
             return mergedExercises;
@@ -72,7 +69,7 @@ namespace Duo.Api.Controllers
             {
                 var exercises = await repository.GetExercisesFromDbAsync();
                 var mergedExercises = MergeExercises(exercises);
-                return Ok(mergedExercises); // OK 200 with the list of merged exercises
+                return Ok(mergedExercises);
             }
             catch (Exception ex)
             {
@@ -90,7 +87,7 @@ namespace Duo.Api.Controllers
 
             try
             {
-                var exercise = await repository.GetExerciseByIdAsync(id); // assuming you updated repository to EFCore
+                var exercise = await repository.GetExerciseByIdAsync(id);
                 List<Exercise> exercises = [exercise];
                 var mergedExercises = MergeExercises(exercises);
 
