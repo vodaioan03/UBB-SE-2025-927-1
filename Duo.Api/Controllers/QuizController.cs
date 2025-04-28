@@ -3,6 +3,7 @@ using Duo.Api.Models.Quizzes;
 using Duo.Api.Persistence;
 using Duo.Api.Repositories;
 using System.Threading.Tasks;
+using Duo.Api.Models.Exercises; // needed for List<Exercise>
 
 namespace Duo.Api.Controllers
 {
@@ -27,7 +28,7 @@ namespace Duo.Api.Controllers
         }
 
         /// <summary>
-        /// Retrieves a quiz by its ID .
+        /// Retrieves a quiz by its ID.
         /// </summary>
         /// <param name="id">The ID of the quiz to retrieve.</param>
         /// <returns>The quiz if found; otherwise, NotFound.</returns>
@@ -79,6 +80,93 @@ namespace Duo.Api.Controllers
                 return NotFound();
             await repository.DeleteQuizAsync(id);
             return Ok();
+        }
+
+        /// <summary>
+        /// Retrieves all quizzes from a specific section.
+        /// </summary>
+        /// <param name="sectionId">The ID of the section.</param>
+        /// <returns>A list of quizzes from the section.</returns>
+        [HttpGet("get-all-section")]
+        public async Task<IActionResult> GetAllQuizzesFromSection([FromQuery] int sectionId)
+        {
+            var quizzes = await repository.GetAllQuizzesFromSectionAsync(sectionId);
+            return Ok(quizzes);
+        }
+
+        /// <summary>
+        /// Retrieves the number of quizzes in a specific section.
+        /// </summary>
+        /// <param name="sectionId">The ID of the section.</param>
+        /// <returns>The number of quizzes.</returns>
+        [HttpGet("count-from-section")]
+        public async Task<IActionResult> CountQuizzesFromSection([FromQuery] int sectionId)
+        {
+            var count = await repository.CountQuizzesFromSectionAsync(sectionId);
+            return Ok(count);
+        }
+
+        /// <summary>
+        /// Retrieves the last order number from a specific section.
+        /// </summary>
+        /// <param name="sectionId">The ID of the section.</param>
+        /// <returns>The last order number if found; otherwise, 0.</returns>
+        [HttpGet("last-order")]
+        public async Task<IActionResult> GetLastOrderNumberFromSection([FromQuery] int sectionId)
+        {
+            var lastOrder = await repository.GetLastOrderNumberFromSectionAsync(sectionId);
+            return Ok(lastOrder);
+        }
+
+        /// <summary>
+        /// Adds a list of new exercises to a quiz.
+        /// </summary>
+        /// <param name="quizId">The ID of the quiz.</param>
+        /// <param name="exercises">The exercises to add.</param>
+        /// <returns>Ok if added.</returns>
+        [HttpPost("add-exercises")]
+        public async Task<IActionResult> AddExercisesToQuiz([FromForm] int quizId, [FromForm] List<int> exercises)
+        {
+            await repository.AddExercisesToQuizAsync(quizId, exercises);
+            return Ok();
+        }
+
+        /// <summary>
+        /// Adds a single exercise to a quiz.
+        /// </summary>
+        /// <param name="quizId">The ID of the quiz.</param>
+        /// <param name="exerciseId">The ID of the exercise to add.</param>
+        /// <returns>Ok if added.</returns>
+        [HttpPost("add-exercise")]
+        public async Task<IActionResult> AddExerciseToQuiz([FromForm] int quizId, [FromForm] int exerciseId)
+        {
+            await repository.AddExerciseToQuizAsync(quizId, exerciseId);
+            return Ok();
+        }
+
+        /// <summary>
+        /// Removes an exercise from a quiz.
+        /// </summary>
+        /// <param name="quizId">The ID of the quiz.</param>
+        /// <param name="exerciseId">The ID of the exercise to remove.</param>
+        /// <returns>Ok if removed.</returns>
+        [HttpDelete("remove-exercise")]
+        public async Task<IActionResult> RemoveExerciseFromQuiz([FromQuery] int quizId, [FromQuery] int exerciseId)
+        {
+            await repository.RemoveExerciseFromQuizAsync(quizId, exerciseId);
+            return Ok();
+        }
+
+        /// <summary>
+        /// Retrieves the quiz result for a specific quiz.
+        /// </summary>
+        /// <param name="quizId">The ID of the quiz.</param>
+        /// <returns>The quiz result.</returns>
+        [HttpGet("get-result")]
+        public async Task<IActionResult> GetQuizResult([FromQuery] int quizId)
+        {
+            var result = await repository.GetQuizResultAsync(quizId);
+            return Ok(result);
         }
     }
 }
