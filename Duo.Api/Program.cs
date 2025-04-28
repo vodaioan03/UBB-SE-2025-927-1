@@ -2,6 +2,8 @@ using DotNetEnv;
 using System.Text.Json.Serialization;
 using Duo.Api.Persistence;
 using Microsoft.EntityFrameworkCore;
+using Duo.Api.Repositories; // Make sure this namespace is included
+using Duo.Api.Models;
 
 namespace Duo.Api
 {
@@ -14,13 +16,14 @@ namespace Duo.Api
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
-
             builder.Services.AddControllers()
                 .AddJsonOptions(options =>
                 {
                     options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
                 });
 
+            // Register the IRepository and Repository for dependency injection
+            builder.Services.AddScoped<IRepository, Repository>();  // Register IRepository with Repository
 
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
@@ -48,7 +51,20 @@ namespace Duo.Api
             using (var scope = app.Services.CreateScope())
             {
                 var db = scope.ServiceProvider.GetRequiredService<DataContext>();
-                db.Database.Migrate();
+
+                // Add a user with ID 0 if it doesn't exist
+/*                if (!db.Users.Any(u => u.UserId == 0))
+                {
+                    db.Users.Add(new User
+                    {
+                        UserId = 0,
+                        CoinBalance = 1000, // Example balance
+                        LastLoginTime = DateTime.Now
+                    });
+                    db.SaveChanges();
+                }*/
+
+                db.Database.Migrate(); // Ensure migrations are applied
             }
 
             app.Run();

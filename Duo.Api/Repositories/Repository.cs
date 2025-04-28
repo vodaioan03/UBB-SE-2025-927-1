@@ -1,4 +1,3 @@
-using CourseApp.Models;
 using Duo.Api.Models;
 using Duo.Api.Models.Exercises;
 using Duo.Api.Models.Quizzes;
@@ -12,9 +11,9 @@ namespace Duo.Api.Repositories
     {
         private readonly DataContext context;
 
-        public Repository(DataContext context)
+        public Repository(DataContext dataContext)
         {
-            context = context;
+            context = dataContext;
         }
 
         #region Users
@@ -233,6 +232,68 @@ namespace Duo.Api.Repositories
                 await context.SaveChangesAsync();
             }
         }
+        #endregion
+
+        #region Coins
+
+        public async Task<int> GetUserCoinBalanceAsync(int userId)
+        {
+            var user = await context.Users.FindAsync(userId);
+            return user?.CoinBalance ?? 0;
+        }
+
+        public async Task<bool> TryDeductCoinsFromUserWalletAsync(int userId, int cost)
+        {
+            var user = await context.Users.FindAsync(userId);
+            if (user != null && user.CoinBalance >= cost)
+            {
+                user.CoinBalance -= cost;
+                await context.SaveChangesAsync();
+                return true;
+            }
+            return false;
+        }
+
+        public async Task AddCoinsToUserWalletAsync(int userId, int amount)
+        {
+            var user = await context.Users.FindAsync(userId);
+            if (user != null)
+            {
+                user.CoinBalance += amount;
+                await context.SaveChangesAsync();
+            }
+        }
+
+        public async Task<DateTime> GetUserLastLoginTimeAsync(int userId)
+        {
+            if (context == null)
+            {
+                throw new Exception("Database context is not initialized.");
+            }
+
+            // Ensure we're awaiting the database call asynchronously.
+            var user = await context.Users.FirstOrDefaultAsync(u => u.UserId == userId);
+
+            // If the user is not found, throw a custom exception.
+            if (user == null)
+            {
+                throw new Exception($"User with ID {userId} not found");
+            }
+
+            // If the user exists, return the LastLoginTime.
+            return user.LastLoginTime;
+        }
+
+        public async Task UpdateUserLastLoginTimeToNowAsync(int userId)
+        {
+            var user = await context.Users.FindAsync(userId);
+            if (user != null)
+            {
+                user.LastLoginTime = DateTime.Now;
+                await context.SaveChangesAsync();
+            }
+        }
+
         #endregion
     }
 }
