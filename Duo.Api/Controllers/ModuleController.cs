@@ -238,5 +238,48 @@ namespace Duo.Api.Controllers
             return Ok();
         }
 
+        [HttpPost("complete")]
+        public async Task<IActionResult> CompleteModule([FromBody] OpenModuleRequest request)
+        {
+            await repository.CompleteModuleAsync(request.UserId, request.ModuleId);
+            return Ok(new { message = "Module completed successfully!" });
+        }
+
+        [HttpGet("isOpen")]
+        public async Task<IActionResult> IsModuleOpen([FromQuery] int userId, [FromQuery] int moduleId)
+        {
+            var result = await repository.IsModuleOpenAsync(userId, moduleId);
+            return Ok(result);
+        }
+
+        [HttpGet("isCompleted")]
+        public async Task<IActionResult> IsModuleCompleted([FromQuery] int userId, [FromQuery] int moduleId)
+        {
+            var result = await repository.IsModuleCompletedAsync(userId, moduleId);
+            return Ok(result);
+        }
+
+        [HttpGet("isAvailable")]
+        public async Task<IActionResult> IsModuleAvailable([FromQuery] int userId, [FromQuery] int moduleId)
+        {
+            var result = await repository.IsModuleAvailableAsync(userId, moduleId);
+            return Ok(result);
+        }
+
+        [HttpPost("clickImage")]
+        public async Task<IActionResult> ClickModuleImage([FromBody] OpenModuleRequest request)
+        {
+            await repository.ClickModuleImageAsync(request.UserId, request.ModuleId);
+            return Ok(new { message = "Image clicked successfully!" });
+        }
+
+        [HttpGet("imageClicked")]
+        public async Task<IActionResult> IsModuleImageClicked([FromQuery] int userId, [FromQuery] int moduleId)
+        {
+            var result = await repository.IsModuleImageClickedAsync(userId, moduleId);
+            return Ok(result);
+        }
+
+
     }
 }
