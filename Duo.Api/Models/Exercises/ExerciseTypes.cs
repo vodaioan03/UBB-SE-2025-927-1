@@ -1,5 +1,9 @@
-﻿namespace Duo.Api.Models.Exercises
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Duo.Api.Models.Exercises
 {
+    #region Enums
+
     /// <summary>
     /// Enum representing the different types of exercises in the system.
     /// This enum helps categorize exercises by their type.
@@ -27,12 +31,19 @@
         Flashcard
     }
 
+    #endregion
+
+    #region Static Classes
+
     /// <summary>
     /// A static class that contains predefined exercise types as strings.
     /// This is used to quickly access a list of available exercise types in the system.
     /// </summary>
+    [ExcludeFromCodeCoverage]
     public static class ExerciseTypes
     {
+        #region Fields
+
         /// <summary>
         /// List of available exercise types represented as strings.
         /// </summary>
@@ -43,5 +54,9 @@
             "Multiple Choice",
             "Flashcard"
         ];
+
+        #endregion
     }
+
+    #endregion
 }
