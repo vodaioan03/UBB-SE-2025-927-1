@@ -157,14 +157,12 @@ namespace Duo.Api.Repositories
         #region Quizzes
         public async Task<List<Quiz>> GetQuizzesFromDbAsync()
         {
-            return await context.Quizzes.ToListAsync();
+            return await context.Quizzes.Include(q => q.Exercises).ToListAsync();
         }
 
         public async Task<Quiz> GetQuizByIdAsync(int id)
         {
-            return await context.Quizzes
-                .Include(q => q.Exercises)
-                .FirstOrDefaultAsync(q => q.Id == id);
+            return await context.Quizzes.Include(q => q.Exercises).FirstOrDefaultAsync(q => q.Id == id);
         }
 
         public async Task AddQuizAsync(Quiz quiz)
