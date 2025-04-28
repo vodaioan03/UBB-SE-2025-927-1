@@ -1,196 +1,175 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Duo.Models;
-using Duo.Repositories;
-using Duo.ModelViews;
-
-#pragma warning disable IDE0079 // Remove unnecessary suppression
-#pragma warning disable SA1010 // Opening square brackets should be spaced correctly
 
 namespace Duo.Services
 {
     /// <summary>
-    /// Provides core business logic for managing courses, modules, and user interactions.
+    /// Provides core business logic for managing courses, modules, and user interactions via API calls.
     /// </summary>
     public class CourseService : ICourseService
     {
-        private readonly ICourseRepository repository;
-        private readonly ICoinsRepository coinsRepository = new CoinsRepository(new UserWalletModelView());
-        private const int UserId = 0;
+        private readonly CourseServiceProxy courseServiceProxy;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="CourseService"/> class with optional repository injection.
+        /// Initializes a new instance of the <see cref="CourseServiceProxy"/> class.
         /// </summary>
-        public CourseService(ICourseRepository? courseRepository = null)
+        public CourseService(CourseServiceProxy courseServiceProxy)
         {
-            repository = courseRepository ?? new CourseRepository();
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CourseService"/> class with injected course and coins repositories.
-        /// </summary>
-        public CourseService(ICourseRepository repository, ICoinsRepository coinsRepository)
-        {
-            this.repository = repository;
-            this.coinsRepository = coinsRepository;
+            this.courseServiceProxy = courseServiceProxy;
         }
 
         /// <summary>
         /// Retrieves all available courses.
         /// </summary>
-        public List<Course> GetCourses() => repository.GetAllCourses();
+        public async Task<List<Course>> GetCoursesAsync()
+        {
+            return await courseServiceProxy.GetAllCourses();
+        }
 
         /// <summary>
         /// Retrieves all available tags.
         /// </summary>
-        public List<Tag> GetTags() => repository.GetAllTags();
+        public async Task<List<Tag>> GetTagsAsync()
+        {
+            return await courseServiceProxy.GetAllTags();
+        }
 
         /// <summary>
         /// Gets all tags associated with a specific course.
         /// </summary>
-        public List<Tag> GetCourseTags(int courseId) => repository.GetTagsForCourse(courseId);
+        public async Task<List<Tag>> GetCourseTagsAsync(int courseId)
+        {
+            return await courseServiceProxy.GetTagsForCourse(courseId);
+        }
 
         /// <summary>
         /// Opens a module for the user if not already opened.
         /// </summary>
-        public void OpenModule(int moduleId)
+        public async Task OpenModuleAsync(int userId, int moduleId)
         {
-            if (!repository.IsModuleOpen(UserId, moduleId))
+            if (!await courseServiceProxy.IsModuleOpen(userId, moduleId))
             {
-                repository.OpenModule(UserId, moduleId);
+                await courseServiceProxy.OpenModule(userId, moduleId);
             }
         }
 
         /// <summary>
         /// Retrieves all modules for a specific course.
         /// </summary>
-        public List<Module> GetModules(int courseId) => repository.GetModulesByCourseId(courseId);
+        public async Task<List<Module>> GetModulesAsync(int courseId)
+        {
+            return await courseServiceProxy.GetModulesByCourseId(courseId);
+        }
 
         /// <summary>
         /// Retrieves all non-bonus modules for a course.
         /// </summary>
-        public List<Module> GetNormalModules(int courseId) =>
-            [.. repository.GetModulesByCourseId(courseId).Where(m => !m.IsBonus)];
+        public async Task<List<Module>> GetNormalModulesAsync(int courseId)
+        {
+            var modules = await courseServiceProxy.GetModulesByCourseId(courseId);
+            return modules.Where(m => !m.IsBonus).ToList();
+        }
 
         /// <summary>
-        /// Attempts to buy a bonus module if not yet opened and enough coins exist.
+        /// Enrolls the user in a course if not already enrolled.
         /// </summary>
-        public bool BuyBonusModule(int moduleId, int courseId)
+        public async Task<bool> EnrollInCourseAsync(int userId, int courseId)
         {
-            var module = repository.GetModule(moduleId);
-            if (module == null || !module.IsBonus || repository.IsModuleOpen(UserId, moduleId))
+            if (await courseServiceProxy.IsUserEnrolled(userId, courseId))
             {
                 return false;
             }
 
-            var course = repository.GetCourse(courseId);
-            if (course == null)
-            {
-                return false;
-            }
-
-            if (!coinsRepository.TryDeductCoinsFromUserWallet(UserId, module.Cost))
-            {
-                return false;
-            }
-
-            repository.OpenModule(UserId, moduleId);
+            await courseServiceProxy.EnrollUser(userId, courseId);
             return true;
         }
 
         /// <summary>
-        /// Enrolls the user in a course if not already enrolled and deducts coins if premium.
+        /// Completes a module and marks course as completed if all modules are done.
         /// </summary>
-        public bool EnrollInCourse(int courseId)
+        public async Task CompleteModuleAsync(int userId, int moduleId, int courseId)
         {
-            if (repository.IsUserEnrolled(UserId, courseId))
+            await courseServiceProxy.CompleteModule(userId, moduleId);
+
+            if (await courseServiceProxy.IsCourseCompleted(userId, courseId))
             {
-                return false;
-            }
-
-            var course = repository.GetCourse(courseId);
-            if (course == null)
-            {
-                return false;
-            }
-
-            if (course.IsPremium && !coinsRepository.TryDeductCoinsFromUserWallet(UserId, course.Cost))
-            {
-                return false;
-            }
-
-            repository.EnrollUser(UserId, courseId);
-            return true;
-        }
-
-        /// <summary>
-        /// Completes a module and checks for course completion status.
-        /// </summary>
-        public void CompleteModule(int moduleId, int courseId)
-        {
-            repository.CompleteModule(UserId, moduleId);
-
-            if (repository.IsCourseCompleted(UserId, courseId))
-            {
-                repository.MarkCourseAsCompleted(UserId, courseId);
+                await courseServiceProxy.MarkCourseAsCompleted(userId, courseId);
             }
         }
 
         /// <summary>
         /// Returns whether the user is enrolled in the specified course.
         /// </summary>
-        public bool IsUserEnrolled(int courseId) => repository.IsUserEnrolled(UserId, courseId);
+        public async Task<bool> IsUserEnrolledAsync(int userId, int courseId)
+        {
+            return await courseServiceProxy.IsUserEnrolled(userId, courseId);
+        }
 
         /// <summary>
         /// Returns whether the user has completed the specified module.
         /// </summary>
-        public bool IsModuleCompleted(int moduleId) => repository.IsModuleCompleted(UserId, moduleId);
+        public async Task<bool> IsModuleCompletedAsync(int userId, int moduleId)
+        {
+            return await courseServiceProxy.IsModuleCompleted(userId, moduleId);
+        }
 
         /// <summary>
         /// Filters courses based on search text, type, enrollment status, and tags.
         /// </summary>
-        public List<Course> GetFilteredCourses(string searchText, bool filterPremium, bool filterFree, bool filterEnrolled, bool filterNotEnrolled, List<int> selectedTagIds)
+        public async Task<List<Course>> GetFilteredCoursesAsync(string searchText, bool filterPremium, bool filterFree, bool filterEnrolled, bool filterNotEnrolled, List<int> selectedTagIds, int userId)
         {
-            var courses = repository.GetAllCourses();
+            var courses = await courseServiceProxy.GetAllCourses();
 
             if (!string.IsNullOrWhiteSpace(searchText))
             {
-                courses = [.. courses.Where(c => c.Title.Contains(searchText, StringComparison.OrdinalIgnoreCase))];
+                courses = courses.Where(c => c.Title.Contains(searchText, StringComparison.OrdinalIgnoreCase)).ToList();
             }
 
             if (filterPremium && filterFree)
             {
-                courses = [];
+                courses = new List<Course>();
             }
             else if (filterPremium)
             {
-                courses = [.. courses.Where(c => c.IsPremium)];
+                courses = courses.Where(c => c.IsPremium).ToList();
             }
             else if (filterFree)
             {
-                courses = [.. courses.Where(c => !c.IsPremium)];
+                courses = courses.Where(c => !c.IsPremium).ToList();
             }
+
             if (filterEnrolled && filterNotEnrolled)
             {
-                courses = [];
+                courses = new List<Course>();
             }
             else if (filterEnrolled)
             {
-                courses = [.. courses.Where(c => repository.IsUserEnrolled(UserId, c.CourseId))];
+                courses = (await Task.WhenAll(courses.Select(async c => new { c, enrolled = await courseServiceProxy.IsUserEnrolled(userId, c.CourseId) })))
+                    .Where(x => x.enrolled)
+                    .Select(x => x.c)
+                    .ToList();
             }
             else if (filterNotEnrolled)
             {
-                courses = [.. courses.Where(c => !repository.IsUserEnrolled(UserId, c.CourseId))];
+                courses = (await Task.WhenAll(courses.Select(async c => new { c, enrolled = await courseServiceProxy.IsUserEnrolled(userId, c.CourseId) })))
+                    .Where(x => !x.enrolled)
+                    .Select(x => x.c)
+                    .ToList();
             }
 
-                if (selectedTagIds.Count > 0)
+            if (selectedTagIds.Count > 0)
             {
-                courses = [.. courses.Where(c =>
+                courses = (await Task.WhenAll(courses.Select(async c =>
                 {
-                    var courseTagIds = repository.GetTagsForCourse(c.CourseId).Select(t => t.TagId).ToList();
-                    return selectedTagIds.All(id => courseTagIds.Contains(id));
-                })];
+                    var tags = await courseServiceProxy.GetTagsForCourse(c.CourseId);
+                    return new { c, tags };
+                })))
+                .Where(x => selectedTagIds.All(id => x.tags.Select(t => t.TagId).Contains(id)))
+                .Select(x => x.c)
+                .ToList();
             }
 
             return courses;
@@ -199,82 +178,95 @@ namespace Duo.Services
         /// <summary>
         /// Updates the time the user has spent on a course.
         /// </summary>
-        public void UpdateTimeSpent(int courseId, int seconds) => repository.UpdateTimeSpent(UserId, courseId, seconds);
+        public async Task UpdateTimeSpentAsync(int userId, int courseId, int seconds)
+        {
+            await courseServiceProxy.UpdateTimeSpent(userId, courseId, seconds);
+        }
 
         /// <summary>
         /// Retrieves the time the user has spent on a course.
         /// </summary>
-        public int GetTimeSpent(int courseId) => repository.GetTimeSpent(UserId, courseId);
+        public async Task<int> GetTimeSpentAsync(int userId, int courseId)
+        {
+            return await courseServiceProxy.GetTimeSpent(userId, courseId);
+        }
 
         /// <summary>
-        /// Handles user interaction with module images and rewards coins if not previously clicked.
+        /// Handles user interaction with module images.
         /// </summary>
-        public bool ClickModuleImage(int moduleId)
+        public async Task<bool> ClickModuleImageAsync(int userId, int moduleId)
         {
-            if (repository.IsModuleImageClicked(UserId, moduleId))
+            if (await courseServiceProxy.IsModuleImageClicked(userId, moduleId))
             {
                 return false;
             }
-                repository.ClickModuleImage(UserId, moduleId);
-            coinsRepository.AddCoinsToUserWallet(UserId, 10);
+
+            await courseServiceProxy.ClickModuleImage(userId, moduleId);
             return true;
         }
 
         /// <summary>
         /// Checks if a module is in progress.
         /// </summary>
-        public bool IsModuleInProgress(int moduleId) => repository.IsModuleInProgress(UserId, moduleId);
+        public async Task<bool> IsModuleInProgressAsync(int userId, int moduleId)
+        {
+            return await courseServiceProxy.IsModuleOpen(userId, moduleId);
+        }
 
         /// <summary>
         /// Checks if a module is available for the user.
         /// </summary>
-        public bool IsModuleAvailable(int moduleId) => repository.IsModuleAvailable(UserId, moduleId);
+        public async Task<bool> IsModuleAvailableAsync(int userId, int moduleId)
+        {
+            return await courseServiceProxy.IsModuleAvailable(userId, moduleId);
+        }
 
         /// <summary>
         /// Checks if a course has been completed by the user.
         /// </summary>
-        public bool IsCourseCompleted(int courseId) => repository.IsCourseCompleted(UserId, courseId);
+        public async Task<bool> IsCourseCompletedAsync(int userId, int courseId)
+        {
+            return await courseServiceProxy.IsCourseCompleted(userId, courseId);
+        }
 
         /// <summary>
         /// Gets the number of completed modules in a course.
         /// </summary>
-        public int GetCompletedModulesCount(int courseId) => repository.GetCompletedModulesCount(UserId, courseId);
+        public async Task<int> GetCompletedModulesCountAsync(int userId, int courseId)
+        {
+            return await courseServiceProxy.GetCompletedModulesCount(userId, courseId);
+        }
 
         /// <summary>
         /// Gets the number of required modules for a course.
         /// </summary>
-        public int GetRequiredModulesCount(int courseId) => repository.GetRequiredModulesCount(courseId);
+        public async Task<int> GetRequiredModulesCountAsync(int courseId)
+        {
+            return await courseServiceProxy.GetRequiredModulesCount(courseId);
+        }
 
         /// <summary>
         /// Claims the course completion reward if eligible.
         /// </summary>
-        public bool ClaimCompletionReward(int courseId)
+        public async Task<bool> ClaimCompletionRewardAsync(int userId, int courseId)
         {
-            bool claimed = repository.ClaimCompletionReward(UserId, courseId);
-            if (claimed)
-            {
-                coinsRepository.AddCoinsToUserWallet(UserId, 50);
-            }
-            return claimed;
+            return await courseServiceProxy.ClaimCompletionReward(userId, courseId);
         }
 
         /// <summary>
         /// Claims a reward if the course was completed within a time limit.
         /// </summary>
-        public bool ClaimTimedReward(int courseId, int timeSpent)
+        public async Task<bool> ClaimTimedRewardAsync(int userId, int courseId, int timeSpent)
         {
-            int timeLimit = repository.GetCourseTimeLimit(courseId);
-            bool claimed = repository.ClaimTimedReward(UserId, courseId, timeSpent, timeLimit);
-            if (claimed)
-            {
-                coinsRepository.AddCoinsToUserWallet(UserId, 300); // Hardcoded reward
-            }
-            return claimed;
+            return await courseServiceProxy.ClaimTimedReward(userId, courseId, timeSpent);
         }
 
         /// <summary>
         /// Retrieves the time limit for completing a course.
         /// </summary>
-        public int GetCourseTimeLimit(int courseId) => repository.GetCourseTimeLimit(courseId);
+        public async Task<int> GetCourseTimeLimitAsync(int courseId)
+        {
+            return await courseServiceProxy.GetCourseTimeLimit(courseId);
+        }
     }
 }
