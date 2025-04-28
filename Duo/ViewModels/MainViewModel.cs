@@ -1,10 +1,11 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Input;
+using Duo.Commands;
 using Duo.Models;
 using Duo.Services;
-using Duo.Commands;
 using Windows.System.Threading;
 
 #pragma warning disable IDE0028, CS8618, CS8602, CS8601, IDE0060
@@ -40,7 +41,21 @@ namespace Duo.ViewModels
         /// <summary>
         /// User's current coin balance.
         /// </summary>
-        public int UserCoinBalance => coinsService.GetCoinBalance(CurrentUserId);
+        private int userCoinBalance;
+        public int UserCoinBalance
+        {
+            get => userCoinBalance;
+            private set
+            {
+                userCoinBalance = value;
+                OnPropertyChanged(nameof(UserCoinBalance));
+            }
+        }
+
+        public async Task RefreshUserCoinBalanceAsync()
+        {
+            UserCoinBalance = await coinsService.GetCoinBalanceAsync(CurrentUserId);
+        }
 
         /// <summary>
         /// The search query used to filter courses.
@@ -135,13 +150,13 @@ namespace Duo.ViewModels
         /// <summary>
         /// Initializes a new instance of the <see cref="MainViewModel"/> class.
         /// </summary>
-        public MainViewModel(ICourseService? courseService = null, ICoinsService? coinsService = null, ICourseService? courseService1 = null)
+        public MainViewModel(ServiceProxy serviceProxy, ICourseService? courseService = null, ICoinsService? coinsService = null)
         {
-            this.courseService = new CourseService();
-            this.coinsService = new CoinsService();
+            this.courseService = courseService ?? new CourseService();
+            this.coinsService = coinsService ?? new CoinsService(serviceProxy);
 
-            DisplayedCourses = new ObservableCollection<Course>(courseService.GetCourses());
-            AvailableTags = new ObservableCollection<Tag>(courseService.GetTags());
+            DisplayedCourses = new ObservableCollection<Course>(this.courseService.GetCourses());
+            AvailableTags = new ObservableCollection<Tag>(this.courseService.GetTags());
 
             foreach (var tag in AvailableTags)
             {
@@ -149,17 +164,14 @@ namespace Duo.ViewModels
             }
 
             ResetAllFiltersCommand = new RelayCommand(ResetAllFilters);
-
-            this.courseService = courseService;
-            this.coinsService = coinsService;
         }
 
         /// <summary>
         /// Attempts to grant a daily login reward to the user.
         /// </summary>
-        public bool TryDailyLoginReward()
+        public async Task<bool> TryDailyLoginReward()
         {
-            bool loginRewardGranted = coinsService.ApplyDailyLoginBonus();
+            bool loginRewardGranted = await coinsService.ApplyDailyLoginBonusAsync();
             OnPropertyChanged(nameof(UserCoinBalance));
             return loginRewardGranted;
         }

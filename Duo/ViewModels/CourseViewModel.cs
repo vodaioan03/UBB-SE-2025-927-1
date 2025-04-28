@@ -2,11 +2,12 @@
 using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Input;
+using Duo.Commands;
 using Duo.Models;
 using Duo.Services;
 using Duo.ViewModels.Helpers;
-using Duo.Commands;
 
 #pragma warning disable IDE0079 // Remove unnecessary suppression
 #pragma warning disable SA1010 // Opening square brackets should be spaced correctly
@@ -70,7 +71,25 @@ namespace Duo.ViewModels
         public bool CoinVisibility => CurrentCourse.IsPremium && !IsEnrolled;
 
         /// <summary>Gets the current coin balance of the user</summary>
-        public int CoinBalance => coinsService.GetCoinBalance(0);
+        private int coinBalance;
+        public int CoinBalance
+        {
+            get => coinBalance;
+            set
+            {
+                if (coinBalance != value)
+                {
+                    coinBalance = value;
+                    OnPropertyChanged(nameof(CoinBalance));  // Notify UI about the change
+                }
+            }
+        }
+
+        public async Task<int> GetCoinBalanceAsync()
+        {
+            CoinBalance = await coinsService.GetCoinBalanceAsync(0);  // Set the CoinBalance after fetching it
+            return CoinBalance;  // Return the CoinBalance
+        }
 
         /// <summary>Gets the tags associated with this course</summary>
         public ObservableCollection<Tag> Tags => [.. courseService.GetCourseTags(CurrentCourse.CourseId)];
@@ -166,7 +185,7 @@ namespace Duo.ViewModels
                 Difficulty = string.Empty
             };
             courseService = new CourseService();
-            coinsService = new CoinsService();
+            coinsService = new CoinsService(new ServiceProxy(new System.Net.Http.HttpClient()));
             notificationHelper = null;
         }
 
@@ -181,14 +200,19 @@ namespace Duo.ViewModels
         /// <exception cref="ArgumentNullException">Thrown when course is null</exception>
         public CourseViewModel(Course course, ICourseService? courseService = null,
             ICoinsService? coinsService = null, IDispatcherTimerService? timerService = null,
-            IDispatcherTimerService? notificationTimerService = null, INotificationHelper? notificationHelper = null)
+            IDispatcherTimerService? notificationTimerService = null, INotificationHelper? notificationHelper = null,
+            ServiceProxy? serviceProxy = null)
         {
             CurrentCourse = course ?? throw new ArgumentNullException(nameof(course));
-            this.courseService = courseService ?? new CourseService();
-            this.coinsService = coinsService ?? new CoinsService();
 
+            // Initialize services
+            this.courseService = courseService ?? new CourseService();
+            this.coinsService = coinsService ?? new CoinsService(serviceProxy ?? new ServiceProxy(new System.Net.Http.HttpClient()));
+
+            // Initialize timers and notification helper
             InitializeTimersAndNotificationHelper(timerService, notificationTimerService, notificationHelper);
 
+            // Initialize properties
             InitializeProperties();
             LoadInitialData();
         }
@@ -218,8 +242,13 @@ namespace Duo.ViewModels
         /// </summary>
         private void InitializeProperties()
         {
+            // Set the IsEnrolled property using synchronous logic
             IsEnrolled = courseService.IsUserEnrolled(CurrentCourse.CourseId);
-            EnrollCommand = new RelayCommand(EnrollUserInCourse, CanUserEnrollInCourse);
+
+            // Update the EnrollCommand to use async methods
+            EnrollCommand = new RelayCommand(
+                async (parameter) => await EnrollUserInCourseAsync(parameter), // Async method for enrolling user
+                async (parameter) => await CanUserEnrollInCourseAsync(parameter)); // Async check for enrollment eligibility
         }
 
         /// <summary>
@@ -316,30 +345,40 @@ namespace Duo.ViewModels
         /// <summary>
         /// Determines if the user can enroll in the course
         /// </summary>
-        private bool CanUserEnrollInCourse(object? parameter)
+        private async Task<bool> CanUserEnrollInCourseAsync(object? parameter)
         {
-            return !IsEnrolled && CoinBalance >= CurrentCourse.Cost;
+            // Ensure that we can asynchronously get the coin balance
+            int coinBalance = await GetCoinBalanceAsync();
+            return !IsEnrolled && coinBalance >= CurrentCourse.Cost;
         }
 
         /// <summary>
         /// Enrolls the user in the current course
         /// </summary>
-        private void EnrollUserInCourse(object? parameter)
+        private async Task EnrollUserInCourseAsync(object? parameter)
         {
-            if (!coinsService.TrySpendingCoins(0, CurrentCourse.Cost))
+            // Attempt to deduct the coins asynchronously
+            bool coinDeductionSuccessful = await coinsService.TrySpendingCoinsAsync(0, CurrentCourse.Cost);
+
+            if (!coinDeductionSuccessful)
             {
                 return;
             }
 
-            if (!courseService.EnrollInCourse(CurrentCourse.CourseId))
+            // Attempt to enroll in the course
+            bool enrollmentSuccessful = courseService.EnrollInCourse(CurrentCourse.CourseId);
+            if (!enrollmentSuccessful)
             {
                 return;
             }
 
+            // If both operations are successful, proceed with updating the UI
             IsEnrolled = true;
             ResetCourseProgressTracking();
             OnPropertyChanged(nameof(IsEnrolled));
             OnPropertyChanged(nameof(CoinBalance));
+
+            // Start the course progress timer and load the modules
             StartCourseProgressTimer();
             LoadAndOrganizeCourseModules();
         }

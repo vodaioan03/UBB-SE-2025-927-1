@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using System.Windows.Input;
 
 namespace Duo.Commands
@@ -8,36 +9,37 @@ namespace Duo.Commands
     /// </summary>
     public class RelayCommand : ICommand
     {
-        private readonly Action<object?> execute;
-        private readonly Predicate<object?>? canExecute;
+        private readonly Func<object?, Task> executeAsync;
+        private readonly Func<object?, Task<bool>> canExecuteAsync;
 
         public event EventHandler? CanExecuteChanged;
 
-        public RelayCommand(Action<object?> execute, Predicate<object?>? canExecute = null)
+        public RelayCommand(Func<object?, Task> executeAsync, Func<object?, Task<bool>> canExecuteAsync = null)
         {
-            this.execute = execute ?? throw new ArgumentNullException(nameof(execute));
-            this.canExecute = canExecute;
+            this.executeAsync = executeAsync ?? throw new ArgumentNullException(nameof(executeAsync));
+            this.canExecuteAsync = canExecuteAsync;
         }
 
-        public RelayCommand(Action execute, Func<bool>? canExecute = null)
+        public RelayCommand(Action<object?> execute, Predicate<object?>? canExecute = null)
         {
-            if (execute == null)
+            this.executeAsync = parameter =>
             {
-                throw new ArgumentNullException(nameof(execute));
-            }
-
-            this.execute = _ => execute();
-            this.canExecute = canExecute != null ? _ => canExecute() : null;
+                execute(parameter);
+                return Task.CompletedTask;
+            };
+            this.canExecuteAsync = canExecute != null
+                ? parameter => Task.FromResult(canExecute(parameter))
+                : null;
         }
 
         public bool CanExecute(object? parameter)
         {
-            return canExecute?.Invoke(parameter) ?? true;
+            return canExecuteAsync == null || canExecuteAsync(parameter).Result;
         }
 
-        public void Execute(object? parameter)
+        public async void Execute(object? parameter)
         {
-            execute(parameter);
+            await executeAsync(parameter);
         }
 
         public void RaiseCanExecuteChanged()

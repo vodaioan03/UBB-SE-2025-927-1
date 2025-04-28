@@ -70,5 +70,13 @@ namespace Duo.Api.Repositories
         Task UpdateSectionAsync(Section section);
         Task DeleteSectionAsync(int id);
         #endregion
+
+        #region Coins
+        Task<int> GetUserCoinBalanceAsync(int userId);
+        Task<bool> TryDeductCoinsFromUserWalletAsync(int userId, int cost);
+        Task AddCoinsToUserWalletAsync(int userId, int amount);
+        Task<DateTime> GetUserLastLoginTimeAsync(int userId);
+        Task UpdateUserLastLoginTimeToNowAsync(int userId);
+        #endregion
     }
 }
