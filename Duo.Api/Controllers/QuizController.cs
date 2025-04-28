@@ -166,7 +166,12 @@ namespace Duo.Api.Controllers
         public async Task<IActionResult> GetQuizResult([FromQuery] int quizId)
         {
             var result = await repository.GetQuizResultAsync(quizId);
+
+            if (result == null)
+                return NotFound();
+
             return Ok(result);
         }
+
     }
 }
