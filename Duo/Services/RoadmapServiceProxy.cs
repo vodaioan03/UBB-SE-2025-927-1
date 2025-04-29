@@ -12,6 +12,7 @@ namespace Duo.Services
     public class RoadmapServiceProxy
     {
         private readonly HttpClient httpClient;
+        private readonly string url = "https://localhost:7174/";
 
         public RoadmapServiceProxy(HttpClient httpClient)
         {
@@ -20,13 +21,13 @@ namespace Duo.Services
 
         public async Task<List<Roadmap>> GetAllAsync()
         {
-            var response = await httpClient.GetFromJsonAsync<List<Roadmap>>("api/Roadmaps");
+            var response = await httpClient.GetFromJsonAsync<List<Roadmap>>($"{url}api/Roadmaps");
             return response ?? new List<Roadmap>();
         }
 
         public async Task<int> AddAsync(Roadmap roadmap)
         {
-            var response = await httpClient.PostAsJsonAsync("api/Roadmaps", roadmap);
+            var response = await httpClient.PostAsJsonAsync($"{url}api/Roadmaps", roadmap);
 
             if (response.IsSuccessStatusCode)
             {
@@ -41,7 +42,7 @@ namespace Duo.Services
 
         public async Task DeleteAsync(int id)
         {
-            var response = await httpClient.DeleteAsync($"api/Roadmaps/{id}");
+            var response = await httpClient.DeleteAsync($"{url}api/Roadmaps/{id}");
             if (!response.IsSuccessStatusCode)
             {
                 throw new Exception("Failed to delete roadmap");
@@ -50,7 +51,7 @@ namespace Duo.Services
 
         public async Task<Roadmap> GetByIdAsync(int roadmapId)
         {
-            var response = await httpClient.GetFromJsonAsync<Roadmap>($"api/Roadmaps/{roadmapId}");
+            var response = await httpClient.GetFromJsonAsync<Roadmap>($"{url}api/Roadmaps/{roadmapId}");
             if (response == null)
             {
                 throw new Exception("Roadmap not found");
@@ -60,7 +61,7 @@ namespace Duo.Services
 
         public async Task<Roadmap> GetByNameAsync(string roadmapName)
         {
-            var response = await httpClient.GetFromJsonAsync<List<Roadmap>>($"api/Roadmaps/search?name={roadmapName}");
+            var response = await httpClient.GetFromJsonAsync<List<Roadmap>>($"{url}api/Roadmaps/search?name={roadmapName}");
             if (response == null || !response.Any())
             {
                 throw new Exception("Roadmap not found");

@@ -35,8 +35,10 @@ namespace Duo.ViewModels
 
             CompleteModuleCommand = new RelayCommand(ExecuteCompleteModule, CanCompleteModule);
             ModuleImageClickCommand = new RelayCommand(HandleModuleImageClick);
+            courseViewModel = courseVM;
 
             courseService.OpenModuleAsync(0, module.ModuleId);
+
             _ = InitializeAsync();
         }
 
@@ -52,12 +54,10 @@ namespace Duo.ViewModels
                     OnPropertyChanged(nameof(TimeSpent));
                 }
             };
-            courseService.OpenModuleAsync(0, module.ModuleId);
         }
 
         public async Task HandleModuleImageClick(object? obj)
         {
-
             var confirmStatus = courseService.ClickModuleImageAsync(0, CurrentModule.ModuleId).GetAwaiter().GetResult();
             if (confirmStatus)
             {
