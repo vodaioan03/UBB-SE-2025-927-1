@@ -37,7 +37,12 @@ namespace Duo.ViewModels
                 Debug.WriteLine(ex);
             }
             DeleteExamCommand = new RelayCommandWithParameter<Exam>(exam => _ = DeleteExam(exam));
-            OpenSelectExercisesCommand = new RelayCommand(OpenSelectExercises);
+            // Fixing the initialization of OpenSelectExercisesCommand to use a proper Task-returning lambda.
+            OpenSelectExercisesCommand = new RelayCommand(_ =>
+            {
+                OpenSelectExercises();
+                return Task.CompletedTask;
+            });
             RemoveExerciseFromQuizCommand = new RelayCommandWithParameter<Exercise>(exercise => _ = RemoveExerciseFromExam(exercise));
             LoadExercisesAsync();
             InitializeViewModel();

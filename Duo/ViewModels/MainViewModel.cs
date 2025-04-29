@@ -149,15 +149,18 @@ namespace Duo.ViewModels
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MainViewModel"/> class.
-        /// </summary>
-        public MainViewModel(CoinsServiceProxy serviceProxy, ICourseService? courseService = null, ICoinsService? coinsService = null)
+        public MainViewModel(CoinsServiceProxy serviceProxy, CourseServiceProxy courseServiceProxy, ICourseService? courseService = null, ICoinsService? coinsService = null)
         {
-            this.courseService = courseService ?? new CourseService();
+            this.courseService = courseService ?? new CourseService(courseServiceProxy);
             this.coinsService = coinsService ?? new CoinsService(serviceProxy);
 
-            DisplayedCourses = new ObservableCollection<Course>(this.courseService.GetCourses());
-            AvailableTags = new ObservableCollection<Tag>(this.courseService.GetTags());
+            InitializeAsync();
+        }
 
+        private async void InitializeAsync()
+        {
+            DisplayedCourses = new ObservableCollection<Course>(await this.courseService.GetCoursesAsync());
+            AvailableTags = new ObservableCollection<Tag>(await this.courseService.GetTagsAsync());
             foreach (var tag in AvailableTags)
             {
                 tag.PropertyChanged += OnTagSelectionChanged;
@@ -206,20 +209,21 @@ namespace Duo.ViewModels
         /// <summary>
         /// Applies all filters based on search query, selected tags, and filter flags.
         /// </summary>
-        private void ApplyAllFilters()
+        private async void ApplyAllFilters()
         {
             var selectedTagIds = AvailableTags
                 .Where(tag => tag.IsSelected)
                 .Select(tag => tag.TagId)
                 .ToList();
 
-            var filteredCourses = courseService.GetFilteredCourses(
+            var filteredCourses = await courseService.GetFilteredCoursesAsync(
                 searchQuery,
                 filterByPremium,
                 filterByFree,
                 filterByEnrolled,
                 filterByNotEnrolled,
-                selectedTagIds);
+                selectedTagIds,
+                CurrentUserId); // Added the missing 'userId' parameter
 
             DisplayedCourses.Clear();
             foreach (var course in filteredCourses)

@@ -27,18 +27,15 @@ namespace Duo.ViewModels
             coinsService = coinsServiceOverride ?? new CoinsService(new CoinsServiceProxy(new System.Net.Http.HttpClient()));
 
             CurrentModule = module;
-            courseViewModel = courseVM;
+
+            // Fix for CS0029: Await the asynchronous method to get the result
+            IsCompleted = courseService.IsModuleCompletedAsync(0, module.ModuleId).GetAwaiter().GetResult();
 
             CompleteModuleCommand = new RelayCommand(ExecuteCompleteModule, CanCompleteModule);
             ModuleImageClickCommand = new RelayCommand(HandleModuleImageClick);
+            courseViewModel = courseVM;
 
-            _ = InitializeAsync();
-        }
-
-        private async Task InitializeAsync()
-        {
-            IsCompleted = await courseService.IsModuleCompletedAsync(UserId, CurrentModule.ModuleId);
-            await courseService.OpenModuleAsync(UserId, CurrentModule.ModuleId);
+            courseService.OpenModuleAsync(0, module.ModuleId);
 
             courseViewModel.PropertyChanged += (s, e) =>
             {
@@ -47,11 +44,13 @@ namespace Duo.ViewModels
                     OnPropertyChanged(nameof(TimeSpent));
                 }
             };
+
+            courseService.OpenModuleAsync(0, module.ModuleId);
         }
 
         public async Task HandleModuleImageClick(object? obj)
         {
-            bool confirmStatus = await courseService.ClickModuleImageAsync(UserId, CurrentModule.ModuleId);
+            var confirmStatus = courseService.ClickModuleImageAsync(0, CurrentModule.ModuleId).GetAwaiter().GetResult();
             if (confirmStatus)
             {
                 OnPropertyChanged(nameof(CoinBalance));

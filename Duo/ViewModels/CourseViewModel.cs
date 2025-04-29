@@ -109,7 +109,6 @@ namespace Duo.ViewModels
             Tags = new ObservableCollection<Tag>(tagList);
         }
 
-
         /// <summary>
         /// Gets or sets the formatted string representing time remaining in course
         /// Format: "X min Y sec"
@@ -209,7 +208,6 @@ namespace Duo.ViewModels
 
             notificationHelper = null;
         }
-
 
         /// <summary>
         /// Initializes a new instance of the CourseViewModel class
@@ -344,7 +342,6 @@ namespace Duo.ViewModels
             OnPropertyChanged(nameof(ModuleRoadmap));
         }
 
-
         /// <summary>
         /// Determines if a module should be unlocked based on its position and progress
         /// </summary>
@@ -361,7 +358,6 @@ namespace Duo.ViewModels
             }
             return await courseService.IsModuleInProgressAsync(0, module.ModuleId);
         }
-
 
         /// <summary>
         /// Determines if the user can enroll in the course

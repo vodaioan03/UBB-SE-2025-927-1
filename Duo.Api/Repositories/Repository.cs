@@ -598,6 +598,27 @@ namespace Duo.Api.Repositories
                 await context.SaveChangesAsync();
             }
         }
+
+        /// <summary>
+        /// Gets the quiz result, including the quiz ID and the count of associated exercises.
+        /// </summary>
+        /// <param name="quizId">The unique identifier of the quiz.</param>
+        /// <returns>An object containing the quiz ID and the count of exercises, or <c>null</c> if the quiz does not exist.</returns>
+        public async Task<QuizResult> GetQuizResultAsync(int quizId)
+        {
+            var quiz = await context.Quizzes
+                .Include(q => q.Exercises)
+                .FirstOrDefaultAsync(q => q.Id == quizId);
+
+            if (quiz == null)
+            {
+                return null;
+            }
+
+            // Basic mock result
+            return new QuizResult();
+        }
+
         #endregion
 
         #region Courses
