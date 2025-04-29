@@ -38,6 +38,5 @@ namespace Duo.Services
         Task<List<Tag>> GetTagsAsync();
         Task<List<Tag>> GetCourseTagsAsync(int courseId);
         Task<bool> BuyBonusModuleAsync(int userId, int moduleId, int courseId);
-
     }
 }

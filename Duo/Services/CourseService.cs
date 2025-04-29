@@ -273,6 +273,5 @@ namespace Duo.Services
         {
             return await courseServiceProxy.BuyBonusModule(userId, moduleId, courseId);
         }
-
     }
 }
