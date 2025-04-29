@@ -10,7 +10,7 @@ namespace Duo.Services
     {
         private readonly IUserService userServiceProxy;
 
-        public UserService(IUserRepository userRepository)
+        public UserService(IUserService userServiceProxy)
         {
             this.userServiceProxy = userServiceProxy ?? throw new ArgumentNullException(nameof(userServiceProxy));
         }
