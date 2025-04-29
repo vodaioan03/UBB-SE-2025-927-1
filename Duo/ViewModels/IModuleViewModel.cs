@@ -1,4 +1,5 @@
-﻿using System.Windows.Input;
+﻿using System.Threading.Tasks;
+using System.Windows.Input;
 using Duo.Models;
 
 #pragma warning disable IDE0079
@@ -42,10 +43,10 @@ public interface IModuleViewModel : IBaseViewModel
     /// <summary>
     /// Handles the image click event for the current module, performing necessary actions.
     /// </summary>
-    void HandleModuleImageClick(object? obj);
+    Task HandleModuleImageClick(object? obj);
 
     /// <summary>
     /// Executes the module image click logic, triggering associated actions and UI updates.
     /// </summary>
-    void ExecuteModuleImageClick(object? obj);
+    Task ExecuteModuleImageClick(object? obj);
 }

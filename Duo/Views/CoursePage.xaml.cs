@@ -50,7 +50,7 @@ namespace Duo.Views
                 }
                 if (moduleDisplay.Module!.IsBonus)
                 {
-                    viewModel.AttemptBonusModulePurchase(moduleDisplay.Module);
+                    viewModel.AttemptBonusModulePurchaseAsync(moduleDisplay.Module);
                 }
                 var dialog = new ContentDialog
                 {

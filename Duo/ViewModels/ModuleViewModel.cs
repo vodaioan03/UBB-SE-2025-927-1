@@ -3,6 +3,7 @@ using System.Windows.Input;
 using Duo.Commands;
 using Duo.Models;
 using Duo.Services;
+using Windows.System;
 
 namespace Duo.ViewModels
 {
@@ -14,24 +15,30 @@ namespace Duo.ViewModels
         public Module CurrentModule { get; set; }
         public bool IsCompleted { get; set; }
         public ICommand CompleteModuleCommand { get; set; }
+        private int UserId { get; set; }
 
         public ICommand ModuleImageClickCommand { get; set; }
 
         public ModuleViewModel(Models.Module module, ICourseViewModel courseVM,
-            ICourseService? courseServiceOverride = null,
-            ICoinsService? coinsServiceOverride = null)
+                    ICourseService? courseServiceOverride = null,
+                    ICoinsService? coinsServiceOverride = null)
         {
-            // Corrected initialization: Use the proper concrete service classes
-            courseService = courseServiceOverride ?? new CourseService();
+            courseService = courseServiceOverride ?? new CourseService(new CourseServiceProxy(new System.Net.Http.HttpClient()));
             coinsService = coinsServiceOverride ?? new CoinsService(new CoinsServiceProxy(new System.Net.Http.HttpClient()));
 
             CurrentModule = module;
-            IsCompleted = courseService.IsModuleCompleted(module.ModuleId);
-            CompleteModuleCommand = new RelayCommand(ExecuteCompleteModule, CanCompleteModule);
-            ModuleImageClickCommand = new RelayCommand(HandleModuleImageClick);
             courseViewModel = courseVM;
 
-            courseService.OpenModule(module.ModuleId);
+            CompleteModuleCommand = new RelayCommand(ExecuteCompleteModule, CanCompleteModule);
+            ModuleImageClickCommand = new RelayCommand(HandleModuleImageClick);
+
+            _ = InitializeAsync();
+        }
+
+        private async Task InitializeAsync()
+        {
+            IsCompleted = await courseService.IsModuleCompletedAsync(UserId, CurrentModule.ModuleId);
+            await courseService.OpenModuleAsync(UserId, CurrentModule.ModuleId);
 
             courseViewModel.PropertyChanged += (s, e) =>
             {
@@ -40,13 +47,11 @@ namespace Duo.ViewModels
                     OnPropertyChanged(nameof(TimeSpent));
                 }
             };
-
-            courseService.OpenModule(module.ModuleId);
         }
 
-        public void HandleModuleImageClick(object? obj)
+        public async Task HandleModuleImageClick(object? obj)
         {
-            var confirmStatus = courseService.ClickModuleImage(CurrentModule.ModuleId);
+            bool confirmStatus = await courseService.ClickModuleImageAsync(UserId, CurrentModule.ModuleId);
             if (confirmStatus)
             {
                 OnPropertyChanged(nameof(CoinBalance));
@@ -84,9 +89,11 @@ namespace Duo.ViewModels
             OnPropertyChanged(nameof(IsCompleted));
             courseViewModel.RefreshCourseModulesDisplay();
         }
-        public void ExecuteModuleImageClick(object? obj)
+
+        public async Task ExecuteModuleImageClick(object? obj)
         {
-            if (courseService.ClickModuleImage(CurrentModule.ModuleId))
+            bool confirmStatus = await courseService.ClickModuleImageAsync(UserId, CurrentModule.ModuleId);
+            if (confirmStatus)
             {
                 OnPropertyChanged(nameof(CoinBalance));
                 courseViewModel.RefreshCourseModulesDisplay();
