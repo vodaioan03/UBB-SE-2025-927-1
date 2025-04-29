@@ -149,8 +149,7 @@ namespace Duo.Services
                     CourseId = courseId
                 }),
                 Encoding.UTF8,
-                "application/json"
-            );
+                "application/json");
 
             var response = await httpClient.PostAsync("api/course/buyBonusModule", requestContent);
 

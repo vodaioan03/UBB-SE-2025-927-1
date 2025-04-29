@@ -21,17 +21,19 @@ namespace Duo.ViewModels
             ICourseService? courseServiceOverride = null,
             ICoinsService? coinsServiceOverride = null)
         {
-            // Corrected initialization: Use the proper concrete service classes
-            courseService = courseServiceOverride ?? new CourseService();
+            courseService = courseServiceOverride ?? new CourseService(new CourseServiceProxy(new System.Net.Http.HttpClient()));
             coinsService = coinsServiceOverride ?? new CoinsService(new CoinsServiceProxy(new System.Net.Http.HttpClient()));
 
             CurrentModule = module;
-            IsCompleted = courseService.IsModuleCompleted(module.ModuleId);
+
+            // Fix for CS0029: Await the asynchronous method to get the result
+            IsCompleted = courseService.IsModuleCompletedAsync(0, module.ModuleId).GetAwaiter().GetResult();
+
             CompleteModuleCommand = new RelayCommand(ExecuteCompleteModule, CanCompleteModule);
             ModuleImageClickCommand = new RelayCommand(HandleModuleImageClick);
             courseViewModel = courseVM;
 
-            courseService.OpenModule(module.ModuleId);
+            courseService.OpenModuleAsync(0, module.ModuleId);
 
             courseViewModel.PropertyChanged += (s, e) =>
             {
@@ -41,12 +43,12 @@ namespace Duo.ViewModels
                 }
             };
 
-            courseService.OpenModule(module.ModuleId);
+            courseService.OpenModuleAsync(0, module.ModuleId);
         }
 
         public void HandleModuleImageClick(object? obj)
         {
-            var confirmStatus = courseService.ClickModuleImage(CurrentModule.ModuleId);
+            var confirmStatus = courseService.ClickModuleImageAsync(0, CurrentModule.ModuleId).GetAwaiter().GetResult();
             if (confirmStatus)
             {
                 OnPropertyChanged(nameof(CoinBalance));
@@ -86,7 +88,7 @@ namespace Duo.ViewModels
         }
         public void ExecuteModuleImageClick(object? obj)
         {
-            if (courseService.ClickModuleImage(CurrentModule.ModuleId))
+            if (courseService.ClickModuleImageAsync(0, CurrentModule.ModuleId).GetAwaiter().GetResult())
             {
                 OnPropertyChanged(nameof(CoinBalance));
                 courseViewModel.RefreshCourseModulesDisplay();

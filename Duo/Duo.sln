@@ -12,6 +12,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		CodeCoverage.runsettings = CodeCoverage.runsettings
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DuoTests", "..\DuoTests\DuoTests.csproj", "{0D1B5015-E591-E0BC-EB6A-0926FAC848C8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM64 = Debug|ARM64
@@ -52,6 +54,18 @@ Global
 		{54AD002B-FBAE-4B7B-ABC2-825E65F999D3}.Release|x64.Build.0 = Release|Any CPU
 		{54AD002B-FBAE-4B7B-ABC2-825E65F999D3}.Release|x86.ActiveCfg = Release|Any CPU
 		{54AD002B-FBAE-4B7B-ABC2-825E65F999D3}.Release|x86.Build.0 = Release|Any CPU
+		{0D1B5015-E591-E0BC-EB6A-0926FAC848C8}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{0D1B5015-E591-E0BC-EB6A-0926FAC848C8}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{0D1B5015-E591-E0BC-EB6A-0926FAC848C8}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{0D1B5015-E591-E0BC-EB6A-0926FAC848C8}.Debug|x64.Build.0 = Debug|Any CPU
+		{0D1B5015-E591-E0BC-EB6A-0926FAC848C8}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{0D1B5015-E591-E0BC-EB6A-0926FAC848C8}.Debug|x86.Build.0 = Debug|Any CPU
+		{0D1B5015-E591-E0BC-EB6A-0926FAC848C8}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{0D1B5015-E591-E0BC-EB6A-0926FAC848C8}.Release|ARM64.Build.0 = Release|Any CPU
+		{0D1B5015-E591-E0BC-EB6A-0926FAC848C8}.Release|x64.ActiveCfg = Release|Any CPU
+		{0D1B5015-E591-E0BC-EB6A-0926FAC848C8}.Release|x64.Build.0 = Release|Any CPU
+		{0D1B5015-E591-E0BC-EB6A-0926FAC848C8}.Release|x86.ActiveCfg = Release|Any CPU
+		{0D1B5015-E591-E0BC-EB6A-0926FAC848C8}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
