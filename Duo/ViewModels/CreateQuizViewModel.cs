@@ -50,9 +50,9 @@ namespace Duo.ViewModels
                 Debug.WriteLine(ex);
             }
             LoadExercisesAsync();
-            SaveButtonCommand = new RelayCommand(() => _ = CreateQuiz());
+            SaveButtonCommand = new RelayCommand((_) => _ = CreateQuiz());
 
-            OpenSelectExercisesCommand = new RelayCommand(OpenSelectExercises);
+            OpenSelectExercisesCommand = new RelayCommand(async (_) => await Task.Run(() => OpenSelectExercises()));
             RemoveExerciseCommand = new RelayCommandWithParameter<Exercise>(RemoveExercise);
         }
 

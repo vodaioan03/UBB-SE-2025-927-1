@@ -27,7 +27,7 @@ namespace Duo.ViewModels.CreateExerciseViewModels
         public CreateMultipleChoiceExerciseViewModel(ExerciseCreationViewModel parentViewModel)
         {
             this.parentViewModel = parentViewModel;
-            AddNewAnswerCommand = new RelayCommand(AddNewAnswer);
+            AddNewAnswerCommand = new RelayCommand(async _ => AddNewAnswer());
             UpdateSelectedAnswerComand = new RelayCommandWithParameter<string>(UpdateSelectedAnswer);
         }
 

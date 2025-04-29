@@ -46,9 +46,13 @@ namespace Duo.ViewModels
             {
                 Debug.WriteLine(ex);
             }
-            OpenSelectQuizesCommand = new RelayCommand(OpenSelectQuizes);
-            OpenSelectExamsCommand = new RelayCommand(OpenSelectExams);
-            SaveButtonCommand = new RelayCommand(() => _ = CreateSection());
+            // OpenSelectQuizesCommand = new RelayCommand(OpenSelectQuizes);
+            // Update the RelayCommand initialization to use a lambda expression that matches the expected Func<object?, Task> signature.
+            OpenSelectQuizesCommand = new RelayCommand(_ => Task.Run(OpenSelectQuizes));
+            OpenSelectExamsCommand = new RelayCommand(_ => Task.Run(OpenSelectExams));
+            SaveButtonCommand = new RelayCommand(_ => CreateSection());
+            // OpenSelectExamsCommand = new RelayCommand(OpenSelectExams);
+            SaveButtonCommand = new RelayCommand((_) => _ = CreateSection());
 
             RemoveQuizCommand = new RelayCommandWithParameter<Quiz>(RemoveSelectedQuiz);
             GetQuizesAsync();

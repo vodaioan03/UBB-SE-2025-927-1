@@ -291,6 +291,13 @@ namespace Duo.Api.Repositories
         public Task RemoveExerciseFromQuizAsync(int quizId, int exerciseId);
 
         /// <summary>
+        /// Retrieves the result of a quiz asynchronously.
+        /// </summary>
+        /// <param name="quizId">The unique identifier of the quiz whose result is to be retrieved.</param>
+        /// <returns>An object representing the quiz result, which can be customized as needed.</returns>
+        public Task<QuizResult> GetQuizResultAsync(int quizId);
+
+        /// <summary>
         /// Saves a quiz submitted by a user
         /// </summary>
         /// <param name="submission">Submitted quiz entity</param>

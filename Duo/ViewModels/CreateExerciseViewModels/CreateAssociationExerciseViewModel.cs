@@ -32,7 +32,7 @@ namespace Duo.ViewModels.CreateExerciseViewModels
             this.parentViewModel = parentViewModel;
             LeftSideAnswers.Add(new Answer(string.Empty));
             RightSideAnswers.Add(new Answer(string.Empty));
-            AddNewAnswerCommand = new RelayCommand(AddNewAnswer);
+            AddNewAnswerCommand = new RelayCommand(async _ => AddNewAnswer());
         }
 
         private void AddNewAnswer()

@@ -24,7 +24,7 @@ namespace Duo.ViewModels.CreateExerciseViewModels
         {
             this.parentViewModel = parentViewModel;
             Answers.Add(new Answer(string.Empty));
-            AddNewAnswerCommand = new RelayCommand(AddNewAnswer);
+            AddNewAnswerCommand = new RelayCommand(async _ => AddNewAnswer());
         }
 
         public ICommand AddNewAnswerCommand { get; }

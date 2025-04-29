@@ -50,7 +50,7 @@ namespace Duo.ViewModels
             CreateAssociationExerciseViewModel = new CreateAssociationExerciseViewModel(this);
             CreateFillInTheBlankExerciseViewModel = new CreateFillInTheBlankExerciseViewModel(this);
 
-            SaveButtonCommand = new RelayCommand(() => _ = CreateExercise());
+            SaveButtonCommand = new RelayCommand((_) => _ = CreateExercise());
             ExerciseTypes = new ObservableCollection<string>(Models.Exercises.ExerciseTypes.EXERCISE_TYPES);
             Difficulties = new ObservableCollection<string>(Models.DifficultyList.DIFFICULTIES);
             SelectedExerciseContent = "Select an exercise type.";
@@ -73,7 +73,7 @@ namespace Duo.ViewModels
             CreateAssociationExerciseViewModel = new CreateAssociationExerciseViewModel(this);
             CreateFillInTheBlankExerciseViewModel = new CreateFillInTheBlankExerciseViewModel(this);
 
-            SaveButtonCommand = new RelayCommand(() => _ = CreateExercise());
+            SaveButtonCommand = new RelayCommand((_) => _ = CreateExercise());
 
             /*ExerciseTypes = new ObservableCollection<string>
             {

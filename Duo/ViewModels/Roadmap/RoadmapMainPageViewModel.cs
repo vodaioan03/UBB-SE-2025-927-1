@@ -38,7 +38,7 @@ namespace Duo.ViewModels.Roadmap
             roadmapService = (IRoadmapService)App.ServiceProvider.GetService(typeof(IRoadmapService));
             userService = (IUserService)App.ServiceProvider.GetService(typeof(IUserService));
 
-            StartQuizCommand = new RelayCommand(() => _ = StartQuiz());
+            StartQuizCommand = new RelayCommand((_) => _ = StartQuiz());
             OpenQuizPreviewCommand = new RelayCommandWithParameter<Tuple<int, bool>>(tuple => _ = OpenQuizPreview(tuple));
         }
 

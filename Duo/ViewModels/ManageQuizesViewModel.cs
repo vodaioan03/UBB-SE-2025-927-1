@@ -39,7 +39,7 @@ namespace Duo.ViewModels
                 Debug.WriteLine(ex);
             }
             DeleteQuizCommand = new RelayCommandWithParameter<Quiz>(quiz => _ = DeleteQuiz(quiz));
-            OpenSelectExercisesCommand = new RelayCommand(() => _ = OpenSelectExercises());
+            OpenSelectExercisesCommand = new RelayCommand((_) => _ = OpenSelectExercises());
             RemoveExerciseFromQuizCommand = new RelayCommandWithParameter<Exercise>(exercise => _ = RemoveExerciseFromQuiz(exercise));
             LoadExercisesAsync();
             InitializeViewModel();
