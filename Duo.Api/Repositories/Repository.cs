@@ -4,6 +4,7 @@ using Duo.Api.Models.Exercises;
 using Duo.Api.Models.Quizzes;
 using Duo.Api.Models.Sections;
 using Duo.Api.Persistence;
+using Duo.Models.Quizzes.API;
 using Microsoft.EntityFrameworkCore;
 
 #pragma warning disable IDE0079 // Remove unnecessary suppression
@@ -603,7 +604,7 @@ namespace Duo.Api.Repositories
         /// </summary>
         /// <param name="quizId">The unique identifier of the quiz.</param>
         /// <returns>An object containing the quiz ID and the count of exercises, or <c>null</c> if the quiz does not exist.</returns>
-        public async Task<QuizResultDTO?> GetQuizResultAsync(int quizId)
+        public async Task<QuizResult> GetQuizResultAsync(int quizId)
         {
             var quiz = await context.Quizzes
                 .Include(q => q.Exercises)
@@ -615,9 +616,7 @@ namespace Duo.Api.Repositories
             }
 
             // Basic mock result
-            return new QuizResultDTO(
-                quiz.Id,
-                quiz.Exercises.Count);
+            return new QuizResult();
         }
 
         #endregion

@@ -3,6 +3,7 @@ using Duo.Api.Models;
 using Duo.Api.Models.Exercises;
 using Duo.Api.Models.Quizzes;
 using Duo.Api.Models.Sections;
+using Duo.Models.Quizzes.API;
 
 namespace Duo.Api.Repositories
 {
@@ -294,13 +295,13 @@ namespace Duo.Api.Repositories
         /// </summary>
         /// <param name="quizId">The unique identifier of the quiz whose result is to be retrieved.</param>
         /// <returns>An object representing the quiz result, which can be customized as needed.</returns>
-        public Task<QuizResultDTO?> GetQuizResultAsync(int quizId);
+        public Task<QuizResult> GetQuizResultAsync(int quizId);
 
         /// <summary>
         /// Saves a quiz submitted by a user
         /// </summary>
         /// <param name="submission">Submitted quiz entity</param>
-        /// <returns>A task representing the asynchronous operation</returns> 
+        /// <returns>A task representing the asynchronous operation</returns>
         Task SaveQuizSubmissionAsync(QuizSubmissionEntity submission);
 
         /// <summary>

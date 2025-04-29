@@ -341,6 +341,7 @@ namespace Duo.ViewModels
 
             OnPropertyChanged(nameof(ModuleRoadmap));
         }
+
         /// <summary>
         /// Determines if a module should be unlocked based on its position and progress
         /// </summary>

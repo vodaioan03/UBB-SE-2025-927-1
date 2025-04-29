@@ -86,7 +86,7 @@ namespace Duo.ViewModels.Roadmap
 
             var mainPageViewModel = (RoadmapMainPageViewModel)App.ServiceProvider.GetService(typeof(RoadmapMainPageViewModel));
             StartQuizCommand = mainPageViewModel.StartQuizCommand;
-            BackButtonCommand = new RelayCommand(() =>
+            BackButtonCommand = new RelayCommand((_) =>
             {
                 isPreviewVisible = Visibility.Collapsed;
                 OnPropertyChanged(nameof(IsPreviewVisible));

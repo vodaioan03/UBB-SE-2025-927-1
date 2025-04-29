@@ -27,8 +27,10 @@ namespace Duo.Views
             // Create an instance of ServiceProxy
             var serviceProxy = new CoinsServiceProxy(httpClient);
 
+            var courseServiceProxy = new CourseServiceProxy(httpClient);
+
             // Create a CourseService instance (you can replace with your existing service)
-            var courseService = new CourseService();
+            var courseService = new CourseService(courseServiceProxy);
 
             // Create a CoinsService instance, passing ServiceProxy
             var coinsService = new CoinsService(serviceProxy);
@@ -36,6 +38,7 @@ namespace Duo.Views
             // Set the DataContext with the updated MainViewModel constructor
             this.DataContext = new MainViewModel(
                 serviceProxy, // Pass the ServiceProxy
+                courseServiceProxy, // Pass the CourseServiceProxy
                 courseService, // Pass the CourseService
                 coinsService);
 
