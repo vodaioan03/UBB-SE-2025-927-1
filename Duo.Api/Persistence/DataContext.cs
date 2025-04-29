@@ -155,26 +155,6 @@ namespace Duo.Api.Persistence
         /// <param name="modelBuilder">The model builder used to configure properties.</param>
         private static void ConfigureExerciseSpecificProperties(ModelBuilder modelBuilder)
         {
-            // AssociationExercise -> FirstAnswersList and SecondAnswersList (stored as JSON)
-            modelBuilder.Entity<AssociationExercise>()
-                .Property(a => a.FirstAnswersList)
-                .HasConversion(
-                    v => JsonSerializer.Serialize(v, (JsonSerializerOptions)null!),
-                    v => JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions)null!)!);
-
-            modelBuilder.Entity<AssociationExercise>()
-                .Property(a => a.SecondAnswersList)
-                .HasConversion(
-                    v => JsonSerializer.Serialize(v, (JsonSerializerOptions)null!),
-                    v => JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions)null!)!);
-
-            // FillInTheBlankExercise -> PossibleCorrectAnswers (stored as JSON)
-            modelBuilder.Entity<FillInTheBlankExercise>()
-                .Property(a => a.PossibleCorrectAnswers)
-                .HasConversion(
-                    v => JsonSerializer.Serialize(v, (JsonSerializerOptions)null!),
-                    v => JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions)null!)!);
-
             // MultipleChoiceExercise -> MultipleChoiceAnswerModel (real one-to-many)
             modelBuilder.Entity<MultipleChoiceExercise>()
                 .HasMany(m => m.Choices)
