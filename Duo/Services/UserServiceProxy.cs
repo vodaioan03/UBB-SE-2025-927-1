@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
@@ -9,12 +8,12 @@ namespace Duo.Services
 {
     public class UserServiceProxy : IUserService
     {
-        private readonly HttpClient httpClient;
+        private readonly HttpClient _httpClient;
         private const string BaseUrl = "api/user";
 
         public UserServiceProxy(HttpClient httpClient)
         {
-            this.httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
+            _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
         }
 
         public async Task<User> GetByIdAsync(int userId)
@@ -24,7 +23,7 @@ namespace Duo.Services
                 throw new ArgumentException("User ID must be greater than 0.", nameof(userId));
             }
 
-            return await httpClient.GetFromJsonAsync<User>($"{BaseUrl}/{userId}");
+            return await _httpClient.GetFromJsonAsync<User>($"{BaseUrl}/{userId}");
         }
 
         public async Task<User> GetByUsernameAsync(string username)
@@ -34,7 +33,7 @@ namespace Duo.Services
                 throw new ArgumentException("Username cannot be null or empty.", nameof(username));
             }
 
-            var users = await httpClient.GetFromJsonAsync<List<User>>(BaseUrl);
+            var users = await _httpClient.GetFromJsonAsync<List<User>>(BaseUrl);
             return users.Find(u => u.Username.Equals(username, StringComparison.OrdinalIgnoreCase));
         }
 
@@ -45,7 +44,7 @@ namespace Duo.Services
                 throw new ArgumentNullException(nameof(user));
             }
 
-            var response = await httpClient.PostAsJsonAsync($"{BaseUrl}/register", user);
+            var response = await _httpClient.PostAsJsonAsync($"{BaseUrl}/register", user);
             response.EnsureSuccessStatusCode();
 
             var createdUser = await response.Content.ReadFromJsonAsync<User>();
@@ -63,7 +62,7 @@ namespace Duo.Services
             user.NumberOfCompletedSections = newNrOfSectionsCompleted;
             user.NumberOfCompletedQuizzesInSection = newNrOfQuizzesInSectionCompleted;
 
-            await httpClient.PutAsJsonAsync($"{BaseUrl}/update", user);
+            await _httpClient.PutAsJsonAsync($"{BaseUrl}/update", user);
         }
 
         public async Task UpdateUserSectionProgressAsync(int userId, int newNrOfSectionsCompleted, int newNrOfQuizzesInSectionCompleted)
@@ -75,8 +74,9 @@ namespace Duo.Services
             var user = await GetByIdAsync(userId);
             user.NumberOfCompletedSections = newNrOfSectionsCompleted;
             user.NumberOfCompletedQuizzesInSection = newNrOfQuizzesInSectionCompleted;
-            await httpClient.PutAsJsonAsync($"{BaseUrl}/update", user);
+            await _httpClient.PutAsJsonAsync($"{BaseUrl}/update", user);
         }
+
 
         public async Task IncrementUserProgressAsync(int userId)
         {
@@ -88,7 +88,7 @@ namespace Duo.Services
             var user = await GetByIdAsync(userId);
             user.NumberOfCompletedQuizzesInSection++;
 
-            await httpClient.PutAsJsonAsync($"{BaseUrl}/update", user);
+            await _httpClient.PutAsJsonAsync($"{BaseUrl}/update", user);
         }
     }
 }

@@ -10,5 +10,6 @@ namespace Duo.Services
         Task<User> GetByUsernameAsync(string username);
         Task IncrementUserProgressAsync(int userId);
         Task UpdateUserSectionProgressAsync(int userId, int newNrOfSectionsCompleted, int newNrOfQuizzesInSectionCompleted);
+        Task UpdateUserAsync(User user);
     }
 }
