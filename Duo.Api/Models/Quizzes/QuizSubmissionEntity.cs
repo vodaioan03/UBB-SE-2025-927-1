@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Duo.Api.Models.Quizzes
 {
+    [Serializable]
     public class QuizSubmissionEntity
     {
         [Key]
@@ -17,6 +18,7 @@ namespace Duo.Api.Models.Quizzes
             [];
     }
 
+    [Serializable]
     public class AnswerSubmissionEntity
     {
         [Key]

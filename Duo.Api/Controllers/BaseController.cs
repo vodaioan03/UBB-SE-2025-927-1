@@ -18,7 +18,7 @@ namespace Duo.Api.Controllers
         /// <summary>
         /// The repository instance used for data access.
         /// </summary>
-        protected readonly IRepository Repository;
+        protected readonly IRepository repository;
 
         #endregion
 
@@ -30,7 +30,7 @@ namespace Duo.Api.Controllers
         /// <param name="repository">The repository instance to be used for data access.</param>
         public BaseController(IRepository repository)
         {
-            Repository = repository;
+            this.repository = repository;
         }
 
         #endregion

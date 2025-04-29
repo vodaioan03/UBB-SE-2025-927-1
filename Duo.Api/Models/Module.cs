@@ -9,6 +9,7 @@ namespace Duo.Api.Models
     /// A module contains structured content and metadata such as its position, cost, and bonus status.
     /// </summary>
     [ExcludeFromCodeCoverage]
+    [Serializable]
     public class Module
     {
         #region Fields and Properties

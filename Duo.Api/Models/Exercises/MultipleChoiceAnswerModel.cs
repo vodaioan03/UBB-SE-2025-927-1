@@ -9,6 +9,7 @@ namespace Duo.Api.Models.Exercises
     /// This model includes the answer text and whether it is correct.
     /// </summary>
     [ExcludeFromCodeCoverage]
+    [Serializable]
     public class MultipleChoiceAnswerModel
     {
         #region Fields and Properties

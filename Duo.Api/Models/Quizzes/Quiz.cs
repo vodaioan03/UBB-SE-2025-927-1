@@ -14,6 +14,7 @@ namespace Duo.Api.Models.Quizzes
     /// Inherits from BaseQuiz to share common quiz properties and behavior.
     /// </summary>
     [ExcludeFromCodeCoverage]
+    [Serializable]
     public class Quiz
     {
         #region Fields and Properties

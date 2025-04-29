@@ -23,8 +23,6 @@ namespace Duo.Api.Controllers
     [ExcludeFromCodeCoverage]
     public class ExamController(IRepository repository) : BaseController(repository)
     {
-        private readonly IRepository repository = repository;
-
         #region Methods
 
         /// <summary>

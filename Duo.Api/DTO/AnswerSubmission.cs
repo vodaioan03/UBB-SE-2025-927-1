@@ -1,5 +1,6 @@
 namespace Duo.Models.Quizzes.API
 {
+    [Serializable]
     public class AnswerSubmission
     {
         public int QuestionId { get; set; }
@@ -7,5 +8,4 @@ namespace Duo.Models.Quizzes.API
         public string? WrittenAnswer { get; set; }
         public int? AssociatedPairId { get; set; }
     }
-
 }

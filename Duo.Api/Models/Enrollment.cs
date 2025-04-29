@@ -7,6 +7,7 @@ namespace Duo.Api.Models
     /// Represents a user's enrollment in a course, including progress and completion status.
     /// </summary>
     [ExcludeFromCodeCoverage]
+    [Serializable]
     public class Enrollment
     {
         #region Fields and Properties

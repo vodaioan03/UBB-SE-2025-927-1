@@ -13,6 +13,7 @@ namespace Duo.Api.Models.Sections
     /// A section is a part of a roadmap and can contain quizzes and an optional exam.
     /// </summary>
     [ExcludeFromCodeCoverage]
+    [Serializable]
     public class Section
     {
         #region Fields and Properties

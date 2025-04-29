@@ -8,6 +8,7 @@ namespace Duo.Api.Models
     /// including reward claim status and completion timestamp.
     /// </summary>
     [ExcludeFromCodeCoverage]
+    [Serializable]
     public class CourseCompletion
     {
         #region Fields and Properties

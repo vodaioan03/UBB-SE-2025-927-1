@@ -16,6 +16,7 @@ namespace Duo.Api.Models.Exercises
     /// </summary>
     [Index(nameof(Question))] // Optimizes search queries on the Question field
     [ExcludeFromCodeCoverage]
+    [Serializable]
     public abstract class Exercise
     {
         #region Properties

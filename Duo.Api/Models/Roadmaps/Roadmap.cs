@@ -12,6 +12,7 @@ namespace Duo.Api.Models.Roadmaps
     /// A roadmap is a structured plan that organizes sections in a specific order.
     /// </summary>
     [ExcludeFromCodeCoverage]
+    [Serializable]
     public class Roadmap
     {
         #region Fields and Properties

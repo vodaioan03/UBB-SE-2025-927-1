@@ -7,6 +7,7 @@ namespace Duo.Api.Models.Exercises
     /// Inherits from the <see cref="Exercise"/> base class.
     /// </summary>
     [ExcludeFromCodeCoverage]
+    [Serializable]
     public class MultipleChoiceExercise : Exercise
     {
         #region Fields and Properties

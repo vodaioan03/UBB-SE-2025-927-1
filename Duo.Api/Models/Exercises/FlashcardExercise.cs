@@ -7,6 +7,7 @@ namespace Duo.Api.Models.Exercises
     /// This class allows defining a flashcard exercise with a question, answer, and time constraints.
     /// </summary>
     [ExcludeFromCodeCoverage]
+    [Serializable]
     public class FlashcardExercise : Exercise
     {
         #region Constants

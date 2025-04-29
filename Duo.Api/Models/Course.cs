@@ -7,6 +7,7 @@ namespace Duo.Api.Models
     /// Represents a course with its details such as title, description, difficulty, and pricing information.
     /// </summary>
     [ExcludeFromCodeCoverage]
+    [Serializable]
     public class Course
     {
         #region Fields and Properties

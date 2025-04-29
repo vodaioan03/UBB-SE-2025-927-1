@@ -3,6 +3,7 @@ using System;
 
 namespace Duo.Models.Quizzes.API
 {
+    [Serializable]
     public class QuizModel
     {
         public int Id { get; set; }
