@@ -22,8 +22,6 @@ namespace Duo.Api.Controllers
     [ExcludeFromCodeCoverage]
     public class UserController(IRepository repository) : BaseController(repository)
     {
-        private readonly IRepository repository = repository;
-
         #region Constructors
 
         #endregion

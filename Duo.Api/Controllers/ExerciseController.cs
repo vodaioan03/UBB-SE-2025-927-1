@@ -21,15 +21,6 @@ namespace Duo.Api.Controllers
     [ExcludeFromCodeCoverage]
     public class ExerciseController(IRepository repository) : BaseController(repository)
     {
-        #region Fields
-
-        /// <summary>
-        /// The repository instance used for data access.
-        /// </summary>
-        private readonly IRepository repository = repository;
-
-        #endregion
-
         #region Methods
 
         /// <summary>

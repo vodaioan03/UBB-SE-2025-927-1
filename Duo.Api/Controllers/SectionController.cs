@@ -22,8 +22,6 @@ namespace Duo.Api.Controllers
     [ExcludeFromCodeCoverage]
     public class SectionController(IRepository repository) : BaseController(repository)
     {
-        private readonly IRepository repository = repository;
-
         #region Private Methods
 
         /// <summary>
