@@ -268,5 +268,10 @@ namespace Duo.Services
         {
             return await courseServiceProxy.GetCourseTimeLimit(courseId);
         }
+
+        public async Task<bool> BuyBonusModuleAsync(int userId, int moduleId, int courseId)
+        {
+            return await courseServiceProxy.BuyBonusModule(userId, moduleId, courseId);
+        }
     }
 }

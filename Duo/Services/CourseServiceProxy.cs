@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Json;
+using System.Text.Json;
+using System.Text;
 using System.Threading.Tasks;
 using Duo.Models;
 
@@ -135,6 +137,24 @@ namespace Duo.Services
         public async Task<int> GetCourseTimeLimit(int courseId)
         {
             return await httpClient.GetFromJsonAsync<int>($"course/timeLimit?courseId={courseId}");
+        }
+
+        public async Task<bool> BuyBonusModule(int userId, int moduleId, int courseId)
+        {
+            var requestContent = new StringContent(
+                JsonSerializer.Serialize(new
+                {
+                    UserId = userId,
+                    ModuleId = moduleId,
+                    CourseId = courseId
+                }),
+                Encoding.UTF8,
+                "application/json"
+            );
+
+            var response = await httpClient.PostAsync("api/course/buyBonusModule", requestContent);
+
+            return response.IsSuccessStatusCode;
         }
     }
 }
