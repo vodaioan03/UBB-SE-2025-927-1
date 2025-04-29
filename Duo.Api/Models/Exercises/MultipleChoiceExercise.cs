@@ -23,27 +23,6 @@ namespace Duo.Api.Models.Exercises
         #region Constructors
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="MultipleChoiceExercise"/> class with the specified parameters.
-        /// </summary>
-        /// <param name="exerciseId">The unique identifier for the exercise.</param>
-        /// <param name="question">The question or prompt for the exercise.</param>
-        /// <param name="difficulty">The difficulty level of the exercise.</param>
-        /// <param name="choices">The list of answer choices for the exercise.</param>
-        /// <exception cref="ArgumentException">
-        /// Thrown when the list of choices is null or does not contain at least one correct answer.
-        /// </exception>
-        public MultipleChoiceExercise(int exerciseId, string question, Difficulty difficulty, List<MultipleChoiceAnswerModel> choices)
-            : base(exerciseId, question, difficulty)
-        {
-            if (choices == null || !choices.Any(c => c.IsCorrect))
-            {
-                throw new ArgumentException("At least one choice must be correct.", nameof(choices));
-            }
-
-            Choices = choices;
-        }
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="MultipleChoiceExercise"/> class.
         /// This parameterless constructor is required for Entity Framework.
         /// </summary>

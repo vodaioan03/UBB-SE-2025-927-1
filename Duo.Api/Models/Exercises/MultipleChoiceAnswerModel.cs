@@ -54,17 +54,6 @@ namespace Duo.Api.Models.Exercises
         {
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="MultipleChoiceAnswerModel"/> class with the specified parameters.
-        /// </summary>
-        /// <param name="answer">The text of the answer.</param>
-        /// <param name="isCorrect">A value indicating whether this answer is correct.</param>
-        public MultipleChoiceAnswerModel(string answer, bool isCorrect)
-        {
-            Answer = answer;
-            IsCorrect = isCorrect;
-        }
-
         #endregion
 
         #region Methods
