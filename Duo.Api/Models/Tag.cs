@@ -8,6 +8,7 @@ namespace Duo.Api.Models
     /// Tags are used to categorize or label content for better organization and searchability.
     /// </summary>
     [ExcludeFromCodeCoverage]
+    [Serializable]
     public class Tag
     {
         #region Fields and Properties

@@ -8,6 +8,7 @@ namespace Duo.Api.Models
     /// A user can complete sections, quizzes, and interact with various platform features.
     /// </summary>
     [ExcludeFromCodeCoverage]
+    [Serializable]
     public class User
     {
         #region Fields and Properties

@@ -3,6 +3,7 @@
 namespace Duo.Api.Models
 {
     [ExcludeFromCodeCoverage]
+    [Serializable]
     public class UserProgress
     {
         public int UserId { get; set; }

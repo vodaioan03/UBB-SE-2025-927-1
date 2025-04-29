@@ -7,6 +7,7 @@ namespace Duo.Api.Models.Exercises
     /// This class allows for defining a fill-in-the-blank type exercise with a list of possible correct answers.
     /// </summary>
     [ExcludeFromCodeCoverage]
+    [Serializable]
     public class FillInTheBlankExercise : Exercise
     {
         #region Properties

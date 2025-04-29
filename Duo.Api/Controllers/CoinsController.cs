@@ -31,7 +31,7 @@ namespace Duo.Api.Controllers
         public async Task<ActionResult<int>> GetUserCoinBalance(int userId)
         {
             // Retrieve the user's coin balance from the repository
-            var balance = await Repository.GetUserCoinBalanceAsync(userId);
+            var balance = await repository.GetUserCoinBalanceAsync(userId);
             return Ok(balance);
         }
 
@@ -44,7 +44,7 @@ namespace Duo.Api.Controllers
         public async Task<ActionResult> SpendCoins([FromBody] SpendCoinsRequest request)
         {
             // Attempt to deduct coins from the user's wallet
-            bool success = await Repository.TryDeductCoinsFromUserWalletAsync(request.UserId, request.Cost);
+            bool success = await repository.TryDeductCoinsFromUserWalletAsync(request.UserId, request.Cost);
             if (success)
             {
                 return Ok();
@@ -64,7 +64,7 @@ namespace Duo.Api.Controllers
         public async Task<ActionResult> AddCoins([FromBody] AddCoinsRequest request)
         {
             // Add coins to the user's wallet
-            await Repository.AddCoinsToUserWalletAsync(request.UserId, request.Amount);
+            await repository.AddCoinsToUserWalletAsync(request.UserId, request.Amount);
             return Ok();
         }
 
@@ -77,16 +77,16 @@ namespace Duo.Api.Controllers
         public async Task<ActionResult> ApplyDailyLoginBonus([FromBody] DailyBonusRequest request)
         {
             // Retrieve the user's last login time
-            DateTime lastLogin = await Repository.GetUserLastLoginTimeAsync(request.UserId);
+            DateTime lastLogin = await repository.GetUserLastLoginTimeAsync(request.UserId);
 
             // Check if the bonus has already been claimed today
             if (lastLogin.Date < DateTime.Now.Date)
             {
                 // Add the daily bonus to the user's wallet
-                await Repository.AddCoinsToUserWalletAsync(request.UserId, 10); // Example: 10 coins bonus
+                await repository.AddCoinsToUserWalletAsync(request.UserId, 10); // Example: 10 coins bonus
 
                 // Update the user's last login time to now
-                await Repository.UpdateUserLastLoginTimeToNowAsync(request.UserId);
+                await repository.UpdateUserLastLoginTimeToNowAsync(request.UserId);
                 return Ok();
             }
             else
