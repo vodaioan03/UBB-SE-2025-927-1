@@ -13,7 +13,8 @@ namespace Duo.Api.Models.Quizzes
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }
 
-        public List<AnswerSubmissionEntity> Answers { get; set; } = new();
+        public List<AnswerSubmissionEntity> Answers { get; set; } =
+            [];
     }
 
     public class AnswerSubmissionEntity
