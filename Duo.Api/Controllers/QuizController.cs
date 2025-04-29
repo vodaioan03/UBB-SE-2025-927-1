@@ -1,8 +1,11 @@
+
+using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
 using System.Diagnostics.CodeAnalysis;
 using Duo.Api.Models.Quizzes;
+using Duo.Api.Persistence;
 using Duo.Api.Repositories;
-using Microsoft.AspNetCore.Mvc;
-
+using Duo.Api.Models.Exercises;
 #pragma warning disable IDE0079 // Remove unnecessary suppression
 #pragma warning disable SA1009 // Closing parenthesis should be spaced correctly
 
@@ -28,8 +31,6 @@ namespace Duo.Api.Controllers
         /// <summary>
         /// Adds a new quiz to the database.
         /// </summary>
-        /// <param name="quiz">The quiz data to add.</param>
-        /// <returns>The added quiz.</returns>
         [HttpPost("add")]
         public async Task<IActionResult> AddQuiz([FromForm] Quiz quiz)
         {
@@ -40,8 +41,6 @@ namespace Duo.Api.Controllers
         /// <summary>
         /// Retrieves a quiz by its ID.
         /// </summary>
-        /// <param name="id">The ID of the quiz to retrieve.</param>
-        /// <returns>The quiz if found; otherwise, NotFound.</returns>
         [HttpGet("get")]
         public async Task<IActionResult> GetQuiz([FromQuery] int id)
         {
@@ -57,7 +56,6 @@ namespace Duo.Api.Controllers
         /// <summary>
         /// Lists all quizzes in the database.
         /// </summary>
-        /// <returns>A list of all quizzes.</returns>
         [HttpGet("list")]
         public async Task<IActionResult> ListQuizzes()
         {
@@ -68,8 +66,6 @@ namespace Duo.Api.Controllers
         /// <summary>
         /// Updates an existing quiz.
         /// </summary>
-        /// <param name="updatedQuiz">The updated quiz data, including Id.</param>
-        /// <returns>The updated quiz if found; otherwise, NotFound.</returns>
         [HttpPut("update")]
         public async Task<IActionResult> UpdateQuiz([FromForm] Quiz updatedQuiz)
         {
@@ -86,8 +82,6 @@ namespace Duo.Api.Controllers
         /// <summary>
         /// Deletes a quiz by its ID.
         /// </summary>
-        /// <param name="id">The ID of the quiz to delete.</param>
-        /// <returns>Ok if deleted; otherwise, NotFound.</returns>
         [HttpDelete("delete")]
         public async Task<IActionResult> DeleteQuiz([FromQuery] int id)
         {
@@ -104,8 +98,6 @@ namespace Duo.Api.Controllers
         /// <summary>
         /// Retrieves all quizzes from a specific section.
         /// </summary>
-        /// <param name="sectionId">The ID of the section.</param>
-        /// <returns>A list of quizzes from the section.</returns>
         [HttpGet("get-all-section")]
         public async Task<IActionResult> GetAllQuizzesFromSection([FromQuery] int sectionId)
         {
@@ -116,8 +108,6 @@ namespace Duo.Api.Controllers
         /// <summary>
         /// Retrieves the number of quizzes in a specific section.
         /// </summary>
-        /// <param name="sectionId">The ID of the section.</param>
-        /// <returns>The number of quizzes.</returns>
         [HttpGet("count-from-section")]
         public async Task<IActionResult> CountQuizzesFromSection([FromQuery] int sectionId)
         {
@@ -128,8 +118,6 @@ namespace Duo.Api.Controllers
         /// <summary>
         /// Retrieves the last order number from a specific section.
         /// </summary>
-        /// <param name="sectionId">The ID of the section.</param>
-        /// <returns>The last order number if found; otherwise, 0.</returns>
         [HttpGet("last-order")]
         public async Task<IActionResult> GetLastOrderNumberFromSection([FromQuery] int sectionId)
         {
@@ -140,9 +128,6 @@ namespace Duo.Api.Controllers
         /// <summary>
         /// Adds a list of new exercises to a quiz.
         /// </summary>
-        /// <param name="quizId">The ID of the quiz.</param>
-        /// <param name="exercises">The exercises to add.</param>
-        /// <returns>Ok if added.</returns>
         [HttpPost("add-exercises")]
         public async Task<IActionResult> AddExercisesToQuiz([FromForm] int quizId, [FromForm] List<int> exercises)
         {
@@ -153,9 +138,6 @@ namespace Duo.Api.Controllers
         /// <summary>
         /// Adds a single exercise to a quiz.
         /// </summary>
-        /// <param name="quizId">The ID of the quiz.</param>
-        /// <param name="exerciseId">The ID of the exercise to add.</param>
-        /// <returns>Ok if added.</returns>
         [HttpPost("add-exercise")]
         public async Task<IActionResult> AddExerciseToQuiz([FromForm] int quizId, [FromForm] int exerciseId)
         {
@@ -166,9 +148,6 @@ namespace Duo.Api.Controllers
         /// <summary>
         /// Removes an exercise from a quiz.
         /// </summary>
-        /// <param name="quizId">The ID of the quiz.</param>
-        /// <param name="exerciseId">The ID of the exercise to remove.</param>
-        /// <returns>Ok if removed.</returns>
         [HttpDelete("remove-exercise")]
         public async Task<IActionResult> RemoveExerciseFromQuiz([FromQuery] int quizId, [FromQuery] int exerciseId)
         {
@@ -177,14 +156,102 @@ namespace Duo.Api.Controllers
         }
 
         /// <summary>
-        /// Retrieves the quiz result for a specific quiz.
+        /// Submits a quiz with user's answers, checks correctness, and saves the submission.
         /// </summary>
-        /// <param name="quizId">The ID of the quiz.</param>
-        /// <returns>The quiz result.</returns>
+        [HttpPost("submit")]
+        public async Task<IActionResult> SubmitQuiz([FromBody] QuizSubmission submission)
+        {
+            var quiz = await repository.GetQuizByIdAsync(submission.QuizId);
+            if (quiz == null)
+                return NotFound();
+
+            var submissionEntity = new QuizSubmissionEntity
+            {
+                QuizId = submission.QuizId,
+                StartTime = DateTime.Now.AddMinutes(-5),
+                EndTime = DateTime.Now,
+            };
+
+            foreach (var answer in submission.Answers)
+            {
+                var question = quiz.Exercises.FirstOrDefault(q => q.ExerciseId == answer.QuestionId);
+                if (question != null)
+                {
+                    submissionEntity.Answers.Add(new AnswerSubmissionEntity
+                    {
+                        QuestionId = answer.QuestionId,
+                        IsCorrect = CheckIfCorrect(question, answer)
+                    });
+                }
+            }
+
+            await repository.SaveQuizSubmissionAsync(submissionEntity);
+            return Ok();
+        }
+
+        /// <summary>
+        /// Checks if a given answer is correct depending on the type of exercise.
+        /// </summary>
+        /// <param name="question">The exercise question to check against.</param>
+        /// <param name="userAnswer">The user's submitted answer.</param>
+        /// <returns>True if the answer is correct, otherwise false.</returns>
+        private bool CheckIfCorrect(Exercise question, AnswerSubmission userAnswer)
+        {
+            if (question is MultipleChoiceExercise mcq)
+            {
+                if (userAnswer.SelectedOptionIndex.HasValue &&
+                    mcq.Choices != null &&
+                    userAnswer.SelectedOptionIndex.Value >= 0 &&
+                    userAnswer.SelectedOptionIndex.Value < mcq.Choices.Count)
+                {
+                    return mcq.Choices[userAnswer.SelectedOptionIndex.Value].IsCorrect;
+                }
+            }
+            else if (question is FillInTheBlankExercise fill)
+            {
+                return fill.PossibleCorrectAnswers
+                    .Any(correct => string.Equals(correct, userAnswer.WrittenAnswer?.Trim(), StringComparison.OrdinalIgnoreCase));
+            }
+            else if (question is FlashcardExercise flash)
+            {
+                return flash.ValidateAnswer(userAnswer.WrittenAnswer ?? string.Empty);
+            }
+            else if (question is AssociationExercise association)
+            {
+                if (userAnswer.SelectedOptionIndex.HasValue && userAnswer.AssociatedPairId.HasValue)
+                {
+                    var selectedFirstIndex = userAnswer.SelectedOptionIndex.Value;
+                    var selectedSecondIndex = userAnswer.AssociatedPairId.Value;
+
+                    if (selectedFirstIndex >= 0 && selectedFirstIndex < association.FirstAnswersList.Count &&
+                        selectedSecondIndex >= 0 && selectedSecondIndex < association.SecondAnswersList.Count)
+                    {
+                        return selectedFirstIndex == selectedSecondIndex;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Retrieves the quiz result (total questions, correct answers, and time taken) after submission.
+        /// </summary>
         [HttpGet("get-result")]
         public async Task<IActionResult> GetQuizResult([FromQuery] int quizId)
         {
-            var result = await repository.GetQuizResultAsync(quizId);
+            var submission = await repository.GetSubmissionByQuizIdAsync(quizId);
+            if (submission == null)
+                return NotFound();
+
+            var result = new QuizResult
+            {
+                QuizId = quizId,
+                TotalQuestions = submission.Answers.Count,
+                CorrectAnswers = submission.Answers.Count(a => a.IsCorrect),
+                TimeTaken = submission.EndTime - submission.StartTime
+            };
+
             return Ok(result);
         }
 

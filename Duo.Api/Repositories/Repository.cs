@@ -428,6 +428,29 @@ namespace Duo.Api.Repositories
         }
 
         /// <summary>
+        /// Asynchronously saves a quiz submitted by a user
+        /// </summary>
+        /// <param name="submission">Object representing submitted quiz</param>
+        /// <returns>A task that represents the asynchronous operation.</returns>
+        public async Task SaveQuizSubmissionAsync(QuizSubmissionEntity submission)
+        {
+            context.QuizSubmissions.Add(submission);
+            await context.SaveChangesAsync();
+        }
+
+        /// <summary>
+        /// Asynchronously gets a quiz submitted by a user
+        /// </summary>
+        /// <param name="quizId">Id of quiz submitted you want to retrieve</param>
+        /// <returns>An object representing quiz submission by a user</returns>
+        public async Task<QuizSubmissionEntity?> GetSubmissionByQuizIdAsync(int quizId)
+        {
+            return await context.QuizSubmissions
+                .Include(q => q.Answers)
+                .FirstOrDefaultAsync(q => q.QuizId == quizId);
+        }
+
+        /// <summary>
         /// Asynchronously adds a new quiz to the database.
         /// </summary>
         /// <param name="quiz">The <see cref="Quiz"/> object to be added.</param>

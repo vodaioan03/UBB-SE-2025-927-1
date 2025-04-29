@@ -49,6 +49,8 @@ namespace Duo.Api.Persistence
         /// Gets or sets the courses in the database.
         /// </summary>
         public DbSet<Course> Courses { get; set; }
+        public DbSet<QuizSubmissionEntity> QuizSubmissions { get; set; }
+        public DbSet<AnswerSubmissionEntity> AnswerSubmissions { get; set; }
 
         /// <summary>
         /// Gets or sets the exams in the database.

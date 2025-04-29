@@ -296,6 +296,20 @@ namespace Duo.Api.Repositories
         /// <returns>An object representing the quiz result, which can be customized as needed.</returns>
         public Task<QuizResultDTO?> GetQuizResultAsync(int quizId);
 
+        /// <summary>
+        /// Saves a quiz submitted by a user
+        /// </summary>
+        /// <param name="submission">Submitted quiz entity</param>
+        /// <returns>A task representing the asynchronous operation</returns> 
+        Task SaveQuizSubmissionAsync(QuizSubmissionEntity submission);
+
+        /// <summary>
+        /// Gets quiz submission by the given quiz id
+        /// </summary>
+        /// <param name="quizId">Id of submitted quiz you want to retrieve</param>
+        /// <returns>An object representing the quiz submitted by the user</returns>
+        Task<QuizSubmissionEntity?> GetSubmissionByQuizIdAsync(int quizId);
+
         #endregion
 
         #region Courses
