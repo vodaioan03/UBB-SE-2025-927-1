@@ -15,8 +15,7 @@ namespace Duo.ViewModels
         public Module CurrentModule { get; set; }
         public bool IsCompleted { get; set; }
         public ICommand CompleteModuleCommand { get; set; }
-        private int 
-        { get; set; }
+        private int UserId { get; set; }
 
         public ICommand ModuleImageClickCommand { get; set; }
 
