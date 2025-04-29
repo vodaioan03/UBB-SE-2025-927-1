@@ -75,5 +75,14 @@ namespace Duo.Services
 
             await userServiceProxy.UpdateUserAsync(user);
         }
+
+        public async Task UpdateUserAsync(User user)
+        {
+            if (user == null)
+            {
+                throw new ArgumentNullException(nameof(user));
+            }
+            await userServiceProxy.UpdateUserAsync(user);
+        }
     }
 }
