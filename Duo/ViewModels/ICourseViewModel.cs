@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using Duo.Models;
 using static Duo.ViewModels.CourseViewModel;
@@ -27,40 +28,39 @@ namespace Duo.ViewModels
         ICommand? EnrollCommand { get; }
 
         /// <summary>
-        /// Gets a value indicating whether the user is enrolled in the current course.
+        /// Gets or sets a value indicating whether the user is enrolled in the current course.
         /// </summary>
-        bool IsEnrolled { get; }
+        bool IsEnrolled { get; set; }
 
         /// <summary>
-        /// Gets whether the coin visibility is enabled (e.g., for premium courses).
+        /// Gets whether coin information should be visible (e.g., for premium courses).
         /// </summary>
         bool CoinVisibility { get; }
 
         /// <summary>
-        /// Gets the current coin balance of the user.
+        /// Gets or sets the current coin balance of the user.
         /// </summary>
-        int CoinBalance { get; }
+        int CoinBalance { get; set; }
 
         /// <summary>
         /// Gets the tags associated with the current course.
         /// </summary>
-        ObservableCollection<Tag> Tags { get; }
+        ObservableCollection<Tag> Tags { get; } 
 
         /// <summary>
-        /// Gets the formatted string representing the time remaining to complete the course.
-        /// The format is typically "X min Y sec".
+        /// Gets the formatted string representing the time remaining to complete the course (e.g., "X min Y sec").
         /// </summary>
         string FormattedTimeRemaining { get; }
 
         /// <summary>
-        /// Gets or sets the notification message that should be displayed to the user.
+        /// Gets or sets the notification message to display to the user.
         /// </summary>
-        string NotificationMessage { get; }
+        string NotificationMessage { get; set; }
 
         /// <summary>
-        /// Gets or sets whether the notification message should be shown.
+        /// Gets or sets a value indicating whether the notification should be visible.
         /// </summary>
-        bool ShowNotification { get; }
+        bool ShowNotification { get; set; }
 
         /// <summary>
         /// Gets the number of modules that have been completed for the current course.
@@ -68,12 +68,12 @@ namespace Duo.ViewModels
         int CompletedModules { get; }
 
         /// <summary>
-        /// Gets the number of modules that are required for completing the current course.
+        /// Gets the number of modules required to complete the course.
         /// </summary>
         int RequiredModules { get; }
 
         /// <summary>
-        /// Gets a value indicating whether the course is completed based on module progress.
+        /// Gets a value indicating whether the course has been completed.
         /// </summary>
         bool IsCourseCompleted { get; }
 
@@ -83,7 +83,7 @@ namespace Duo.ViewModels
         int TimeLimit { get; }
 
         /// <summary>
-        /// Gets the time remaining to complete the course, in seconds.
+        /// Gets the remaining time to complete the course, in seconds.
         /// </summary>
         int TimeRemaining { get; }
 
@@ -100,36 +100,41 @@ namespace Duo.ViewModels
         #region Methods
 
         /// <summary>
-        /// Starts the timer for tracking course progress.
+        /// Retrieves and updates the current coin balance asynchronously.
+        /// </summary>
+        Task<int> GetCoinBalanceAsync();
+
+        /// <summary>
+        /// Starts the timer that tracks course progress.
         /// </summary>
         void StartCourseProgressTimer();
 
         /// <summary>
-        /// Pauses the timer for tracking course progress.
+        /// Pauses the course progress timer and saves the current progress asynchronously.
         /// </summary>
-        void PauseCourseProgressTimer();
+        Task PauseCourseProgressTimer();
 
         /// <summary>
-        /// Refreshes the display of course modules based on current progress and status.
+        /// Refreshes the module roadmap by reloading module statuses asynchronously.
         /// </summary>
-        void RefreshCourseModulesDisplay();
+        Task RefreshCourseModulesDisplay();
 
-        /// <summary>
-        /// Marks the specified module as completed and checks if rewards can be claimed.
+        /// <summary
+        /// >Marks a module as completed and checks for rewards asynchronously.
         /// </summary>
         /// <param name="targetModuleId">The ID of the module to mark as completed.</param>
-        void MarkModuleAsCompletedAndCheckRewards(int targetModuleId);
+        Task MarkModuleAsCompletedAndCheckRewards(int targetModuleId);
 
         /// <summary>
-        /// Attempts to purchase a bonus module for the course.
+        /// Attempts to purchase a bonus module asynchronously.
         /// </summary>
         /// <param name="module">The module to purchase.</param>
-        void AttemptBonusModulePurchase(Module module);
+        Task AttemptBonusModulePurchaseAsync(Module? module);
 
         /// <summary>
-        /// Loads and organizes all the modules for the current course, updating their progress status.
+        /// Loads and organizes all modules for the course asynchronously.
         /// </summary>
-        void LoadAndOrganizeCourseModules();
+        Task LoadAndOrganizeCourseModules();
 
         #endregion
     }
