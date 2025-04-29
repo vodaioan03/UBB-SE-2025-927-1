@@ -426,8 +426,405 @@ namespace Duo.Api.Tests.Repositories
 
             // Act
             await repository.OpenModuleAsync(userId: 1, moduleId: 999);
+        }
 
-            // Expect exception
+        [TestMethod]
+        public async Task CompleteModuleAsync_UpdatesStatus_WhenProgressExists()
+        {
+            // Arrange
+            var context = GetInMemoryDbContext();
+            var repo = new Repository(context);
+
+            context.UserProgresses.Add(new UserProgress
+            {
+                UserId = 1,
+                ModuleId = 1,
+                Status = "started"
+            });
+            await context.SaveChangesAsync();
+
+            // Act
+            await repo.CompleteModuleAsync(1, 1);
+            var progress = await context.UserProgresses.FirstOrDefaultAsync();
+
+            // Assert
+            Assert.AreEqual("completed", progress?.Status);
+        }
+
+        [TestMethod]
+        public async Task CompleteModuleAsync_UpdatesExistingProgressStatusToCompleted()
+        {
+            // Arrange
+            var context = GetInMemoryDbContext();
+            var repo = new Repository(context);
+
+            context.UserProgresses.Add(new UserProgress
+            {
+                UserId = 100,
+                ModuleId = 200,
+                Status = "started",
+                ImageClicked = false
+            });
+            await context.SaveChangesAsync();
+
+            // Act
+            await repo.CompleteModuleAsync(100, 200);
+
+            // Assert
+            var progress = await context.UserProgresses
+                .FirstOrDefaultAsync(p => p.UserId == 100 && p.ModuleId == 200);
+
+            Assert.IsNotNull(progress);
+            Assert.AreEqual("completed", progress!.Status);
+        }
+
+        [TestMethod]
+        public async Task CompleteModuleAsync_AddsNewProgressWhenNoneExists()
+        {
+            // Arrange
+            var context = GetInMemoryDbContext();
+            var repo = new Repository(context);
+
+            int userId = 101;
+            int moduleId = 201;
+
+            Assert.IsFalse(await context.UserProgresses
+                .AnyAsync(p => p.UserId == userId && p.ModuleId == moduleId));
+
+            // Act
+            await repo.CompleteModuleAsync(userId, moduleId);
+
+            // Assert
+            var progress = await context.FindAsync<UserProgress>(userId, moduleId);
+
+            Assert.IsNotNull(progress);
+            Assert.AreEqual("completed", progress!.Status);
+            Assert.IsFalse(progress.ImageClicked);
+        }
+
+
+
+        [TestMethod]
+        public async Task IsModuleOpenAsync_ReturnsTrue_IfProgressExists()
+        {
+            var context = GetInMemoryDbContext();
+            var repo = new Repository(context);
+
+            context.UserProgresses.Add(new UserProgress { UserId = 3, ModuleId = 3 });
+            await context.SaveChangesAsync();
+
+            var result = await repo.IsModuleOpenAsync(3, 3);
+
+            Assert.IsTrue(result);
+        }
+
+        [TestMethod]
+        public async Task IsModuleOpenAsync_ReturnsFalse_IfProgressNotExists()
+        {
+            var context = GetInMemoryDbContext();
+            var repo = new Repository(context);
+
+            var result = await repo.IsModuleOpenAsync(999, 999);
+
+            Assert.IsFalse(result);
+        }
+
+        [TestMethod]
+        public async Task IsModuleAvailableAsync_ReturnsFalse_WhenModuleDoesNotExist()
+        {
+            // Arrange
+            var context = GetInMemoryDbContext();
+            var repo = new Repository(context);
+
+            int nonExistentModuleId = 999;
+            int userId = 1;
+
+            // Act
+            var result = await repo.IsModuleAvailableAsync(userId, nonExistentModuleId);
+
+            // Assert
+            Assert.IsFalse(result);
+        }
+
+        [TestMethod]
+        public async Task IsModuleAvailableAsync_ReturnsTrue_WhenModulePositionIs1()
+        {
+            // Arrange
+            var context = GetInMemoryDbContext();
+            var repo = new Repository(context);
+
+            var module = new Module
+            {
+                ModuleId = 1,
+                CourseId = 10,
+                Title = "Intro",
+                Description = "First module",
+                Position = 1,
+                IsBonus = false,
+                Cost = 0,
+                ImageUrl = "image.png"
+            };
+            context.Modules.Add(module);
+            await context.SaveChangesAsync();
+
+            // Act
+            var result = await repo.IsModuleAvailableAsync(userId: 1, moduleId: 1);
+
+            // Assert
+            Assert.IsTrue(result);
+        }
+
+        [TestMethod]
+        public async Task IsModuleAvailableAsync_ReturnsTrue_WhenModuleIsBonus()
+        {
+            // Arrange
+            var context = GetInMemoryDbContext();
+            var repo = new Repository(context);
+
+            var module = new Module
+            {
+                ModuleId = 2,
+                CourseId = 10,
+                Title = "Bonus",
+                Description = "Bonus module",
+                Position = 5,
+                IsBonus = true,
+                Cost = 0,
+                ImageUrl = "bonus.png"
+            };
+            context.Modules.Add(module);
+            await context.SaveChangesAsync();
+
+            // Act
+            var result = await repo.IsModuleAvailableAsync(userId: 1, moduleId: 2);
+
+            // Assert
+            Assert.IsTrue(result);
+        }
+
+
+        [TestMethod]
+        public async Task IsModuleCompletedAsync_ReturnsTrue_IfCompleted()
+        {
+            var context = GetInMemoryDbContext();
+            var repo = new Repository(context);
+
+            context.UserProgresses.Add(new UserProgress
+            {
+                UserId = 4,
+                ModuleId = 4,
+                Status = "completed"
+            });
+            await context.SaveChangesAsync();
+
+            var result = await repo.IsModuleCompletedAsync(4, 4);
+
+            Assert.IsTrue(result);
+        }
+
+        [TestMethod]
+        public async Task IsModuleCompletedAsync_ReturnsFalse_IfNotCompleted()
+        {
+            var context = GetInMemoryDbContext();
+            var repo = new Repository(context);
+
+            context.UserProgresses.Add(new UserProgress
+            {
+                UserId = 5,
+                ModuleId = 5,
+                Status = "started"
+            });
+            await context.SaveChangesAsync();
+
+            var result = await repo.IsModuleCompletedAsync(5, 5);
+
+            Assert.IsFalse(result);
+        }
+
+        [TestMethod]
+        public async Task IsModuleAvailableAsync_ReturnsTrue_IfPosition1()
+        {
+            var context = GetInMemoryDbContext();
+            var repo = new Repository(context);
+
+            context.Modules.Add(new Module
+            {
+                ModuleId = 10,
+                Title = "Start",
+                Description = "Intro",
+                Position = 1,
+                IsBonus = false,
+                Cost = 0,
+                ImageUrl = "img.jpg",
+                CourseId = 1
+            });
+            await context.SaveChangesAsync();
+
+            var result = await repo.IsModuleAvailableAsync(1, 10);
+
+            Assert.IsTrue(result);
+        }
+
+        [TestMethod]
+        public async Task IsModuleAvailableAsync_ReturnsTrue_IfBonus()
+        {
+            var context = GetInMemoryDbContext();
+            var repo = new Repository(context);
+
+            context.Modules.Add(new Module
+            {
+                ModuleId = 11,
+                Title = "Bonus",
+                Description = "Optional",
+                Position = 2,
+                IsBonus = true,
+                Cost = 0,
+                ImageUrl = "img.jpg",
+                CourseId = 1
+            });
+            await context.SaveChangesAsync();
+
+            var result = await repo.IsModuleAvailableAsync(1, 11);
+
+            Assert.IsTrue(result);
+        }
+
+        [TestMethod]
+        public async Task IsModuleAvailableAsync_ReturnsFalse_IfNoPreviousModule()
+        {
+            var context = GetInMemoryDbContext();
+            var repo = new Repository(context);
+
+            context.Modules.Add(new Module
+            {
+                ModuleId = 12,
+                Title = "Module 2",
+                Description = "Second",
+                Position = 2,
+                CourseId = 1,
+                IsBonus = false,
+                Cost = 0,
+                ImageUrl = "img.jpg"
+            });
+            await context.SaveChangesAsync();
+
+            var result = await repo.IsModuleAvailableAsync(1, 12);
+
+            Assert.IsFalse(result);
+        }
+
+        [TestMethod]
+        public async Task IsModuleAvailableAsync_ReturnsTrue_IfPreviousCompleted()
+        {
+            var context = GetInMemoryDbContext();
+            var repo = new Repository(context);
+
+            context.Modules.AddRange(
+                new Module
+                {
+                    ModuleId = 20,
+                    Title = "First",
+                    Description = "Start",
+                    Position = 1,
+                    CourseId = 2,
+                    IsBonus = false,
+                    Cost = 0,
+                    ImageUrl = "img1.jpg"
+                },
+                new Module
+                {
+                    ModuleId = 21,
+                    Title = "Second",
+                    Description = "Next",
+                    Position = 2,
+                    CourseId = 2,
+                    IsBonus = false,
+                    Cost = 0,
+                    ImageUrl = "img2.jpg"
+                }
+            );
+
+            context.UserProgresses.Add(new UserProgress
+            {
+                UserId = 2,
+                ModuleId = 20,
+                Status = "completed"
+            });
+
+            await context.SaveChangesAsync();
+
+            var result = await repo.IsModuleAvailableAsync(2, 21);
+
+            Assert.IsTrue(result);
+        }
+
+        [TestMethod]
+        public async Task ClickModuleImageAsync_SetsImageClicked()
+        {
+            var context = GetInMemoryDbContext();
+            var repo = new Repository(context);
+
+            context.UserProgresses.Add(new UserProgress
+            {
+                UserId = 6,
+                ModuleId = 6,
+                ImageClicked = false
+            });
+            await context.SaveChangesAsync();
+
+            await repo.ClickModuleImageAsync(6, 6);
+            var progress = await context.UserProgresses.FirstOrDefaultAsync();
+
+            Assert.IsTrue(progress.ImageClicked);
+        }
+
+        [TestMethod]
+        public async Task IsModuleImageClickedAsync_ReturnsTrue_IfClicked()
+        {
+            var context = GetInMemoryDbContext();
+            var repo = new Repository(context);
+
+            context.UserProgresses.Add(new UserProgress
+            {
+                UserId = 7,
+                ModuleId = 7,
+                ImageClicked = true
+            });
+            await context.SaveChangesAsync();
+
+            var result = await repo.IsModuleImageClickedAsync(7, 7);
+
+            Assert.IsTrue(result);
+        }
+
+        [TestMethod]
+        public async Task IsModuleImageClickedAsync_ReturnsFalse_IfNotClicked()
+        {
+            var context = GetInMemoryDbContext();
+            var repo = new Repository(context);
+
+            context.UserProgresses.Add(new UserProgress
+            {
+                UserId = 8,
+                ModuleId = 8,
+                ImageClicked = false
+            });
+            await context.SaveChangesAsync();
+
+            var result = await repo.IsModuleImageClickedAsync(8, 8);
+
+            Assert.IsFalse(result);
+        }
+
+        [TestMethod]
+        public async Task IsModuleImageClickedAsync_ReturnsFalse_IfProgressMissing()
+        {
+            var context = GetInMemoryDbContext();
+            var repo = new Repository(context);
+
+            var result = await repo.IsModuleImageClickedAsync(99, 99);
+
+            Assert.IsFalse(result);
         }
         #endregion
 
@@ -899,6 +1296,91 @@ namespace Duo.Api.Tests.Repositories
             Assert.AreEqual(0, context.Quizzes.Count());
         }
 
+        [TestMethod]
+        public async Task SaveQuizSubmissionAsync_SavesSuccessfully()
+        {
+            // Arrange
+            var context = GetInMemoryDbContext();
+            var repo = new Repository(context);
+
+            var submission = new QuizSubmissionEntity
+            {
+                QuizId = 1,
+                StartTime = DateTime.UtcNow,
+                EndTime = DateTime.UtcNow.AddMinutes(10),
+                Answers = new List<AnswerSubmissionEntity>
+            {
+                new AnswerSubmissionEntity
+                {
+                    QuestionId = 101,
+                    SelectedOptionIndex = 2,
+                    IsCorrect = true
+                }
+            }
+            };
+
+            // Act
+            await repo.SaveQuizSubmissionAsync(submission);
+
+            // Assert
+            var saved = await context.QuizSubmissions.Include(q => q.Answers).FirstOrDefaultAsync();
+            Assert.IsNotNull(saved);
+            Assert.AreEqual(1, saved.QuizId);
+            Assert.AreEqual(1, saved.Answers.Count);
+            Assert.AreEqual(101, saved.Answers.First().QuestionId);
+        }
+
+        [TestMethod]
+        public async Task GetSubmissionByQuizIdAsync_ReturnsSubmission_WhenExists()
+        {
+            // Arrange
+            var context = GetInMemoryDbContext();
+
+            var submission = new QuizSubmissionEntity
+            {
+                QuizId = 10,
+                StartTime = DateTime.UtcNow,
+                EndTime = DateTime.UtcNow.AddMinutes(15),
+                Answers = new List<AnswerSubmissionEntity>
+            {
+                new AnswerSubmissionEntity
+                {
+                    QuestionId = 200,
+                    SelectedOptionIndex = 1,
+                    IsCorrect = false
+                }
+            }
+            };
+
+            context.QuizSubmissions.Add(submission);
+            await context.SaveChangesAsync();
+
+            var repo = new Repository(context);
+
+            // Act
+            var result = await repo.GetSubmissionByQuizIdAsync(10);
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(10, result.QuizId);
+            Assert.AreEqual(1, result.Answers.Count);
+            Assert.AreEqual(200, result.Answers.First().QuestionId);
+        }
+
+        [TestMethod]
+        public async Task GetSubmissionByQuizIdAsync_ReturnsNull_WhenNotExists()
+        {
+            // Arrange
+            var context = GetInMemoryDbContext();
+            var repo = new Repository(context);
+
+            // Act
+            var result = await repo.GetSubmissionByQuizIdAsync(999); // Non-existent quiz
+
+            // Assert
+            Assert.IsNull(result);
+        }
+
         #endregion
 
         #region Course
@@ -1165,6 +1647,51 @@ namespace Duo.Api.Tests.Repositories
         }
 
         [TestMethod]
+        public async Task IsCourseCompletedAsync_ReturnsFalse_WhenCompletionExistsButNotCompleted()
+        {
+            // Arrange
+            var context = GetInMemoryDbContext();
+            var repo = new Repository(context);
+
+            var userId = 2;
+            var courseId = 101;
+
+            context.CourseCompletions.Add(new CourseCompletion
+            {
+                UserId = userId,
+                CourseId = courseId,
+                CompletedAt = DateTime.MinValue
+            });
+            await context.SaveChangesAsync();
+
+            // Act
+            var result = await repo.IsCourseCompletedAsync(userId, courseId);
+
+            // Assert
+            Assert.IsFalse(result);
+        }
+
+        [TestMethod]
+        public async Task IsCourseCompletedAsync_ReturnsFalse_WhenNoCompletionRecordExists()
+        {
+            // Arrange
+            var context = GetInMemoryDbContext();
+            var repo = new Repository(context);
+
+            var userId = 3;
+            var courseId = 102;
+
+            // No CourseCompletion added
+
+            // Act
+            var result = await repo.IsCourseCompletedAsync(userId, courseId);
+
+            // Assert
+            Assert.IsFalse(result);
+        }
+
+
+        [TestMethod]
         public async Task UpdateTimeSpentAsync_UpdatesTimeSpentForUser()
         {
             // Arrange
@@ -1225,6 +1752,39 @@ namespace Duo.Api.Tests.Repositories
         }
 
         [TestMethod]
+        public async Task ClaimCompletionRewardAsync_DoesNotClaim_WhenAlreadyClaimed()
+        {
+            var context = GetInMemoryDbContext();
+            var service = new Repository(context);
+
+            context.CourseCompletions.Add(new CourseCompletion
+            {
+                UserId = 1,
+                CourseId = 10,
+                CompletionRewardClaimed = true
+            });
+            await context.SaveChangesAsync();
+
+            await service.ClaimCompletionRewardAsync(1, 10);
+
+            var unchanged = await context.CourseCompletions.FirstAsync();
+            Assert.IsTrue(unchanged.CompletionRewardClaimed); // unchanged
+        }
+
+        [TestMethod]
+        public async Task ClaimCompletionRewardAsync_DoesNothing_WhenNoCompletion()
+        {
+            var context = GetInMemoryDbContext();
+            var service = new Repository(context);
+
+            // No CourseCompletion added
+            await service.ClaimCompletionRewardAsync(2, 20);
+
+            Assert.AreEqual(0, context.CourseCompletions.Count());
+        }
+
+
+        [TestMethod]
         public async Task ClaimTimeRewardAsync_ClaimsTimeRewardSuccessfully()
         {
             // Arrange
@@ -1264,6 +1824,27 @@ namespace Duo.Api.Tests.Repositories
                 .FirstOrDefaultAsync(cc => cc.UserId == user.UserId && cc.CourseId == course.CourseId);
             Assert.IsTrue(updatedCompletion?.TimedRewardClaimed);
         }
+
+        [TestMethod]
+        public async Task ClaimTimeRewardAsync_DoesNotClaim_WhenAlreadyClaimed()
+        {
+            var context = GetInMemoryDbContext();
+            var service = new Repository(context);
+
+            context.CourseCompletions.Add(new CourseCompletion
+            {
+                UserId = 1,
+                CourseId = 11,
+                TimedRewardClaimed = true
+            });
+            await context.SaveChangesAsync();
+
+            await service.ClaimTimeRewardAsync(1, 11);
+
+            var result = await context.CourseCompletions.FirstAsync();
+            Assert.IsTrue(result.TimedRewardClaimed);
+        }
+
 
         [TestMethod]
         public async Task GetTimeSpentAsync_ReturnsNumberOfCompletedSections_WhenUserExists()
@@ -2061,6 +2642,21 @@ namespace Duo.Api.Tests.Repositories
         }
 
         [TestMethod]
+        public async Task GetUserCoinBalanceAsync_ReturnsZero_WhenUserDoesNotExist()
+        {
+            // Arrange
+            var context = GetInMemoryDbContext();
+            var repo = new Repository(context);
+
+            // Act
+            var result = await repo.GetUserCoinBalanceAsync(999);
+
+            // Assert
+            Assert.AreEqual(0, result);
+        }
+
+
+        [TestMethod]
         public async Task TryDeductCoinsFromUserWalletAsync_SuccessfulDeduction()
         {
             // Arrange
@@ -2101,6 +2697,23 @@ namespace Duo.Api.Tests.Repositories
             var updatedUser = await context.Users.FindAsync(userId);
             Assert.AreEqual(30, updatedUser?.CoinBalance);
         }
+
+        [TestMethod]
+        public async Task TryDeductCoinsFromUserWalletAsync_ReturnsFalse_WhenUserNotFound()
+        {
+            // Arrange
+            var context = GetInMemoryDbContext();
+            var repo = new Repository(context);
+
+            // No user is added to the context
+
+            // Act
+            var success = await repo.TryDeductCoinsFromUserWalletAsync(999, 10);
+
+            // Assert
+            Assert.IsFalse(success);
+        }
+
 
         [TestMethod]
         public async Task AddCoinsToUserWalletAsync_AddsCoinsSuccessfully()

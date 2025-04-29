@@ -1,11 +1,11 @@
-
-using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks;
 using System.Diagnostics.CodeAnalysis;
+using System.Threading.Tasks;
+using Duo.Api.Models.Exercises;
 using Duo.Api.Models.Quizzes;
 using Duo.Api.Persistence;
 using Duo.Api.Repositories;
-using Duo.Api.Models.Exercises;
+using Duo.Models.Quizzes.API;
+using Microsoft.AspNetCore.Mvc;
 #pragma warning disable IDE0079 // Remove unnecessary suppression
 #pragma warning disable SA1009 // Closing parenthesis should be spaced correctly
 
@@ -163,7 +163,9 @@ namespace Duo.Api.Controllers
         {
             var quiz = await repository.GetQuizByIdAsync(submission.QuizId);
             if (quiz == null)
+            {
                 return NotFound();
+            }
 
             var submissionEntity = new QuizSubmissionEntity
             {
@@ -242,7 +244,9 @@ namespace Duo.Api.Controllers
         {
             var submission = await repository.GetSubmissionByQuizIdAsync(quizId);
             if (submission == null)
+            {
                 return NotFound();
+            }
 
             var result = new QuizResult
             {
