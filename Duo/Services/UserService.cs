@@ -8,11 +8,11 @@ namespace Duo.Services
 {
     public class UserService : IUserService
     {
-        private readonly IUserRepository userRepository;
+        private readonly IUserService userServiceProxy;
 
         public UserService(IUserRepository userRepository)
         {
-            this.userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
+            this.userServiceProxy = userServiceProxy ?? throw new ArgumentNullException(nameof(userServiceProxy));
         }
 
         public async Task<User> GetByIdAsync(int userId)
@@ -22,7 +22,7 @@ namespace Duo.Services
                 throw new ArgumentException("User ID must be greater than 0.", nameof(userId));
             }
 
-            return await userRepository.GetByIdAsync(userId);
+            return await userServiceProxy.GetByIdAsync(userId);
         }
 
         public async Task<User> GetByUsernameAsync(string username)
@@ -32,7 +32,7 @@ namespace Duo.Services
                 throw new ArgumentException("Username cannot be null or empty.", nameof(username));
             }
 
-            return await userRepository.GetByUsernameAsync(username);
+            return await userServiceProxy.GetByUsernameAsync(username);
         }
 
         public async Task<int> CreateUserAsync(User user)
@@ -47,7 +47,7 @@ namespace Duo.Services
                 throw new ArgumentException("Username cannot be null or empty.", nameof(user));
             }
 
-            return await userRepository.CreateUserAsync(user);
+            return await userServiceProxy.CreateUserAsync(user);
         }
 
         public async Task UpdateUserSectionProgressAsync(int userId, int newNrOfSectionsCompleted, int newNrOfQuizzesInSectionCompleted)
@@ -57,7 +57,7 @@ namespace Duo.Services
                 throw new ArgumentException("User ID must be greater than 0.", nameof(userId));
             }
 
-            await userRepository.UpdateUserProgressAsync(
+            await userServiceProxy.UpdateUserSectionProgressAsync(
                 userId,
                 newNrOfSectionsCompleted,
                 newNrOfQuizzesInSectionCompleted);
@@ -73,7 +73,16 @@ namespace Duo.Services
             var user = await GetByIdAsync(userId);
             user.NumberOfCompletedQuizzesInSection++;
 
-            await userRepository.UpdateUserAsync(user);
+            await userServiceProxy.UpdateUserAsync(user);
+        }
+
+        public async Task UpdateUserAsync(User user)
+        {
+            if (user == null)
+            {
+                throw new ArgumentNullException(nameof(user));
+            }
+            await userServiceProxy.UpdateUserAsync(user);
         }
     }
 }
