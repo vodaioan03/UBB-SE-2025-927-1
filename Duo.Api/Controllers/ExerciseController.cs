@@ -176,10 +176,10 @@ namespace Duo.Api.Controllers
                 {
                     exerciseMap[exercise.ExerciseId] = exercise switch
                     {
-                        MultipleChoiceExercise mc => new MultipleChoiceExercise(mc.ExerciseId, mc.Question!, mc.Difficulty, [.. mc.Choices!]),
-                        FillInTheBlankExercise fb => new FillInTheBlankExercise(fb.ExerciseId, fb.Question!, fb.Difficulty, [.. fb.PossibleCorrectAnswers!]),
-                        AssociationExercise assoc => new AssociationExercise(assoc.ExerciseId, assoc.Question!, assoc.Difficulty, [.. assoc.FirstAnswersList], [.. assoc.SecondAnswersList]),
-                        FlashcardExercise flash => new FlashcardExercise(flash.ExerciseId, flash.Question!, flash.Answer, flash.Difficulty),
+                        MultipleChoiceExercise mc => new MultipleChoiceExercise { ExerciseId = mc.ExerciseId, Question = mc.Question!, Difficulty = mc.Difficulty, Choices = [.. mc.Choices!] },
+                        FillInTheBlankExercise fb => new FillInTheBlankExercise { ExerciseId = fb.ExerciseId, Question = fb.Question!, Difficulty = fb.Difficulty, PossibleCorrectAnswers = [.. fb.PossibleCorrectAnswers!] },
+                        AssociationExercise assoc => new AssociationExercise { ExerciseId = assoc.ExerciseId, Question = assoc.Question!, Difficulty = assoc.Difficulty, FirstAnswersList = [.. assoc.FirstAnswersList], SecondAnswersList = [.. assoc.SecondAnswersList] },
+                        FlashcardExercise flash => new FlashcardExercise { ExerciseId = flash.ExerciseId, Question = flash.Question!, Answer = flash.Answer, Difficulty = flash.Difficulty },
                         _ => exercise
                     };
                 }

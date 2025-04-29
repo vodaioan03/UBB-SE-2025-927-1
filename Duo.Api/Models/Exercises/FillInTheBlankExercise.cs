@@ -22,25 +22,6 @@ namespace Duo.Api.Models.Exercises
         #region Constructors
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="FillInTheBlankExercise"/> class with the specified parameters.
-        /// </summary>
-        /// <param name="exerciseId">The unique identifier for the exercise.</param>
-        /// <param name="question">The question or prompt for the exercise.</param>
-        /// <param name="difficulty">The difficulty level of the exercise.</param>
-        /// <param name="possibleCorrectAnswers">A list of possible correct answers for this exercise.</param>
-        /// <exception cref="ArgumentException">Thrown when the list of possible correct answers is null or empty.</exception>
-        public FillInTheBlankExercise(int exerciseId, string question, Difficulty difficulty, List<string> possibleCorrectAnswers)
-            : base(exerciseId, question, difficulty)
-        {
-            if (possibleCorrectAnswers == null || possibleCorrectAnswers.Count == 0)
-            {
-                throw new ArgumentException("Answers cannot be empty.", nameof(possibleCorrectAnswers));
-            }
-
-            PossibleCorrectAnswers = possibleCorrectAnswers;
-        }
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="FillInTheBlankExercise"/> class.
         /// This parameterless constructor is required for Entity Framework.
         /// </summary>

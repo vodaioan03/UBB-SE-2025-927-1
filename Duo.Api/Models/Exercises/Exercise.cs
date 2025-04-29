@@ -57,19 +57,6 @@ namespace Duo.Api.Models.Exercises
         #region Constructors
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Exercise"/> class with the specified parameters.
-        /// </summary>
-        /// <param name="exerciseId">The unique identifier for the exercise.</param>
-        /// <param name="question">The question or prompt for the exercise.</param>
-        /// <param name="difficulty">The difficulty level of the exercise.</param>
-        public Exercise(int exerciseId, string question, Difficulty difficulty)
-        {
-            ExerciseId = exerciseId;
-            Question = question;
-            Difficulty = difficulty;
-        }
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="Exercise"/> class.
         /// This parameterless constructor is required for Entity Framework.
         /// </summary>

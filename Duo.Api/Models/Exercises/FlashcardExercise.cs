@@ -68,52 +68,11 @@ namespace Duo.Api.Models.Exercises
         #region Constructors
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="FlashcardExercise"/> class with the specified parameters.
-        /// </summary>
-        /// <param name="exerciseId">The unique identifier for the exercise.</param>
-        /// <param name="question">The question or prompt for the exercise.</param>
-        /// <param name="answer">The correct answer for the exercise.</param>
-        /// <param name="difficulty">The difficulty level of the exercise.</param>
-        /// <exception cref="ArgumentException">Thrown when the answer is null or empty.</exception>
-        public FlashcardExercise(int exerciseId, string question, string answer, Difficulty difficulty = Difficulty.Normal)
-            : base(exerciseId, question, difficulty)
-        {
-            if (string.IsNullOrWhiteSpace(answer))
-            {
-                throw new ArgumentException("Answer cannot be empty.", nameof(answer));
-            }
-
-            mAnswer = answer;
-            TimeInSeconds = GetDefaultTimeForDifficulty(difficulty);
-        }
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="FlashcardExercise"/> class.
         /// This parameterless constructor is required for Entity Framework.
         /// </summary>
         public FlashcardExercise()
         {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="FlashcardExercise"/> class with additional parameters.
-        /// </summary>
-        /// <param name="exerciseId">The unique identifier for the exercise.</param>
-        /// <param name="sentence">The sentence or question for the exercise.</param>
-        /// <param name="answer">The correct answer for the exercise.</param>
-        /// <param name="timeInSeconds">The time allocated for the exercise in seconds.</param>
-        /// <param name="difficulty">The difficulty level of the exercise.</param>
-        /// <exception cref="ArgumentException">Thrown when the answer is null or empty.</exception>
-        public FlashcardExercise(int exerciseId, string sentence, string answer, int timeInSeconds, Difficulty difficulty = Difficulty.Normal)
-            : base(exerciseId, sentence, difficulty)
-        {
-            if (string.IsNullOrWhiteSpace(answer))
-            {
-                throw new ArgumentException("Answer cannot be empty.", nameof(answer));
-            }
-
-            mAnswer = answer;
-            TimeInSeconds = timeInSeconds;
         }
 
         #endregion
