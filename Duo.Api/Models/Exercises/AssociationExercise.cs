@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 
 #pragma warning disable IDE0079 // Remove unnecessary suppression
@@ -43,6 +44,7 @@ namespace Duo.Api.Models.Exercises
         /// <param name="firstAnswers">The first list of answers for the exercise.</param>
         /// <param name="secondAnswers">The second list of answers for the exercise.</param>
         /// <exception cref="ArgumentException">Thrown if the answer lists are null or have different lengths.</exception>
+        [JsonConstructorAttribute]
         public AssociationExercise(
             int exerciseId,
             string question,
@@ -64,6 +66,7 @@ namespace Duo.Api.Models.Exercises
         /// Initializes a new instance of the <see cref="AssociationExercise"/> class.
         /// This parameterless constructor is required for Entity Framework.
         /// </summary>
+        [JsonConstructorAttribute]
         public AssociationExercise()
         {
         }

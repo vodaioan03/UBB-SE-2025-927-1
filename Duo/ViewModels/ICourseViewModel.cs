@@ -45,7 +45,7 @@ namespace Duo.ViewModels
         /// <summary>
         /// Gets the tags associated with the current course.
         /// </summary>
-        ObservableCollection<Tag> Tags { get; } 
+        ObservableCollection<Tag> Tags { get; }
 
         /// <summary>
         /// Gets the formatted string representing the time remaining to complete the course (e.g., "X min Y sec").

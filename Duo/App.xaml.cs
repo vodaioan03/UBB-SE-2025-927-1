@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Net.Http;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
 using Windows.Foundation;
@@ -55,24 +56,80 @@ namespace Duo
                 .Build();
 
             var services = new ServiceCollection();
+            services.AddSingleton<HttpClient>();
             services.AddSingleton<IConfiguration>(configuration);
             services.AddSingleton<DatabaseConnection>();
 
             services.AddSingleton<IUserRepository, UserRepository>();
-            services.AddSingleton<IUserService, UserService>();
 
-            services.AddSingleton<IExerciseRepository, ExerciseRepository>();
-            services.AddSingleton<IExerciseService, ExerciseService>();
+            // User
+            services.AddSingleton<UserServiceProxy>(sp =>
+            {
+                var httpClient = sp.GetRequiredService<HttpClient>();
+                return new UserServiceProxy(httpClient);
+            });
+            services.AddSingleton<IUserService>(sp =>
+            {
+                var proxy = sp.GetRequiredService<UserServiceProxy>();
+                return new UserService(proxy);
+            });
+
+            // Exercise
+            services.AddSingleton<ExerciseServiceProxy>(sp =>
+            {
+                var httpClient = sp.GetRequiredService<HttpClient>();
+                return new ExerciseServiceProxy(httpClient);
+            });
+            services.AddSingleton<IExerciseService>(sp =>
+                {
+                var proxy = sp.GetRequiredService<ExerciseServiceProxy>();
+                return new ExerciseService(proxy);
+            });
 
             services.AddSingleton<IExamRepository, ExamRepository>();
             services.AddSingleton<IQuizRepository, QuizRepository>();
-            services.AddSingleton<IQuizService, QuizService>();
+
+            // Quiz
+            services.AddSingleton<QuizServiceProxy>(sp =>
+            {
+                var httpClient = sp.GetRequiredService<HttpClient>();
+                return new QuizServiceProxy(httpClient);
+            });
+            services.AddSingleton<IQuizService>(sp =>
+            {
+                var proxy = sp.GetRequiredService<QuizServiceProxy>();
+                return new QuizService(proxy);
+            });
 
             services.AddSingleton<ISectionRepository, SectionRepository>();
-            services.AddSingleton<ISectionService, SectionService>();
+
+            // Section
+            services.AddSingleton<SectionServiceProxy>(sp =>
+            {
+                var httpClient = sp.GetRequiredService<HttpClient>();
+                return new SectionServiceProxy(httpClient);
+            });
+            services.AddSingleton<ISectionService>(sp =>
+            {
+                var proxy = sp.GetRequiredService<SectionServiceProxy>();
+                return new SectionService(proxy);
+            });
 
             services.AddSingleton<IRoadmapRepository, RoadmapRepository>();
-            services.AddSingleton<IRoadmapService, RoadmapService>();
+
+            // Roadmap
+            services.AddSingleton<RoadmapServiceProxy>(
+                sp =>
+                {
+                    var httpClient = sp.GetRequiredService<HttpClient>();
+                    return new RoadmapServiceProxy(httpClient);
+                });
+            services.AddSingleton<IRoadmapService>(
+                sp =>
+                {
+                    var proxy = sp.GetRequiredService<RoadmapServiceProxy>();
+                    return new RoadmapService(proxy);
+                });
 
             services.AddSingleton<IExerciseViewFactory, ExerciseViewFactory>();
             services.AddSingleton<IUserRepository, UserRepository>();
