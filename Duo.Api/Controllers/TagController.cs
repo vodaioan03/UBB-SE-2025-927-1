@@ -21,8 +21,6 @@ namespace Duo.Api.Controllers
     [ExcludeFromCodeCoverage]
     public class TagController(IRepository repository) : BaseController(repository)
     {
-        private readonly IRepository repository = repository;
-
         #region Constructors
 
         #endregion

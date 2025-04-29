@@ -24,8 +24,6 @@ namespace Duo.Api.Controllers
     [ExcludeFromCodeCoverage]
     public class QuizController(IRepository repository) : BaseController(repository)
     {
-        private readonly IRepository repository = repository;
-
         #region Public Methods
 
         /// <summary>
