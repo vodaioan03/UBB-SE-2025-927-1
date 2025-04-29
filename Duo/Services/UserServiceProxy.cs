@@ -4,6 +4,7 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using Duo.Models;
+using Duo.Models.Quizzes;
 
 namespace Duo.Services
 {
@@ -77,6 +78,11 @@ namespace Duo.Services
             user.NumberOfCompletedQuizzesInSection++;
 
             await httpClient.PutAsJsonAsync($"{BaseUrl}/update", user);
+        }
+
+        public async Task UpdateUserAsync(User user)
+        {
+            await httpClient.PutAsJsonAsync($"{BaseUrl}", user);
         }
     }
 }
