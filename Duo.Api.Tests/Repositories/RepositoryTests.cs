@@ -834,10 +834,10 @@ namespace Duo.Api.Tests.Repositories
         {
             // Arrange
             var context = GetInMemoryDbContext();
-            context.Exercises.Add(new AssociationExercise(1, "Match the following countries with their capitals", Difficulty.Normal,
-                new List<string> { "USA", "Canada", "Mexico" }, new List<string> { "Washington D.C.", "Ottawa", "Mexico City" }));
-            context.Exercises.Add(new AssociationExercise(2, "Match the colors with their hex codes", Difficulty.Easy,
-                new List<string> { "Red", "Green", "Blue" }, new List<string> { "#FF0000", "#00FF00", "#0000FF" }));
+            var ex1 = new AssociationExercise { ExerciseId = 1, Question = "Match colors with fruits" };
+            var ex2 = new AssociationExercise { ExerciseId = 2, Question = "Match countries with capitals" };
+            context.Exercises.Add(ex1);
+            context.Exercises.Add(ex2);
             await context.SaveChangesAsync();
 
             var repository = new Repository(context);
@@ -854,8 +854,9 @@ namespace Duo.Api.Tests.Repositories
         {
             // Arrange
             var context = GetInMemoryDbContext();
-            var exercise = new AssociationExercise(3, "Match fruits with their colors", Difficulty.Normal,
-                new List<string> { "Apple", "Banana", "Grapes" }, new List<string> { "Red", "Yellow", "Purple" });
+            var exercise = new AssociationExercise();
+            exercise.ExerciseId = 3;
+            exercise.Question = "Match fruits with their colors";
             context.Exercises.Add(exercise);
             await context.SaveChangesAsync();
 
@@ -876,13 +877,9 @@ namespace Duo.Api.Tests.Repositories
             var context = GetInMemoryDbContext();
             var repository = new Repository(context);
 
-            var exercise = new AssociationExercise(
-                4,
-                "Match animals with their sounds",
-                Difficulty.Hard,
-                new List<string> { "Dog", "Cat", "Cow" },
-                new List<string> { "Bark", "Meow", "Moo" }
-            );
+            var exercise = new AssociationExercise();
+            exercise.ExerciseId = 4;
+            exercise.Question = "Match animals with their sounds";
 
             await repository.AddExerciseAsync(exercise);
 
@@ -899,19 +896,15 @@ namespace Duo.Api.Tests.Repositories
         {
             // Arrange
             var context = GetInMemoryDbContext();
-            var exercise = new AssociationExercise(
-                5,
-                "Match countries with their capitals",
-                Difficulty.Normal,
-                new List<string> { "France", "Germany", "Italy" },
-                new List<string> { "Paris", "Berlin", "Rome" }
-            );
+            var exercise = new AssociationExercise();
+            exercise.ExerciseId = 5;
+            exercise.Question = "Match European countries with their capitals";
             context.Exercises.Add(exercise);
             await context.SaveChangesAsync();
 
             var repository = new Repository(context);
 
-            exercise.Question = "Match European countries with their capitals";
+            
             await repository.UpdateExerciseAsync(exercise);
 
             // Act
@@ -927,8 +920,9 @@ namespace Duo.Api.Tests.Repositories
         {
             // Arrange
             var context = GetInMemoryDbContext();
-            var exercise = new AssociationExercise(6, "Match planets with their moons", Difficulty.Easy,
-                new List<string> { "Earth", "Mars", "Jupiter" }, new List<string> { "Moon", "Phobos", "Io" });
+            var exercise = new AssociationExercise();
+            exercise.ExerciseId = 6;
+            exercise.Question = "Match Asian countries with their capitals";
             context.Exercises.Add(exercise);
             await context.SaveChangesAsync();
 
