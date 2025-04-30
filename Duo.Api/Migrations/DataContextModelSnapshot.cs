@@ -362,6 +362,28 @@ namespace Duo.Api.Migrations
                     b.ToTable("Users");
                 });
 
+            modelBuilder.Entity("Duo.Api.Models.UserProgress", b =>
+                {
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ModuleId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("ImageClicked")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("UserId", "ModuleId");
+
+                    b.HasIndex("ModuleId");
+
+                    b.ToTable("UserProgresses");
+                });
+
             modelBuilder.Entity("ExamExercise", b =>
                 {
                     b.Property<int>("ExamsId")
@@ -504,6 +526,25 @@ namespace Duo.Api.Migrations
                         .IsRequired();
 
                     b.Navigation("Roadmap");
+                });
+
+            modelBuilder.Entity("Duo.Api.Models.UserProgress", b =>
+                {
+                    b.HasOne("Duo.Api.Models.Module", "Module")
+                        .WithMany()
+                        .HasForeignKey("ModuleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Duo.Api.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Module");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("ExamExercise", b =>
