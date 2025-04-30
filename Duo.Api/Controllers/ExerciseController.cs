@@ -1,4 +1,5 @@
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
+using Duo.Api.DTO.Requests;
 using Duo.Api.Models.Exercises;
 using Duo.Api.Repositories;
 using Microsoft.AspNetCore.Mvc;
@@ -47,7 +48,7 @@ namespace Duo.Api.Controllers
         /// </summary>
         /// <param name="id">The ID of the exercise to retrieve.</param>
         /// <returns>The exercise if found; otherwise, NotFound.</returns>
-        [HttpGet("{id}")]
+        [HttpGet("{id}", Name = "GetExerciseById")]
         public async Task<ActionResult<Exercise>> GetByIdAsync(int id)
         {
             if (id <= 0)
@@ -126,15 +127,26 @@ namespace Duo.Api.Controllers
         /// <param name="exercise">The exercise to add.</param>
         /// <returns>The created exercise.</returns>
         [HttpPost]
-        public async Task<ActionResult> AddExercise([FromBody] Exercise exercise)
+        public async Task<ActionResult> AddExercise([FromBody] CreateExerciseDto dto)
         {
-            if (exercise == null)
+            if (dto == null)
             {
-                return BadRequest("Exercise cannot be null.");
+                return BadRequest("Invalid payload.");
             }
 
+            // Map DTO → concrete Exercise
+            var exercise = new MultipleChoiceExercise
+            {
+                Question = dto.Question,
+                Difficulty = dto.Difficulty,
+                // link up Exam/Quiz associations here if needed
+            };
+
             await repository.AddExerciseAsync(exercise);
-            return CreatedAtAction(nameof(GetByIdAsync), new { id = exercise.ExerciseId }, exercise);
+            return CreatedAtRoute(
+              routeName: "GetExerciseById",
+              routeValues: new { id = exercise.ExerciseId },
+              value: exercise);
         }
 
         /// <summary>
