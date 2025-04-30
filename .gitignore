@@ -372,4 +372,3 @@ onnx-models
 /Duo/appsettings.json
 /Duo.ConsoleTest/appsettings.json
 *.env
-/Duo.Api/Migrations
