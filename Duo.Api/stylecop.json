@@ -1,0 +1,9 @@
+﻿{
+    "settings": {
+        "documentationRules": {
+            "excludePaths": [
+                "Migrations/**"
+            ]
+        }
+    }
+}
