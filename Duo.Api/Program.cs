@@ -103,7 +103,6 @@ namespace Duo.Api
             var db = scope.ServiceProvider.GetRequiredService<DataContext>();
 
             // Apply database migrations.
-            // db.Database.EnsureDeleted(); // Uncomment to delete the database (for development purposes).
             db.Database.Migrate();
 
             // Seed initial data (e.g., add a default user if necessary).

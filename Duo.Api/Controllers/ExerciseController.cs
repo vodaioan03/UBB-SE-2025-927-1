@@ -134,12 +134,10 @@ namespace Duo.Api.Controllers
                 return BadRequest("Invalid payload.");
             }
 
-            // Map DTO → concrete Exercise
             var exercise = new MultipleChoiceExercise
             {
                 Question = dto.Question,
                 Difficulty = dto.Difficulty,
-                // link up Exam/Quiz associations here if needed
             };
 
             await repository.AddExerciseAsync(exercise);
