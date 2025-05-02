@@ -353,7 +353,11 @@ namespace Duo.Api.Repositories
         /// <returns>A list of <see cref="Exercise"/> objects representing all exercises in the database.</returns>
         public async Task<List<Exercise>> GetExercisesFromDbAsync()
         {
-            return await context.Exercises.ToListAsync();
+            return await context.Exercises
+                .Include("Choices")
+                .Include(e => e.Quizzes)
+                .Include(e => e.Exams)
+                .ToListAsync();
         }
 
         /// <summary>

@@ -37,7 +37,6 @@
 
   <ItemGroup>
     <Folder Include="Repositories\" />
-	<AdditionalFiles Include="stylecop.json" />
   </ItemGroup>
 
 </Project>

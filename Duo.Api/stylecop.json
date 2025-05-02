@@ -1,10 +1,10 @@
-{
-  "settings": {
-    "documentationRules": {
-      "excludePaths": [
-        "Migrations/**"
-      ]
+﻿{
+    "settings": {
+        "documentationRules": {
+            "excludePaths": [
+                "Migrations/**"
+            ]
+        }
     }
-  }
 }
    
