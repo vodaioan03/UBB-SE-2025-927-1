@@ -12,6 +12,7 @@ namespace Duo.Services
     public class QuizServiceProxy
     {
         private readonly HttpClient httpClient;
+        private readonly string url = "https://localhost:7174/";
 
         public QuizServiceProxy(HttpClient httpClient)
         {
@@ -22,7 +23,7 @@ namespace Duo.Services
         {
             try
             {
-                var result = await httpClient.GetFromJsonAsync<List<Quiz>>("quiz/list");
+                var result = await httpClient.GetFromJsonAsync<List<Quiz>>($"{url}quiz/list");
                 if (result == null)
                 {
                     throw new QuizServiceProxyException("Received null response when fetching quiz list.");
@@ -39,7 +40,7 @@ namespace Duo.Services
         {
             try
             {
-                var result = await httpClient.GetFromJsonAsync<List<Exam>>("exam/get-available");
+                var result = await httpClient.GetFromJsonAsync<List<Exam>>($"{url}exam/get-available");
                 if (result == null)
                 {
                     throw new QuizServiceProxyException("Received null response when fetching available exams.");
@@ -56,7 +57,7 @@ namespace Duo.Services
         {
             try
             {
-                var result = await httpClient.GetFromJsonAsync<Quiz>($"quiz/get?id={id}");
+                var result = await httpClient.GetFromJsonAsync<Quiz>($"{url}quiz/get?id={id}");
                 if (result == null)
                 {
                     throw new QuizServiceProxyException($"Received null response for quiz with ID {id}.");
@@ -73,7 +74,7 @@ namespace Duo.Services
         {
             try
             {
-                var result = await httpClient.GetFromJsonAsync<Exam>($"exam/get?id={id}");
+                var result = await httpClient.GetFromJsonAsync<Exam>($"{url}exam/get?id={id}");
                 if (result == null)
                 {
                     throw new QuizServiceProxyException($"Received null response for exam with ID {id}.");
@@ -90,7 +91,7 @@ namespace Duo.Services
         {
             try
             {
-                var result = await httpClient.GetFromJsonAsync<List<Quiz>>($"quiz/get-all-section?sectionId={sectionId}");
+                var result = await httpClient.GetFromJsonAsync<List<Quiz>>($"{url}quiz/get-all-section?sectionId={sectionId}");
                 if (result == null)
                 {
                     throw new QuizServiceProxyException($"Received null response for section {sectionId} quizzes.");
@@ -107,7 +108,7 @@ namespace Duo.Services
         {
             try
             {
-                var result = await httpClient.GetFromJsonAsync<int?>($"quiz/count-from-section?sectionId={sectionId}");
+                var result = await httpClient.GetFromJsonAsync<int?>($"{url}quiz/count-from-section?sectionId={sectionId}");
                 if (result == null)
                 {
                     throw new QuizServiceProxyException($"Received null response when counting quizzes in section {sectionId}.");
@@ -124,7 +125,7 @@ namespace Duo.Services
         {
             try
             {
-                var result = await httpClient.GetFromJsonAsync<int?>($"quiz/last-order?sectionId={sectionId}");
+                var result = await httpClient.GetFromJsonAsync<int?>($"{url}quiz/last-order?sectionId={sectionId}");
                 if (result == null)
                 {
                     throw new QuizServiceProxyException($"Received null response when getting last order number from section {sectionId}.");
@@ -141,7 +142,7 @@ namespace Duo.Services
         {
             try
             {
-                var result = await httpClient.GetFromJsonAsync<Exam>($"exam/get-from-section?sectionId={sectionId}");
+                var result = await httpClient.GetFromJsonAsync<Exam>($"{url}exam/get-from-section?sectionId={sectionId}");
                 if (result == null)
                 {
                     throw new QuizServiceProxyException($"Received null response for exam from section {sectionId}.");
@@ -158,7 +159,7 @@ namespace Duo.Services
         {
             try
             {
-                await httpClient.DeleteAsync($"quiz/delete?id={quizId}");
+                await httpClient.DeleteAsync($"{url}quiz/delete?id={quizId}");
             }
             catch (Exception ex)
             {
@@ -170,7 +171,7 @@ namespace Duo.Services
         {
             try
             {
-                await httpClient.PutAsJsonAsync("quiz/update", quiz);
+                await httpClient.PutAsJsonAsync($"{url}quiz/update", quiz);
             }
             catch (Exception ex)
             {
@@ -182,7 +183,7 @@ namespace Duo.Services
         {
             try
             {
-                await httpClient.PostAsJsonAsync("quiz/add", quiz);
+                await httpClient.PostAsJsonAsync($"{url}quiz/add", quiz);
             }
             catch (Exception ex)
             {
@@ -200,7 +201,7 @@ namespace Duo.Services
                 {
                     formData.Add(new StringContent(exerciseId.ToString()), "exercises");
                 }
-                await httpClient.PostAsync("quiz/add-exercises", formData);
+                await httpClient.PostAsync($"{url}quiz/add-exercises", formData);
             }
             catch (Exception ex)
             {
@@ -215,7 +216,7 @@ namespace Duo.Services
                 var formData = new MultipartFormDataContent();
                 formData.Add(new StringContent(quizId.ToString()), "quizId");
                 formData.Add(new StringContent(exerciseId.ToString()), "exerciseId");
-                await httpClient.PostAsync("quiz/add-exercise", formData);
+                await httpClient.PostAsync($"{url}quiz/add-exercise", formData);
             }
             catch (Exception ex)
             {
@@ -227,7 +228,7 @@ namespace Duo.Services
         {
             try
             {
-                await httpClient.DeleteAsync($"quiz/remove-exercise?quizId={quizId}&exerciseId={exerciseId}");
+                await httpClient.DeleteAsync($"{url}quiz/remove-exercise?quizId={quizId}&exerciseId={exerciseId}");
             }
             catch (Exception ex)
             {
@@ -239,7 +240,7 @@ namespace Duo.Services
         {
             try
             {
-                await httpClient.DeleteAsync($"exam/delete?id={examId}");
+                await httpClient.DeleteAsync($"{url}exam/delete?id={examId}");
             }
             catch (Exception ex)
             {
@@ -251,7 +252,7 @@ namespace Duo.Services
         {
             try
             {
-                await httpClient.PutAsJsonAsync("exam/update", exam);
+                await httpClient.PutAsJsonAsync($"{url}exam/update", exam);
             }
             catch (Exception ex)
             {
@@ -263,7 +264,7 @@ namespace Duo.Services
         {
             try
             {
-                await httpClient.PostAsJsonAsync("exam/add", exam);
+                await httpClient.PostAsJsonAsync($"{url}exam/add", exam);
             }
             catch (Exception ex)
             {
@@ -275,7 +276,7 @@ namespace Duo.Services
         {
             try
             {
-                var result = await httpClient.GetFromJsonAsync<QuizResult>($"quiz/get-result?quizId={quizId}");
+                var result = await httpClient.GetFromJsonAsync<QuizResult>($"{url}quiz/get-result?quizId={quizId}");
                 if (result == null)
                 {
                     throw new QuizServiceProxyException($"Received null response for result of quiz {quizId}.");
@@ -292,7 +293,7 @@ namespace Duo.Services
         {
             try
             {
-                await httpClient.PostAsJsonAsync("quiz/submit", submission);
+                await httpClient.PostAsJsonAsync($"{url}quiz/submit", submission);
             }
             catch (Exception ex)
             {
