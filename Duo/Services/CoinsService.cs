@@ -1,32 +1,35 @@
 using System;
 using System.Threading.Tasks;
 
+#pragma warning disable IDE0079 // Remove unnecessary suppression
+#pragma warning disable SA1009 // Closing paranthesis should not be followed by a space
+
 namespace Duo.Services
 {
     /// <summary>
     /// Service responsible for managing coin-related operations for users.
     /// </summary>
-    /// <remarks>
-    /// Initializes a new instance of the <see cref="CoinsService"/> class.
-    /// </remarks>
-    /// <param name="serviceProxy">Proxy for accessing backend API services.</param>
-    public class CoinsService : ICoinsService
+    public class CoinsService(CoinsServiceProxy serviceProxy) : ICoinsService
     {
-        private readonly CoinsServiceProxy serviceProxy;
-
-        public CoinsService(CoinsServiceProxy serviceProxy)
-        {
-            this.serviceProxy = serviceProxy;
-        }
+        private readonly CoinsServiceProxy serviceProxy = serviceProxy;
 
         /// <summary>
         /// Gets the coin balance for a specific user.
         /// </summary>
         /// <param name="userId">The ID of the user whose coin balance is being queried.</param>
-        /// <returns>The coin balance of the user.</returns>
+        /// <returns>The coin balance of the user, or 0 if an error occurs.</returns>
         public async Task<int> GetCoinBalanceAsync(int userId)
         {
-            return await serviceProxy.GetUserCoinBalanceAsync(userId);
+            try
+            {
+                return await serviceProxy.GetUserCoinBalanceAsync(userId);
+            }
+            catch (Exception ex)
+            {
+                // Log the exception (e.g., to a logging service)
+                Console.Error.WriteLine($"Error in GetCoinBalanceAsync: {ex.Message}");
+                return 0; // Return a default value
+            }
         }
 
         /// <summary>
@@ -37,7 +40,16 @@ namespace Duo.Services
         /// <returns>True if the operation was successful, false otherwise.</returns>
         public async Task<bool> TrySpendingCoinsAsync(int userId, int cost)
         {
-            return await serviceProxy.TrySpendingCoinsAsync(userId, cost);
+            try
+            {
+                return await serviceProxy.TrySpendingCoinsAsync(userId, cost);
+            }
+            catch (Exception ex)
+            {
+                // Log the exception
+                Console.Error.WriteLine($"Error in TrySpendingCoinsAsync: {ex.Message}");
+                return false; // Indicate failure
+            }
         }
 
         /// <summary>
@@ -47,7 +59,15 @@ namespace Duo.Services
         /// <param name="amount">The amount of coins to add.</param>
         public async Task AddCoinsAsync(int userId, int amount)
         {
-            await serviceProxy.AddCoinsAsync(userId, amount);
+            try
+            {
+                await serviceProxy.AddCoinsAsync(userId, amount);
+            }
+            catch (Exception ex)
+            {
+                // Log the exception
+                Console.Error.WriteLine($"Error in AddCoinsAsync: {ex.Message}");
+            }
         }
 
         /// <summary>
@@ -57,7 +77,16 @@ namespace Duo.Services
         /// <returns>True if the bonus was applied, false if the user has already logged in today.</returns>
         public async Task<bool> ApplyDailyLoginBonusAsync(int userId = 0)
         {
-            return await serviceProxy.ApplyDailyLoginBonusAsync(userId);
+            try
+            {
+                return await serviceProxy.ApplyDailyLoginBonusAsync(userId);
+            }
+            catch (Exception ex)
+            {
+                // Log the exception
+                Console.Error.WriteLine($"Error in ApplyDailyLoginBonusAsync: {ex.Message}");
+                return false; // Indicate failure
+            }
         }
     }
 }
