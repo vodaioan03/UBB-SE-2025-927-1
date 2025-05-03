@@ -19,32 +19,78 @@ namespace Duo.Services
 
         public async Task<List<Exercise>> GetAllExercises()
         {
-            return await exerciseServiceProxy.GetAllExercises();
+            try
+            {
+                return await exerciseServiceProxy.GetAllExercises();
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error fetching all exercises: {ex.Message}");
+                return new List<Exercise>();
+            }
         }
 
         public async Task<Exercise> GetExerciseById(int exerciseId)
         {
-            return await exerciseServiceProxy.GetExerciseById(exerciseId);
+            try
+            {
+                return await exerciseServiceProxy.GetExerciseById(exerciseId);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error fetching exercise by ID {exerciseId}: {ex.Message}");
+                return null;
+            }
         }
 
         public async Task<List<Exercise>> GetAllExercisesFromQuiz(int quizId)
         {
-            return await exerciseServiceProxy.GetAllExercisesFromQuiz(quizId);
+            try
+            {
+                return await exerciseServiceProxy.GetAllExercisesFromQuiz(quizId);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error fetching exercises from quiz ID {quizId}: {ex.Message}");
+                return new List<Exercise>();
+            }
         }
         public async Task<List<Exercise>> GetAllExercisesFromExam(int examId)
         {
-            return await exerciseServiceProxy.GetAllExercisesFromExam(examId);
+            try
+            {
+                return await exerciseServiceProxy.GetAllExercisesFromExam(examId);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error fetching exercises from exam ID {examId}: {ex.Message}");
+                return new List<Exercise>();
+            }
         }
 
         public async Task DeleteExercise(int exerciseId)
         {
-            await exerciseServiceProxy.DeleteExercise(exerciseId);
+            try
+            {
+                await exerciseServiceProxy.DeleteExercise(exerciseId);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error deleting exercise ID {exerciseId}: {ex.Message}");
+            }
         }
 
         public async Task CreateExercise(Exercise exercise)
         {
-            ValidationHelper.ValidateGenericExercise(exercise);
-            await exerciseServiceProxy.CreateExercise(exercise);
+            try
+            {
+                ValidationHelper.ValidateGenericExercise(exercise);
+                await exerciseServiceProxy.CreateExercise(exercise);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error creating exercise: {ex.Message}");
+            }
         }
     }
 }
