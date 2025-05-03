@@ -8,19 +8,14 @@ namespace Duo.Services
     /// <summary>
     /// Provides methods to interact with the Coins API for managing user coin balances and transactions.
     /// </summary>
-    public class CoinsServiceProxy
+    /// <remarks>
+    /// Initializes a new instance of the <see cref="CoinsServiceProxy"/> class.
+    /// </remarks>
+    /// <param name="httpClient">The HTTP client used to send requests to the Coins API.</param>
+    public class CoinsServiceProxy(HttpClient httpClient)
     {
-        private readonly HttpClient httpClient;
+        private readonly HttpClient httpClient = httpClient;
         private readonly string url = "https://localhost:7174/";
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CoinsServiceProxy"/> class.
-        /// </summary>
-        /// <param name="httpClient">The HTTP client used to send requests to the Coins API.</param>
-        public CoinsServiceProxy(HttpClient httpClient)
-        {
-            this.httpClient = httpClient;
-        }
 
         /// <summary>
         /// Retrieves the coin balance for a specific user.
