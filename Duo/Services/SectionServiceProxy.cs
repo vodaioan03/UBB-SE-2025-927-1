@@ -3,139 +3,201 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
-using Duo.Exceptions;
 using Duo.Models.Sections;
 
-public class SectionServiceProxy
+namespace Duo.Services
 {
-    private readonly HttpClient httpClient;
-
-    public SectionServiceProxy(HttpClient httpClient)
+    /// <summary>
+    /// Provides methods to interact with the Sections API.
+    /// </summary>
+    public class SectionServiceProxy
     {
-        this.httpClient = httpClient;
-    }
+        private readonly HttpClient httpClient;
+        private readonly string url = "http://localhost:7174";
 
-    public async Task<int> AddSection(Section section)
-    {
-        try
+        public SectionServiceProxy(HttpClient httpClient)
         {
-            var response = await httpClient.PostAsJsonAsync("api/sections/add", section);
-            response.EnsureSuccessStatusCode();
-            return await response.Content.ReadFromJsonAsync<int>();
+            this.httpClient = httpClient;
         }
-        catch (Exception ex)
-        {
-            throw new SectionServiceProxyException("Failed to add section via proxy.", ex);
-        }
-    }
 
-    public async Task<int> CountSectionsFromRoadmap(int roadmapId)
-    {
-        try
+        public async Task<int> AddSection(Section section)
         {
-            return await httpClient.GetFromJsonAsync<int>($"api/sections/count/{roadmapId}");
+            try
+            {
+                var response = await httpClient.PostAsJsonAsync($"{url}/api/sections/add", section);
+                response.EnsureSuccessStatusCode();
+                return await response.Content.ReadFromJsonAsync<int>();
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.Error.WriteLine($"HTTP error adding section: {ex.Message}");
+                return 0;
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Unexpected error adding section: {ex.Message}");
+                return 0;
+            }
         }
-        catch (Exception ex)
-        {
-            throw new SectionServiceProxyException($"Failed to count sections for roadmap ID {roadmapId}.", ex);
-        }
-    }
 
-    public async Task DeleteSection(int sectionId)
-    {
-        try
+        public async Task<int> CountSectionsFromRoadmap(int roadmapId)
         {
-            await httpClient.DeleteAsync($"api/sections/{sectionId}");
+            try
+            {
+                return await httpClient.GetFromJsonAsync<int>($"{url}/api/sections/count/{roadmapId}");
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.Error.WriteLine($"HTTP error counting sections: {ex.Message}");
+                return 0;
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Unexpected error counting sections: {ex.Message}");
+                return 0;
+            }
         }
-        catch (Exception ex)
-        {
-            throw new SectionServiceProxyException($"Failed to delete section with ID {sectionId}.", ex);
-        }
-    }
 
-    public async Task<List<Section>> GetAllSections()
-    {
-        try
+        public async Task DeleteSection(int sectionId)
         {
-            return await httpClient.GetFromJsonAsync<List<Section>>("api/sections");
+            try
+            {
+                await httpClient.DeleteAsync($"{url}/api/sections/{sectionId}");
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.Error.WriteLine($"HTTP error deleting section: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Unexpected error deleting section: {ex.Message}");
+            }
         }
-        catch (Exception ex)
-        {
-            throw new SectionServiceProxyException("Failed to retrieve all sections.", ex);
-        }
-    }
 
-    public async Task<List<Section>> GetByRoadmapId(int roadmapId)
-    {
-        try
+        public async Task<List<Section>> GetAllSections()
         {
-            return await httpClient.GetFromJsonAsync<List<Section>>($"api/sections/roadmap/{roadmapId}");
+            try
+            {
+                return await httpClient.GetFromJsonAsync<List<Section>>($"{url}/api/sections");
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.Error.WriteLine($"HTTP error retrieving all sections: {ex.Message}");
+                return new List<Section>();
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Unexpected error retrieving all sections: {ex.Message}");
+                return new List<Section>();
+            }
         }
-        catch (Exception ex)
-        {
-            throw new SectionServiceProxyException($"Failed to retrieve sections for roadmap ID {roadmapId}.", ex);
-        }
-    }
 
-    public async Task<Section> GetSectionById(int sectionId)
-    {
-        try
+        public async Task<List<Section>> GetByRoadmapId(int roadmapId)
         {
-            return await httpClient.GetFromJsonAsync<Section>($"api/sections/{sectionId}");
+            try
+            {
+                return await httpClient.GetFromJsonAsync<List<Section>>($"{url}/api/sections/roadmap/{roadmapId}");
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.Error.WriteLine($"HTTP error retrieving sections by roadmap ID: {ex.Message}");
+                return new List<Section>();
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Unexpected error retrieving sections by roadmap ID: {ex.Message}");
+                return new List<Section>();
+            }
         }
-        catch (Exception ex)
-        {
-            throw new SectionServiceProxyException($"Failed to retrieve section with ID {sectionId}.", ex);
-        }
-    }
 
-    public async Task<int> LastOrderNumberFromRoadmap(int roadmapId)
-    {
-        try
+        public async Task<Section> GetSectionById(int sectionId)
         {
-            return await httpClient.GetFromJsonAsync<int>($"api/sections/lastordernumber/{roadmapId}");
+            try
+            {
+                return await httpClient.GetFromJsonAsync<Section>($"{url}/api/sections/{sectionId}");
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.Error.WriteLine($"HTTP error retrieving section by ID: {ex.Message}");
+                return null;
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Unexpected error retrieving section by ID: {ex.Message}");
+                return null;
+            }
         }
-        catch (Exception ex)
-        {
-            throw new SectionServiceProxyException($"Failed to get last order number for roadmap ID {roadmapId}.", ex);
-        }
-    }
 
-    public async Task UpdateSection(Section section)
-    {
-        try
+        public async Task<int> LastOrderNumberFromRoadmap(int roadmapId)
         {
-            await httpClient.PutAsJsonAsync("api/sections/update", section);
+            try
+            {
+                return await httpClient.GetFromJsonAsync<int>($"{url}/api/sections/lastordernumber/{roadmapId}");
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.Error.WriteLine($"HTTP error retrieving last order number: {ex.Message}");
+                return 0;
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Unexpected error retrieving last order number: {ex.Message}");
+                return 0;
+            }
         }
-        catch (Exception ex)
-        {
-            throw new SectionServiceProxyException($"Failed to update section with ID {section.Id}.", ex);
-        }
-    }
 
-    public async Task<bool> TrackCompletion(int sectionId, bool isCompleted)
-    {
-        try
+        public async Task UpdateSection(Section section)
         {
-            var response = await httpClient.PostAsJsonAsync($"api/sections/completion/{sectionId}/{isCompleted}", new { });
-            response.EnsureSuccessStatusCode();
-            return await response.Content.ReadFromJsonAsync<bool>();
+            try
+            {
+                await httpClient.PutAsJsonAsync($"{url}/api/sections/update", section);
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.Error.WriteLine($"HTTP error updating section: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Unexpected error updating section: {ex.Message}");
+            }
         }
-        catch (Exception ex)
-        {
-            throw new SectionServiceProxyException($"Failed to track completion for section ID {sectionId}.", ex);
-        }
-    }
 
-    public async Task<List<SectionDependency>> GetSectionDependencies(int sectionId)
-    {
-        try
+        public async Task<bool> TrackCompletion(int sectionId, bool isCompleted)
         {
-            return await httpClient.GetFromJsonAsync<List<SectionDependency>>($"api/sections/dependencies/{sectionId}");
+            try
+            {
+                var response = await httpClient.PostAsJsonAsync($"{url}/api/sections/completion/{sectionId}/{isCompleted}", new { });
+                response.EnsureSuccessStatusCode();
+                return await response.Content.ReadFromJsonAsync<bool>();
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.Error.WriteLine($"HTTP error tracking completion: {ex.Message}");
+                return false;
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Unexpected error tracking completion: {ex.Message}");
+                return false;
+            }
         }
-        catch (Exception ex)
+
+        public async Task<List<SectionDependency>> GetSectionDependencies(int sectionId)
         {
-            throw new SectionServiceProxyException($"Failed to get dependencies for section ID {sectionId}.", ex);
+            try
+            {
+                return await httpClient.GetFromJsonAsync<List<SectionDependency>>($"{url}/api/sections/dependencies/{sectionId}");
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.Error.WriteLine($"HTTP error retrieving dependencies: {ex.Message}");
+                return new List<SectionDependency>();
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Unexpected error retrieving dependencies: {ex.Message}");
+                return new List<SectionDependency>();
+            }
         }
     }
 }
