@@ -1022,7 +1022,7 @@ namespace Duo.Api.Repositories
             catch (Exception ex)
             {
                 Console.Error.WriteLine($"Error retrieving coin balance for user {userId}: {ex.Message}");
-                return 0; // Return a default value in case of an error
+                return 0;
             }
         }
 
@@ -1043,12 +1043,12 @@ namespace Duo.Api.Repositories
                     await context.SaveChangesAsync();
                     return true;
                 }
-                return false; // Not enough coins or user not found
+                return false;
             }
             catch (Exception ex)
             {
                 Console.Error.WriteLine($"Error deducting coins for user {userId}: {ex.Message}");
-                return false; // Indicate failure in case of an error
+                return false;
             }
         }
 
@@ -1095,7 +1095,7 @@ namespace Duo.Api.Repositories
             catch (Exception ex)
             {
                 Console.Error.WriteLine($"Error retrieving last login time for user {userId}: {ex.Message}");
-                throw; // Re-throw the exception to propagate it further
+                throw;
             }
         }
 
