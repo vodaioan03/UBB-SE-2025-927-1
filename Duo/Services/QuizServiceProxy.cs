@@ -35,11 +35,11 @@ namespace Duo.Services
             }
         }
 
-        public async Task<List<Quiz>> GetAllAvailableExamsAsync()
+        public async Task<List<Exam>> GetAllAvailableExamsAsync()
         {
             try
             {
-                var result = await httpClient.GetFromJsonAsync<List<Quiz>>("exam/get-available");
+                var result = await httpClient.GetFromJsonAsync<List<Exam>>("exam/get-available");
                 if (result == null)
                 {
                     throw new QuizServiceProxyException("Received null response when fetching available exams.");
