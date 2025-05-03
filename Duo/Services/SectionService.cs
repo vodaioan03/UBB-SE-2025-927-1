@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Duo.Models.Sections;
+using Duo.Exceptions;
 
 namespace Duo.Services
 {
@@ -15,75 +17,135 @@ namespace Duo.Services
 
         public async Task<List<Section>> GetAllSections()
         {
-            return await sectionServiceProxy.GetAllSections();
+            try
+            {
+                return await sectionServiceProxy.GetAllSections();
+            }
+            catch (Exception ex)
+            {
+                throw new SectionServiceException("Failed to retrieve all sections.", ex);
+            }
         }
 
         public async Task<Section> GetSectionById(int sectionId)
         {
-            return await sectionServiceProxy.GetSectionById(sectionId);
+            try
+            {
+                return await sectionServiceProxy.GetSectionById(sectionId);
+            }
+            catch (Exception ex)
+            {
+                throw new SectionServiceException($"Failed to retrieve section with ID {sectionId}.", ex);
+            }
         }
 
         public async Task<List<Section>> GetByRoadmapId(int roadmapId)
         {
-            return await sectionServiceProxy.GetByRoadmapId(roadmapId);
+            try
+            {
+                return await sectionServiceProxy.GetByRoadmapId(roadmapId);
+            }
+            catch (Exception ex)
+            {
+                throw new SectionServiceException($"Failed to retrieve sections for roadmap ID {roadmapId}.", ex);
+            }
         }
 
         public async Task<int> CountSectionsFromRoadmap(int roadmapId)
         {
-            return await sectionServiceProxy.CountSectionsFromRoadmap(roadmapId);
+            try
+            {
+                return await sectionServiceProxy.CountSectionsFromRoadmap(roadmapId);
+            }
+            catch (Exception ex)
+            {
+                throw new SectionServiceException($"Failed to count sections for roadmap ID {roadmapId}.", ex);
+            }
         }
 
         public async Task<int> LastOrderNumberFromRoadmap(int roadmapId)
         {
-            return await sectionServiceProxy.LastOrderNumberFromRoadmap(roadmapId);
+            try
+            {
+                return await sectionServiceProxy.LastOrderNumberFromRoadmap(roadmapId);
+            }
+            catch (Exception ex)
+            {
+                throw new SectionServiceException($"Failed to get last order number for roadmap ID {roadmapId}.", ex);
+            }
         }
 
         public async Task<int> AddSection(Section section)
         {
-            // Validate section via API
-            ValidationHelper.ValidateSection(section);
+            try
+            {
+                ValidationHelper.ValidateSection(section);
+                var allSections = await GetAllSections();
+                section.OrderNumber = allSections.Count + 1;
 
-            // Get all sections to determine the order number
-            var allSections = await GetAllSections();
-            section.OrderNumber = allSections.Count + 1;
-
-            return await sectionServiceProxy.AddSection(section);
+                return await sectionServiceProxy.AddSection(section);
+            }
+            catch (Exception ex)
+            {
+                throw new SectionServiceException("Failed to add new section.", ex);
+            }
         }
 
         public async Task DeleteSection(int sectionId)
         {
-            await sectionServiceProxy.DeleteSection(sectionId);
+            try
+            {
+                await sectionServiceProxy.DeleteSection(sectionId);
+            }
+            catch (Exception ex)
+            {
+                throw new SectionServiceException($"Failed to delete section with ID {sectionId}.", ex);
+            }
         }
 
         public async Task UpdateSection(Section section)
         {
-            // Validate section via API
-            ValidationHelper.ValidateSection(section);
-            await sectionServiceProxy.UpdateSection(section);
+            try
+            {
+                ValidationHelper.ValidateSection(section);
+                await sectionServiceProxy.UpdateSection(section);
+            }
+            catch (Exception ex)
+            {
+                throw new SectionServiceException($"Failed to update section with ID {section.Id}.", ex);
+            }
         }
 
-        // Track completion directly without the need for a separate model
         public async Task<bool> TrackCompletion(int sectionId, bool isCompleted)
         {
-            var response = await sectionServiceProxy.TrackCompletion(sectionId, isCompleted);
-            return response;
+            try
+            {
+                return await sectionServiceProxy.TrackCompletion(sectionId, isCompleted);
+            }
+            catch (Exception ex)
+            {
+                throw new SectionServiceException($"Failed to track completion for section ID {sectionId}.", ex);
+            }
         }
 
-        // Validate section dependencies
         public async Task<bool> ValidateDependencies(int sectionId)
         {
-            var dependencies = await sectionServiceProxy.GetSectionDependencies(sectionId);
-
-            // Check dependencies logic here
-            foreach (var dependency in dependencies)
+            try
             {
-                if (!dependency.IsCompleted)
+                var dependencies = await sectionServiceProxy.GetSectionDependencies(sectionId);
+                foreach (var dependency in dependencies)
                 {
-                    return false; // Dependency not completed
+                    if (!dependency.IsCompleted)
+                    {
+                        return false;
+                    }
                 }
+                return true;
             }
-
-            return true; // All dependencies met
+            catch (Exception ex)
+            {
+                throw new SectionServiceException($"Failed to validate dependencies for section ID {sectionId}.", ex);
+            }
         }
     }
 }
