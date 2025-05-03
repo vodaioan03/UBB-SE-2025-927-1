@@ -1014,8 +1014,16 @@ namespace Duo.Api.Repositories
         /// <returns>The coin balance of the specified user. If the user is not found, returns 0.</returns>
         public async Task<int> GetUserCoinBalanceAsync(int userId)
         {
-            var user = await context.Users.FindAsync(userId);
-            return user?.CoinBalance ?? 0;
+            try
+            {
+                var user = await context.Users.FindAsync(userId);
+                return user?.CoinBalance ?? 0;
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error retrieving coin balance for user {userId}: {ex.Message}");
+                return 0;
+            }
         }
 
         /// <summary>
@@ -1026,14 +1034,22 @@ namespace Duo.Api.Repositories
         /// <returns>True if the deduction was successful, false if the user does not have enough coins.</returns>
         public async Task<bool> TryDeductCoinsFromUserWalletAsync(int userId, int cost)
         {
-            var user = await context.Users.FindAsync(userId);
-            if (user != null && user.CoinBalance >= cost)
+            try
             {
-                user.CoinBalance -= cost;
-                await context.SaveChangesAsync();
-                return true;
+                var user = await context.Users.FindAsync(userId);
+                if (user != null && user.CoinBalance >= cost)
+                {
+                    user.CoinBalance -= cost;
+                    await context.SaveChangesAsync();
+                    return true;
+                }
+                return false;
             }
-            return false;
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error deducting coins for user {userId}: {ex.Message}");
+                return false;
+            }
         }
 
         /// <summary>
@@ -1044,11 +1060,18 @@ namespace Duo.Api.Repositories
         /// <returns>A task that represents the asynchronous operation.</returns>
         public async Task AddCoinsToUserWalletAsync(int userId, int amount)
         {
-            var user = await context.Users.FindAsync(userId);
-            if (user != null)
+            try
             {
-                user.CoinBalance += amount;
-                await context.SaveChangesAsync();
+                var user = await context.Users.FindAsync(userId);
+                if (user != null)
+                {
+                    user.CoinBalance += amount;
+                    await context.SaveChangesAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error adding coins for user {userId}: {ex.Message}");
             }
         }
 
@@ -1060,8 +1083,20 @@ namespace Duo.Api.Repositories
         /// <exception cref="Exception">Thrown when the user with the specified ID is not found.</exception>
         public async Task<DateTime> GetUserLastLoginTimeAsync(int userId)
         {
-            var user = await context.Users.FindAsync(userId);
-            return user == null ? throw new Exception($"User with ID {userId} not found") : user.LastLoginTime;
+            try
+            {
+                var user = await context.Users.FindAsync(userId);
+                if (user == null)
+                {
+                    throw new Exception($"User with ID {userId} not found");
+                }
+                return user.LastLoginTime;
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error retrieving last login time for user {userId}: {ex.Message}");
+                throw;
+            }
         }
 
         /// <summary>
@@ -1071,11 +1106,18 @@ namespace Duo.Api.Repositories
         /// <returns>A task that represents the asynchronous operation.</returns>
         public async Task UpdateUserLastLoginTimeToNowAsync(int userId)
         {
-            var user = await context.Users.FindAsync(userId);
-            if (user != null)
+            try
             {
-                user.LastLoginTime = DateTime.Now;
-                await context.SaveChangesAsync();
+                var user = await context.Users.FindAsync(userId);
+                if (user != null)
+                {
+                    user.LastLoginTime = DateTime.Now;
+                    await context.SaveChangesAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error updating last login time for user {userId}: {ex.Message}");
             }
         }
 
