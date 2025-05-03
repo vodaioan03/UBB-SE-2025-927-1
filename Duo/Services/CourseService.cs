@@ -453,6 +453,6 @@ namespace Duo.Services
                 Console.Error.WriteLine($"Error occurred buying bonus module: {e}");
                 return false;
             }
-decimal catch        }
+        }
     }
 }
