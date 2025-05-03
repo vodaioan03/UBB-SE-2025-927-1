@@ -31,9 +31,8 @@ namespace Duo.Services
             }
             catch (HttpRequestException ex)
             {
-                // Log the exception (e.g., to a logging service)
                 Console.Error.WriteLine($"Error fetching coin balance: {ex.Message}");
-                return 0; // Return a default value or handle as needed
+                return 0;
             }
             catch (Exception ex)
             {
@@ -58,7 +57,7 @@ namespace Duo.Services
             catch (HttpRequestException ex)
             {
                 Console.Error.WriteLine($"Error spending coins: {ex.Message}");
-                return false; // Indicate failure
+                return false;
             }
             catch (Exception ex)
             {
@@ -104,7 +103,7 @@ namespace Duo.Services
             catch (HttpRequestException ex)
             {
                 Console.Error.WriteLine($"Error applying daily login bonus: {ex.Message}");
-                return false; // Indicate failure
+                return false;
             }
             catch (Exception ex)
             {
