@@ -1,41 +1,121 @@
-﻿using System.Net.Http;
+﻿using System;
+using System.Net.Http;
 using System.Net.Http.Json;
-using System.Reflection.Metadata;
 using System.Threading.Tasks;
 
 namespace Duo.Services
 {
+    /// <summary>
+    /// Provides methods to interact with the Coins API for managing user coin balances and transactions.
+    /// </summary>
     public class CoinsServiceProxy
     {
         private readonly HttpClient httpClient;
         private readonly string url = "https://localhost:7174/";
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CoinsServiceProxy"/> class.
+        /// </summary>
+        /// <param name="httpClient">The HTTP client used to send requests to the Coins API.</param>
         public CoinsServiceProxy(HttpClient httpClient)
         {
             this.httpClient = httpClient;
         }
 
+        /// <summary>
+        /// Retrieves the coin balance for a specific user.
+        /// </summary>
+        /// <param name="userId">The ID of the user whose coin balance is to be retrieved.</param>
+        /// <returns>The user's coin balance, or 0 if an error occurs.</returns>
         public async Task<int> GetUserCoinBalanceAsync(int userId)
         {
-            var response = await httpClient.GetFromJsonAsync<int>($"{url}/coins/balance/{userId}");
-            return response;
+            try
+            {
+                var response = await httpClient.GetFromJsonAsync<int>($"{url}/coins/balance/{userId}");
+                return response;
+            }
+            catch (HttpRequestException ex)
+            {
+                // Log the exception (e.g., to a logging service)
+                Console.Error.WriteLine($"Error fetching coin balance: {ex.Message}");
+                return 0; // Return a default value or handle as needed
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+                return 0;
+            }
         }
 
+        /// <summary>
+        /// Attempts to spend a specified amount of coins for a user.
+        /// </summary>
+        /// <param name="userId">The ID of the user attempting to spend coins.</param>
+        /// <param name="cost">The amount of coins to spend.</param>
+        /// <returns><c>true</c> if the operation is successful; otherwise, <c>false</c>.</returns>
         public async Task<bool> TrySpendingCoinsAsync(int userId, int cost)
         {
-            var response = await httpClient.PostAsJsonAsync($"{url}/coins/spend", new { UserId = userId, Cost = cost });
-            return response.IsSuccessStatusCode;
+            try
+            {
+                var response = await httpClient.PostAsJsonAsync($"{url}/coins/spend", new { UserId = userId, Cost = cost });
+                return response.IsSuccessStatusCode;
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.Error.WriteLine($"Error spending coins: {ex.Message}");
+                return false; // Indicate failure
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+                return false;
+            }
         }
 
+        /// <summary>
+        /// Adds a specified amount of coins to a user's balance.
+        /// </summary>
+        /// <param name="userId">The ID of the user to whom coins will be added.</param>
+        /// <param name="amount">The amount of coins to add.</param>
+        /// <returns>A task that represents the asynchronous operation.</returns>
         public async Task AddCoinsAsync(int userId, int amount)
         {
-            await httpClient.PostAsJsonAsync($"{url}/coins/add", new { UserId = userId, Amount = amount });
+            try
+            {
+                await httpClient.PostAsJsonAsync($"{url}/coins/add", new { UserId = userId, Amount = amount });
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.Error.WriteLine($"Error adding coins: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            }
         }
 
+        /// <summary>
+        /// Applies a daily login bonus to a user's coin balance.
+        /// </summary>
+        /// <param name="userId">The ID of the user receiving the daily login bonus.</param>
+        /// <returns><c>true</c> if the operation is successful; otherwise, <c>false</c>.</returns>
         public async Task<bool> ApplyDailyLoginBonusAsync(int userId)
         {
-            var response = await httpClient.PostAsJsonAsync($"{url}/coins/dailybonus", new { UserId = userId });
-            return response.IsSuccessStatusCode;
+            try
+            {
+                var response = await httpClient.PostAsJsonAsync($"{url}/coins/dailybonus", new { UserId = userId });
+                return response.IsSuccessStatusCode;
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.Error.WriteLine($"Error applying daily login bonus: {ex.Message}");
+                return false; // Indicate failure
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+                return false;
+            }
         }
     }
 }
