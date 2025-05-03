@@ -26,7 +26,6 @@ namespace Duo.Services
             {
                 throw new ArgumentNullException(nameof(exercise));
             }
-
             try
             {
                 var response = await httpClient.PostAsJsonAsync($"{url}api/Exercise", exercise);
@@ -122,7 +121,7 @@ namespace Duo.Services
             }
         }
 
-        public async Task<Exercise> GetExerciseById(int exerciseId)
+        public async Task<Exercise?> GetExerciseById(int exerciseId)
         {
             try
             {
