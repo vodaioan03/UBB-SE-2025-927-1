@@ -26,9 +26,8 @@ namespace Duo.Services
             }
             catch (Exception ex)
             {
-                // Log the exception (e.g., to a logging service)
                 Console.Error.WriteLine($"Error in GetCoinBalanceAsync: {ex.Message}");
-                return 0; // Return a default value
+                return 0;
             }
         }
 
@@ -46,9 +45,8 @@ namespace Duo.Services
             }
             catch (Exception ex)
             {
-                // Log the exception
                 Console.Error.WriteLine($"Error in TrySpendingCoinsAsync: {ex.Message}");
-                return false; // Indicate failure
+                return false;
             }
         }
 
@@ -65,7 +63,6 @@ namespace Duo.Services
             }
             catch (Exception ex)
             {
-                // Log the exception
                 Console.Error.WriteLine($"Error in AddCoinsAsync: {ex.Message}");
             }
         }
@@ -83,9 +80,8 @@ namespace Duo.Services
             }
             catch (Exception ex)
             {
-                // Log the exception
                 Console.Error.WriteLine($"Error in ApplyDailyLoginBonusAsync: {ex.Message}");
-                return false; // Indicate failure
+                return false;
             }
         }
     }
