@@ -1,7 +1,9 @@
+using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
+using Duo.Exceptions;
 using Duo.Models.Sections;
 
 public class SectionServiceProxy
@@ -15,55 +17,125 @@ public class SectionServiceProxy
 
     public async Task<int> AddSection(Section section)
     {
-        var response = await httpClient.PostAsJsonAsync("api/sections/add", section);
-        response.EnsureSuccessStatusCode();
-        return await response.Content.ReadFromJsonAsync<int>();
+        try
+        {
+            var response = await httpClient.PostAsJsonAsync("api/sections/add", section);
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadFromJsonAsync<int>();
+        }
+        catch (Exception ex)
+        {
+            throw new SectionServiceProxyException("Failed to add section via proxy.", ex);
+        }
     }
 
     public async Task<int> CountSectionsFromRoadmap(int roadmapId)
     {
-        return await httpClient.GetFromJsonAsync<int>($"api/sections/count/{roadmapId}");
+        try
+        {
+            return await httpClient.GetFromJsonAsync<int>($"api/sections/count/{roadmapId}");
+        }
+        catch (Exception ex)
+        {
+            throw new SectionServiceProxyException($"Failed to count sections for roadmap ID {roadmapId}.", ex);
+        }
     }
 
     public async Task DeleteSection(int sectionId)
     {
-        await httpClient.DeleteAsync($"api/sections/{sectionId}");
+        try
+        {
+            await httpClient.DeleteAsync($"api/sections/{sectionId}");
+        }
+        catch (Exception ex)
+        {
+            throw new SectionServiceProxyException($"Failed to delete section with ID {sectionId}.", ex);
+        }
     }
 
     public async Task<List<Section>> GetAllSections()
     {
-        return await httpClient.GetFromJsonAsync<List<Section>>("api/sections");
+        try
+        {
+            return await httpClient.GetFromJsonAsync<List<Section>>("api/sections");
+        }
+        catch (Exception ex)
+        {
+            throw new SectionServiceProxyException("Failed to retrieve all sections.", ex);
+        }
     }
 
     public async Task<List<Section>> GetByRoadmapId(int roadmapId)
     {
-        return await httpClient.GetFromJsonAsync<List<Section>>($"api/sections/roadmap/{roadmapId}");
+        try
+        {
+            return await httpClient.GetFromJsonAsync<List<Section>>($"api/sections/roadmap/{roadmapId}");
+        }
+        catch (Exception ex)
+        {
+            throw new SectionServiceProxyException($"Failed to retrieve sections for roadmap ID {roadmapId}.", ex);
+        }
     }
 
     public async Task<Section> GetSectionById(int sectionId)
     {
-        return await httpClient.GetFromJsonAsync<Section>($"api/sections/{sectionId}");
+        try
+        {
+            return await httpClient.GetFromJsonAsync<Section>($"api/sections/{sectionId}");
+        }
+        catch (Exception ex)
+        {
+            throw new SectionServiceProxyException($"Failed to retrieve section with ID {sectionId}.", ex);
+        }
     }
 
     public async Task<int> LastOrderNumberFromRoadmap(int roadmapId)
     {
-        return await httpClient.GetFromJsonAsync<int>($"api/sections/lastordernumber/{roadmapId}");
+        try
+        {
+            return await httpClient.GetFromJsonAsync<int>($"api/sections/lastordernumber/{roadmapId}");
+        }
+        catch (Exception ex)
+        {
+            throw new SectionServiceProxyException($"Failed to get last order number for roadmap ID {roadmapId}.", ex);
+        }
     }
 
     public async Task UpdateSection(Section section)
     {
-        await httpClient.PutAsJsonAsync("api/sections/update", section);
+        try
+        {
+            await httpClient.PutAsJsonAsync("api/sections/update", section);
+        }
+        catch (Exception ex)
+        {
+            throw new SectionServiceProxyException($"Failed to update section with ID {section.Id}.", ex);
+        }
     }
 
     public async Task<bool> TrackCompletion(int sectionId, bool isCompleted)
     {
-        var response = await httpClient.PostAsJsonAsync($"api/sections/completion/{sectionId}/{isCompleted}", new { });
-        response.EnsureSuccessStatusCode();
-        return await response.Content.ReadFromJsonAsync<bool>();
+        try
+        {
+            var response = await httpClient.PostAsJsonAsync($"api/sections/completion/{sectionId}/{isCompleted}", new { });
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadFromJsonAsync<bool>();
+        }
+        catch (Exception ex)
+        {
+            throw new SectionServiceProxyException($"Failed to track completion for section ID {sectionId}.", ex);
+        }
     }
 
     public async Task<List<SectionDependency>> GetSectionDependencies(int sectionId)
     {
-        return await httpClient.GetFromJsonAsync<List<SectionDependency>>($"api/sections/dependencies/{sectionId}");
+        try
+        {
+            return await httpClient.GetFromJsonAsync<List<SectionDependency>>($"api/sections/dependencies/{sectionId}");
+        }
+        catch (Exception ex)
+        {
+            throw new SectionServiceProxyException($"Failed to get dependencies for section ID {sectionId}.", ex);
+        }
     }
 }
