@@ -1,9 +1,7 @@
-﻿using System;
+﻿using System.Net.Http;
+using System.Net.Http.Json;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using System.Net.Http;
-using System.Net.Http.Json;
-using Duo.Exceptions;
 using Duo.Models.Quizzes;
 using Duo.Models.Quizzes.API;
 
@@ -20,284 +18,108 @@ namespace Duo.Services
 
         public async Task<List<Quiz>> GetAsync()
         {
-            try
-            {
-                var result = await httpClient.GetFromJsonAsync<List<Quiz>>("quiz/list");
-                if (result == null)
-                {
-                    throw new QuizServiceProxyException("Received null response when fetching quiz list.");
-                }
-                return result;
-            }
-            catch (Exception ex)
-            {
-                throw new QuizServiceProxyException("Failed to fetch quiz list.", ex);
-            }
+            return await httpClient.GetFromJsonAsync<List<Quiz>>("quiz/list");
         }
 
         public async Task<List<Quiz>> GetAllAvailableExamsAsync()
         {
-            try
-            {
-                var result = await httpClient.GetFromJsonAsync<List<Quiz>>("exam/get-available");
-                if (result == null)
-                {
-                    throw new QuizServiceProxyException("Received null response when fetching available exams.");
-                }
-                return result;
-            }
-            catch (Exception ex)
-            {
-                throw new QuizServiceProxyException("Failed to fetch available exams.", ex);
-            }
+            return await httpClient.GetFromJsonAsync<List<Quiz>>("exam/get-available");
         }
 
         public async Task<Quiz> GetQuizByIdAsync(int id)
         {
-            try
-            {
-                var result = await httpClient.GetFromJsonAsync<Quiz>($"quiz/get?id={id}");
-                if (result == null)
-                {
-                    throw new QuizServiceProxyException($"Received null response for quiz with ID {id}.");
-                }
-                return result;
-            }
-            catch (Exception ex)
-            {
-                throw new QuizServiceProxyException($"Failed to fetch quiz with ID {id}.", ex);
-            }
+            return await httpClient.GetFromJsonAsync<Quiz>($"quiz/get?id={id}");
         }
 
         public async Task<Exam> GetExamByIdAsync(int id)
         {
-            try
-            {
-                var result = await httpClient.GetFromJsonAsync<Exam>($"exam/get?id={id}");
-                if (result == null)
-                {
-                    throw new QuizServiceProxyException($"Received null response for exam with ID {id}.");
-                }
-                return result;
-            }
-            catch (Exception ex)
-            {
-                throw new QuizServiceProxyException($"Failed to fetch exam with ID {id}.", ex);
-            }
+            return await httpClient.GetFromJsonAsync<Exam>($"exam/get?id={id}");
         }
 
         public async Task<List<Quiz>> GetAllQuizzesFromSectionAsync(int sectionId)
         {
-            try
-            {
-                var result = await httpClient.GetFromJsonAsync<List<Quiz>>($"quiz/get-all-section?sectionId={sectionId}");
-                if (result == null)
-                {
-                    throw new QuizServiceProxyException($"Received null response for section {sectionId} quizzes.");
-                }
-                return result;
-            }
-            catch (Exception ex)
-            {
-                throw new QuizServiceProxyException($"Failed to fetch quizzes from section {sectionId}.", ex);
-            }
+            return await httpClient.GetFromJsonAsync<List<Quiz>>($"quiz/get-all-section?sectionId={sectionId}");
         }
 
         public async Task<int> CountQuizzesFromSectionAsync(int sectionId)
         {
-            try
-            {
-                var result = await httpClient.GetFromJsonAsync<int?>($"quiz/count-from-section?sectionId={sectionId}");
-                if (result == null)
-                {
-                    throw new QuizServiceProxyException($"Received null response when counting quizzes in section {sectionId}.");
-                }
-                return result.Value;
-            }
-            catch (Exception ex)
-            {
-                throw new QuizServiceProxyException($"Failed to count quizzes from section {sectionId}.", ex);
-            }
+            return await httpClient.GetFromJsonAsync<int>($"quiz/count-from-section?sectionId={sectionId}");
         }
 
         public async Task<int> LastOrderNumberFromSectionAsync(int sectionId)
         {
-            try
-            {
-                var result = await httpClient.GetFromJsonAsync<int?>($"quiz/last-order?sectionId={sectionId}");
-                if (result == null)
-                {
-                    throw new QuizServiceProxyException($"Received null response when getting last order number from section {sectionId}.");
-                }
-                return result.Value;
-            }
-            catch (Exception ex)
-            {
-                throw new QuizServiceProxyException($"Failed to get last order number from section {sectionId}.", ex);
-            }
+            return await httpClient.GetFromJsonAsync<int>($"quiz/last-order?sectionId={sectionId}");
         }
 
         public async Task<Exam> GetExamFromSectionAsync(int sectionId)
         {
-            try
-            {
-                var result = await httpClient.GetFromJsonAsync<Exam>($"exam/get-from-section?sectionId={sectionId}");
-                if (result == null)
-                {
-                    throw new QuizServiceProxyException($"Received null response for exam from section {sectionId}.");
-                }
-                return result;
-            }
-            catch (Exception ex)
-            {
-                throw new QuizServiceProxyException($"Failed to fetch exam from section {sectionId}.", ex);
-            }
+            return await httpClient.GetFromJsonAsync<Exam>($"exam/get-from-section?sectionId={sectionId}");
         }
 
         public async Task DeleteQuizAsync(int quizId)
         {
-            try
-            {
-                await httpClient.DeleteAsync($"quiz/delete?id={quizId}");
-            }
-            catch (Exception ex)
-            {
-                throw new QuizServiceProxyException($"Failed to delete quiz with ID {quizId}.", ex);
-            }
+            await httpClient.DeleteAsync($"quiz/delete?id={quizId}");
         }
 
         public async Task UpdateQuizAsync(Quiz quiz)
         {
-            try
-            {
-                await httpClient.PutAsJsonAsync("quiz/update", quiz);
-            }
-            catch (Exception ex)
-            {
-                throw new QuizServiceProxyException($"Failed to update quiz with ID {quiz.Id}.", ex);
-            }
+            await httpClient.PutAsJsonAsync("quiz/update", quiz);
         }
 
         public async Task CreateQuizAsync(Quiz quiz)
         {
-            try
-            {
-                await httpClient.PostAsJsonAsync("quiz/add", quiz);
-            }
-            catch (Exception ex)
-            {
-                throw new QuizServiceProxyException("Failed to create quiz.", ex);
-            }
+            await httpClient.PostAsJsonAsync("quiz/add", quiz);
         }
 
         public async Task AddExercisesToQuizAsync(int quizId, List<int> exerciseIds)
         {
-            try
+            var formData = new MultipartFormDataContent();
+            formData.Add(new StringContent(quizId.ToString()), "quizId");
+            foreach (var exerciseId in exerciseIds)
             {
-                var formData = new MultipartFormDataContent();
-                formData.Add(new StringContent(quizId.ToString()), "quizId");
-                foreach (var exerciseId in exerciseIds)
-                {
-                    formData.Add(new StringContent(exerciseId.ToString()), "exercises");
-                }
-                await httpClient.PostAsync("quiz/add-exercises", formData);
+                formData.Add(new StringContent(exerciseId.ToString()), "exercises");
             }
-            catch (Exception ex)
-            {
-                throw new QuizServiceProxyException($"Failed to add exercises to quiz {quizId}.", ex);
-            }
+
+            await httpClient.PostAsync("quiz/add-exercises", formData);
         }
 
         public async Task AddExerciseToQuizAsync(int quizId, int exerciseId)
         {
-            try
-            {
-                var formData = new MultipartFormDataContent();
-                formData.Add(new StringContent(quizId.ToString()), "quizId");
-                formData.Add(new StringContent(exerciseId.ToString()), "exerciseId");
-                await httpClient.PostAsync("quiz/add-exercise", formData);
-            }
-            catch (Exception ex)
-            {
-                throw new QuizServiceProxyException($"Failed to add exercise {exerciseId} to quiz {quizId}.", ex);
-            }
+            var formData = new MultipartFormDataContent();
+            formData.Add(new StringContent(quizId.ToString()), "quizId");
+            formData.Add(new StringContent(exerciseId.ToString()), "exerciseId");
+
+            await httpClient.PostAsync("quiz/add-exercise", formData);
         }
 
         public async Task RemoveExerciseFromQuizAsync(int quizId, int exerciseId)
         {
-            try
-            {
-                await httpClient.DeleteAsync($"quiz/remove-exercise?quizId={quizId}&exerciseId={exerciseId}");
-            }
-            catch (Exception ex)
-            {
-                throw new QuizServiceProxyException($"Failed to remove exercise {exerciseId} from quiz {quizId}.", ex);
-            }
+            await httpClient.DeleteAsync($"quiz/remove-exercise?quizId={quizId}&exerciseId={exerciseId}");
         }
 
         public async Task DeleteExamAsync(int examId)
         {
-            try
-            {
-                await httpClient.DeleteAsync($"exam/delete?id={examId}");
-            }
-            catch (Exception ex)
-            {
-                throw new QuizServiceProxyException($"Failed to delete exam with ID {examId}.", ex);
-            }
+            await httpClient.DeleteAsync($"exam/delete?id={examId}");
         }
 
         public async Task UpdateExamAsync(Exam exam)
         {
-            try
-            {
-                await httpClient.PutAsJsonAsync("exam/update", exam);
-            }
-            catch (Exception ex)
-            {
-                throw new QuizServiceProxyException($"Failed to update exam with ID {exam.Id}.", ex);
-            }
+            await httpClient.PutAsJsonAsync("exam/update", exam);
         }
 
         public async Task CreateExamAsync(Exam exam)
         {
-            try
-            {
-                await httpClient.PostAsJsonAsync("exam/add", exam);
-            }
-            catch (Exception ex)
-            {
-                throw new QuizServiceProxyException("Failed to create exam.", ex);
-            }
+            await httpClient.PostAsJsonAsync("exam/add", exam);
         }
 
         public async Task<QuizResult> GetResultAsync(int quizId)
         {
-            try
-            {
-                var result = await httpClient.GetFromJsonAsync<QuizResult>($"quiz/get-result?quizId={quizId}");
-                if (result == null)
-                {
-                    throw new QuizServiceProxyException($"Received null response for result of quiz {quizId}.");
-                }
-                return result;
-            }
-            catch (Exception ex)
-            {
-                throw new QuizServiceProxyException($"Failed to fetch result for quiz with ID {quizId}.", ex);
-            }
+            return await httpClient.GetFromJsonAsync<QuizResult>($"quiz/get-result?quizId={quizId}");
         }
 
         public async Task SubmitQuizAsync(QuizSubmission submission)
         {
-            try
-            {
-                await httpClient.PostAsJsonAsync("quiz/submit", submission);
-            }
-            catch (Exception ex)
-            {
-                throw new QuizServiceProxyException("Failed to submit quiz.", ex);
-            }
+            await httpClient.PostAsJsonAsync("quiz/submit", submission);
         }
     }
 }
