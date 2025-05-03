@@ -211,6 +211,11 @@ namespace Duo.ViewModels
         /// </summary>
         private async void ApplyAllFilters()
         {
+            if (AvailableTags == null)
+            {
+                return;
+            }
+
             var selectedTagIds = AvailableTags
                 .Where(tag => tag.IsSelected)
                 .Select(tag => tag.TagId)
