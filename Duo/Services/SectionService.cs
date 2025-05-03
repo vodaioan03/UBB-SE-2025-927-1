@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Duo.Models.Sections;
-using Duo.Exceptions;
 
 namespace Duo.Services
 {
+    /// <summary>
+    /// Provides methods to interact with sections, delegating to the SectionServiceProxy.
+    /// </summary>
     public class SectionService : ISectionService
     {
         private readonly SectionServiceProxy sectionServiceProxy;
@@ -15,39 +18,24 @@ namespace Duo.Services
             this.sectionServiceProxy = sectionServiceProxy;
         }
 
-        public async Task<List<Section>> GetAllSections()
+        public async Task<int> AddSection(Section section)
         {
             try
             {
-                return await sectionServiceProxy.GetAllSections();
+                ValidationHelper.ValidateSection(section);
+                var allSections = await GetAllSections();
+                section.OrderNumber = allSections.Count + 1;
+                return await sectionServiceProxy.AddSection(section);
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.Error.WriteLine($"HTTP error adding section: {ex.Message}");
+                return 0;
             }
             catch (Exception ex)
             {
-                throw new SectionServiceException("Failed to retrieve all sections.", ex);
-            }
-        }
-
-        public async Task<Section> GetSectionById(int sectionId)
-        {
-            try
-            {
-                return await sectionServiceProxy.GetSectionById(sectionId);
-            }
-            catch (Exception ex)
-            {
-                throw new SectionServiceException($"Failed to retrieve section with ID {sectionId}.", ex);
-            }
-        }
-
-        public async Task<List<Section>> GetByRoadmapId(int roadmapId)
-        {
-            try
-            {
-                return await sectionServiceProxy.GetByRoadmapId(roadmapId);
-            }
-            catch (Exception ex)
-            {
-                throw new SectionServiceException($"Failed to retrieve sections for roadmap ID {roadmapId}.", ex);
+                Console.Error.WriteLine($"Unexpected error adding section: {ex.Message}");
+                return 0;
             }
         }
 
@@ -57,37 +45,15 @@ namespace Duo.Services
             {
                 return await sectionServiceProxy.CountSectionsFromRoadmap(roadmapId);
             }
-            catch (Exception ex)
+            catch (HttpRequestException ex)
             {
-                throw new SectionServiceException($"Failed to count sections for roadmap ID {roadmapId}.", ex);
-            }
-        }
-
-        public async Task<int> LastOrderNumberFromRoadmap(int roadmapId)
-        {
-            try
-            {
-                return await sectionServiceProxy.LastOrderNumberFromRoadmap(roadmapId);
+                Console.Error.WriteLine($"HTTP error counting sections: {ex.Message}");
+                return 0;
             }
             catch (Exception ex)
             {
-                throw new SectionServiceException($"Failed to get last order number for roadmap ID {roadmapId}.", ex);
-            }
-        }
-
-        public async Task<int> AddSection(Section section)
-        {
-            try
-            {
-                ValidationHelper.ValidateSection(section);
-                var allSections = await GetAllSections();
-                section.OrderNumber = allSections.Count + 1;
-
-                return await sectionServiceProxy.AddSection(section);
-            }
-            catch (Exception ex)
-            {
-                throw new SectionServiceException("Failed to add new section.", ex);
+                Console.Error.WriteLine($"Unexpected error counting sections: {ex.Message}");
+                return 0;
             }
         }
 
@@ -97,9 +63,85 @@ namespace Duo.Services
             {
                 await sectionServiceProxy.DeleteSection(sectionId);
             }
+            catch (HttpRequestException ex)
+            {
+                Console.Error.WriteLine($"HTTP error deleting section: {ex.Message}");
+            }
             catch (Exception ex)
             {
-                throw new SectionServiceException($"Failed to delete section with ID {sectionId}.", ex);
+                Console.Error.WriteLine($"Unexpected error deleting section: {ex.Message}");
+            }
+        }
+
+        public async Task<List<Section>> GetAllSections()
+        {
+            try
+            {
+                return await sectionServiceProxy.GetAllSections();
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.Error.WriteLine($"HTTP error retrieving all sections: {ex.Message}");
+                return new List<Section>();
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Unexpected error retrieving all sections: {ex.Message}");
+                return new List<Section>();
+            }
+        }
+
+        public async Task<List<Section>> GetByRoadmapId(int roadmapId)
+        {
+            try
+            {
+                return await sectionServiceProxy.GetByRoadmapId(roadmapId);
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.Error.WriteLine($"HTTP error retrieving sections by roadmap ID: {ex.Message}");
+                return new List<Section>();
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Unexpected error retrieving sections by roadmap ID: {ex.Message}");
+                return new List<Section>();
+            }
+        }
+
+        public async Task<Section> GetSectionById(int sectionId)
+        {
+            try
+            {
+                return await sectionServiceProxy.GetSectionById(sectionId);
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.Error.WriteLine($"HTTP error retrieving section by ID: {ex.Message}");
+                return null;
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Unexpected error retrieving section by ID: {ex.Message}");
+                return null;
+            }
+        }
+
+        public async Task<int> LastOrderNumberFromRoadmap(int roadmapId)
+        {
+            try
+            {
+                return await sectionServiceProxy.LastOrderNumberFromRoadmap(roadmapId);
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.Error.WriteLine($"HTTP error retrieving last order number: {ex.Message}");
+                return 0;
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Unexpected error retrieving last order number: {ex.Message}");
+                return 0;
             }
         }
 
@@ -110,9 +152,13 @@ namespace Duo.Services
                 ValidationHelper.ValidateSection(section);
                 await sectionServiceProxy.UpdateSection(section);
             }
+            catch (HttpRequestException ex)
+            {
+                Console.Error.WriteLine($"HTTP error updating section: {ex.Message}");
+            }
             catch (Exception ex)
             {
-                throw new SectionServiceException($"Failed to update section with ID {section.Id}.", ex);
+                Console.Error.WriteLine($"Unexpected error updating section: {ex.Message}");
             }
         }
 
@@ -122,9 +168,15 @@ namespace Duo.Services
             {
                 return await sectionServiceProxy.TrackCompletion(sectionId, isCompleted);
             }
+            catch (HttpRequestException ex)
+            {
+                Console.Error.WriteLine($"HTTP error tracking completion: {ex.Message}");
+                return false;
+            }
             catch (Exception ex)
             {
-                throw new SectionServiceException($"Failed to track completion for section ID {sectionId}.", ex);
+                Console.Error.WriteLine($"Unexpected error tracking completion: {ex.Message}");
+                return false;
             }
         }
 
@@ -142,9 +194,15 @@ namespace Duo.Services
                 }
                 return true;
             }
+            catch (HttpRequestException ex)
+            {
+                Console.Error.WriteLine($"HTTP error validating dependencies: {ex.Message}");
+                return false;
+            }
             catch (Exception ex)
             {
-                throw new SectionServiceException($"Failed to validate dependencies for section ID {sectionId}.", ex);
+                Console.Error.WriteLine($"Unexpected error validating dependencies: {ex.Message}");
+                return false;
             }
         }
     }
