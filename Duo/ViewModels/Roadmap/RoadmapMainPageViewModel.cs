@@ -44,38 +44,48 @@ namespace Duo.ViewModels.Roadmap
 
         public async Task SetupViewModel()
         {
-            roadmap = await roadmapService.GetRoadmapById(1);
-            user = await userService.GetByIdAsync(1);
-
-            ISectionService sectionService = (ISectionService)App.ServiceProvider.GetService(typeof(ISectionService));
-            List<Section> sections = (List<Section>)await sectionService.GetByRoadmapId(1);
-
-            sectionViewModels = new ObservableCollection<RoadmapSectionViewModel>();
-            // sections.ForEach(section =>
-            // {
-            //    var sectionViewModel = (RoadmapSectionViewModel)App.serviceProvider.GetService(typeof(RoadmapSectionViewModel));
-            //    sectionViewModel.SetupForSection(section.Id);
-            //    _sectionViewModels.Add(sectionViewModel);
-            // });
-            for (int i = 1; i <= sections.Count; i += 1)
+            try
             {
-                var sectionViewModel = (RoadmapSectionViewModel)App.ServiceProvider.GetService(typeof(RoadmapSectionViewModel));
-                if (i <= user.NumberOfCompletedSections)
-                {
-                    await sectionViewModel.SetupForSection(sections[i - 1].Id, true, 0);
-                }
-                else if (i == user.NumberOfCompletedSections + 1)
-                {
-                    await sectionViewModel.SetupForSection(sections[i - 1].Id, false, user.NumberOfCompletedQuizzesInSection);
-                }
-                else
-                {
-                    await sectionViewModel.SetupForSection(sections[i - 1].Id, false, -1);
-                }
-                sectionViewModels.Add(sectionViewModel);
-            }
+                roadmap = await roadmapService.GetRoadmapById(1);
+                user = await userService.GetByIdAsync(1);
 
-            OnPropertyChanged(nameof(SectionViewModels));
+                var sectionService = (ISectionService)App.ServiceProvider.GetService(typeof(ISectionService));
+                var sections = (List<Section>)await sectionService.GetByRoadmapId(1);
+
+                sectionViewModels = new ObservableCollection<RoadmapSectionViewModel>();
+
+                for (int i = 1; i <= sections.Count; i++)
+                {
+                    var sectionViewModel = (RoadmapSectionViewModel)App.ServiceProvider
+                        .GetService(typeof(RoadmapSectionViewModel));
+
+                    if (i <= user.NumberOfCompletedSections)
+                    {
+                        await sectionViewModel.SetupForSection(sections[i - 1].Id, true, 0);
+                    }
+                    else if (i == user.NumberOfCompletedSections + 1)
+                    {
+                        await sectionViewModel.SetupForSection(
+                            sections[i - 1].Id,
+                            false,
+                            user.NumberOfCompletedQuizzesInSection);
+                    }
+                    else
+                    {
+                        await sectionViewModel.SetupForSection(sections[i - 1].Id, false, -1);
+                    }
+
+                    sectionViewModels.Add(sectionViewModel);
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error in SetupViewModel: {ex.Message}");
+            }
+            finally
+            {
+                OnPropertyChanged(nameof(SectionViewModels));
+            }
         }
 
         private async Task OpenQuizPreview(Tuple<int, bool> args)
@@ -84,7 +94,8 @@ namespace Duo.ViewModels.Roadmap
             {
                 Debug.WriteLine($"Opening quiz with ID: {args.Item1}");
 
-                var quizPreviewViewModel = (RoadmapQuizPreviewViewModel)App.ServiceProvider.GetService(typeof(RoadmapQuizPreviewViewModel));
+                var quizPreviewViewModel = (RoadmapQuizPreviewViewModel)App.ServiceProvider
+                    .GetService(typeof(RoadmapQuizPreviewViewModel));
 
                 if (quizPreviewViewModel == null)
                 {
@@ -97,11 +108,9 @@ namespace Duo.ViewModels.Roadmap
             catch (Exception ex)
             {
                 Debug.WriteLine($"Error during OpenQuizPreview: {ex.Message}");
-                Debug.WriteLine(ex.StackTrace);
             }
         }
 
-        // MAYBE MAKE THIS OBSOLETE
         private async Task StartQuiz()
         {
             Console.WriteLine($"Starting quiz with ID: {selectedQuiz?.Id}");

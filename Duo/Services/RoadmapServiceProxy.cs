@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
-using System.Text;
 using System.Threading.Tasks;
 using Duo.Models.Roadmap;
 
@@ -12,7 +12,7 @@ namespace Duo.Services
     public class RoadmapServiceProxy
     {
         private readonly HttpClient httpClient;
-        private readonly string url = "https://localhost:7174/";
+        private readonly string url = "https://localhost:7174";
 
         public RoadmapServiceProxy(HttpClient httpClient)
         {
@@ -21,52 +21,80 @@ namespace Duo.Services
 
         public async Task<List<Roadmap>> GetAllAsync()
         {
-            var response = await httpClient.GetFromJsonAsync<List<Roadmap>>($"{url}api/Roadmaps");
-            return response ?? new List<Roadmap>();
+            var resp = await httpClient.GetAsync($"{url}/api/Roadmaps");
+            resp.EnsureSuccessStatusCode();
+
+            var list = await resp.Content.ReadFromJsonAsync<List<Roadmap>>();
+            return list ?? new List<Roadmap>();
         }
 
         public async Task<int> AddAsync(Roadmap roadmap)
         {
-            var response = await httpClient.PostAsJsonAsync($"{url}api/Roadmaps", roadmap);
+            var resp = await httpClient.PostAsJsonAsync($"{url}/api/Roadmaps", roadmap);
 
-            if (response.IsSuccessStatusCode)
+            if (resp.IsSuccessStatusCode)
             {
-                var result = await response.Content.ReadFromJsonAsync<Roadmap>();
-                return result?.Id ?? 0;
+                var created = await resp.Content.ReadFromJsonAsync<Roadmap>();
+                return created?.Id
+                    ?? throw new Exception("Add succeeded but response body was empty.");
             }
-            else
-            {
-                throw new Exception("Failed to add roadmap");
-            }
+
+            throw new Exception($"Failed to add roadmap (HTTP {(int)resp.StatusCode}).");
         }
 
         public async Task DeleteAsync(int id)
         {
-            var response = await httpClient.DeleteAsync($"{url}api/Roadmaps/{id}");
-            if (!response.IsSuccessStatusCode)
+            var resp = await httpClient.DeleteAsync($"{url}/api/Roadmaps/{id}");
+
+            if (resp.StatusCode == HttpStatusCode.NotFound)
             {
-                throw new Exception("Failed to delete roadmap");
+                throw new Exception($"Roadmap #{id} not found.");
             }
+
+            resp.EnsureSuccessStatusCode();
         }
 
         public async Task<Roadmap> GetByIdAsync(int roadmapId)
         {
-            var response = await httpClient.GetFromJsonAsync<Roadmap>($"{url}api/Roadmaps/{roadmapId}");
-            if (response == null)
+            var resp = await httpClient.GetAsync($"{url}/api/Roadmaps/{roadmapId}");
+
+            if (resp.StatusCode == HttpStatusCode.NotFound)
             {
-                throw new Exception("Roadmap not found");
+                throw new Exception($"Roadmap #{roadmapId} not found.");
             }
-            return response;
+
+            resp.EnsureSuccessStatusCode();
+
+            var roadmap = await resp.Content.ReadFromJsonAsync<Roadmap>();
+            if (roadmap == null)
+            {
+                throw new Exception("Failed to decode roadmap.");
+            }
+
+            return roadmap;
         }
 
         public async Task<Roadmap> GetByNameAsync(string roadmapName)
         {
-            var response = await httpClient.GetFromJsonAsync<List<Roadmap>>($"{url}api/Roadmaps/search?name={roadmapName}");
-            if (response == null || !response.Any())
+            var resp = await httpClient.GetAsync(
+                $"{url}/api/Roadmaps/search?name={Uri.EscapeDataString(roadmapName)}");
+
+            if (resp.StatusCode == HttpStatusCode.NotFound)
             {
-                throw new Exception("Roadmap not found");
+                throw new Exception($"Roadmap named '{roadmapName}' not found.");
             }
-            return response.FirstOrDefault();
+
+            resp.EnsureSuccessStatusCode();
+
+            var list = await resp.Content.ReadFromJsonAsync<List<Roadmap>>()
+                       ?? throw new Exception("Failed to decode search results.");
+
+            if (!list.Any())
+            {
+                throw new Exception($"Roadmap named '{roadmapName}' not found.");
+            }
+
+            return list[0];
         }
     }
 }
