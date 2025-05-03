@@ -105,13 +105,7 @@ namespace Duo.Services
             await serviceProxy.CreateExamAsync(exam);
             return exam.Id;
         }
-        /*
-        public async Task<QuizModel> FetchQuizAsync(int quizId)
-        {
-            var model = await httpClient.GetFromJsonAsync<QuizModel>($"quiz/fetch?id={quizId}");
-            return model!;
-        }
-        */
+
         public async Task SubmitQuizAsync(QuizSubmission submission)
         {
             await serviceProxy.SubmitQuizAsync(submission);
