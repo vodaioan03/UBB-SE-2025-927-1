@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Duo.Models.Sections;
+using Duo.Services.Interfaces;
 
 namespace Duo.Services
 {
@@ -16,6 +17,10 @@ namespace Duo.Services
         public SectionService(SectionServiceProxy sectionServiceProxy)
         {
             this.sectionServiceProxy = sectionServiceProxy;
+        }
+
+        public SectionService(ISectionServiceProxy @object)
+        {
         }
 
         public async Task<int> AddSection(Section section)

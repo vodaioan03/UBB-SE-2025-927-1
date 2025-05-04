@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Duo.Models.Exercises;
 using Duo.Models.Quizzes;
@@ -21,8 +22,14 @@ namespace Duo.Services
         }
         public async Task<List<Exam>> GetAllAvailableExams()
         {
-            // return await serviceProxy.GetAllAvailableExamsAsync();
-            throw new System.NotImplementedException();
+            try
+            {
+                return await serviceProxy.GetAllAvailableExamsAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new QuizServiceException("Failed to retrieve available exams.", ex);
+            }
         }
         public async Task<Quiz> GetQuizById(int quizId)
         {
@@ -120,6 +127,22 @@ namespace Duo.Services
         public async Task<QuizResult> GetResultAsync(int quizId)
         {
             return await serviceProxy.GetResultAsync(quizId);
+        }
+    }
+
+    [Serializable]
+    public class QuizServiceException : Exception
+    {
+        public QuizServiceException()
+        {
+        }
+
+        public QuizServiceException(string? message) : base(message)
+        {
+        }
+
+        public QuizServiceException(string? message, Exception? innerException) : base(message, innerException)
+        {
         }
     }
 }

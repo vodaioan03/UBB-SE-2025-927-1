@@ -9,7 +9,7 @@ using Duo.Models.Roadmap;
 
 namespace Duo.Services
 {
-    public class RoadmapServiceProxy
+    public class RoadmapServiceProxy : IRoadmapService
     {
         private readonly HttpClient httpClient;
         private readonly string url = "https://localhost:7174/";
@@ -40,8 +40,9 @@ namespace Duo.Services
             }
         }
 
-        public async Task DeleteAsync(int id)
+        public async Task DeleteAsync(Roadmap roadmap)
         {
+            var id = roadmap.Id;
             var response = await httpClient.DeleteAsync($"{url}api/Roadmaps/{id}");
             if (!response.IsSuccessStatusCode)
             {

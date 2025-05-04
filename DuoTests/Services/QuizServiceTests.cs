@@ -6,7 +6,6 @@
 //using Duo.Models.Quizzes.API;
 //using System.Collections.Generic;
 //using System.Threading.Tasks;
-//using Assert = Xunit.Assert;
 
 //namespace Duo.Tests.Services
 //{

@@ -44,7 +44,7 @@ namespace Duo.ViewModels.Roadmap
 
         public async Task SetupViewModel()
         {
-            roadmap = await roadmapService.GetRoadmapById(1);
+            roadmap = await roadmapService.GetByIdAsync(1);
             user = await userService.GetByIdAsync(1);
 
             ISectionService sectionService = (ISectionService)App.ServiceProvider.GetService(typeof(ISectionService));
