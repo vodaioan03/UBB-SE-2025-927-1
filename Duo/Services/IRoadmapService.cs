@@ -6,10 +6,10 @@ namespace Duo.Services
 {
     public interface IRoadmapService
     {
-        Task<int> AddRoadmap(Roadmap roadmap);
-        Task DeleteRoadmap(Roadmap roadmap);
-        Task<List<Roadmap>> GetAllRoadmaps();
-        Task<Roadmap> GetByName(string roadmapName);
-        Task<Roadmap> GetRoadmapById(int roadmapId);
+        Task<int> AddAsync(Roadmap roadmap);
+        Task DeleteAsync(Roadmap roadmap);
+        Task<List<Roadmap>> GetAllAsync();
+        Task<Roadmap> GetByNameAsync(string roadmapName);
+        Task<Roadmap> GetByIdAsync(int roadmapId);
     }
 }
