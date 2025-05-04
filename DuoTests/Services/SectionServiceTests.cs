@@ -1,219 +1,368 @@
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Net.Http;
+using System.Net.Http.Json;
+using System.Text;
+using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using Duo.Models.Sections;
 using Duo.Services;
-using Duo.Services.Interfaces;
-using Duo.Models.Quizzes;
 
 namespace Duo.Tests.Services
 {
     [TestClass]
-    public class SectionServiceTests
+    public class SectionServiceProxyTests
     {
-        private Mock<ISectionServiceProxy> mockProxy;
-        private SectionService sectionService;
-
-        [TestInitialize]
-        public void Setup()
+        private class TestHandler : HttpMessageHandler
         {
-            mockProxy = new Mock<ISectionServiceProxy>();
-            sectionService = new SectionService(mockProxy.Object); 
+            private readonly Func<HttpRequestMessage, HttpResponseMessage> _responder;
+            public TestHandler(Func<HttpRequestMessage, HttpResponseMessage> r) => _responder = r;
+            protected override Task<HttpResponseMessage> SendAsync(
+                HttpRequestMessage request, CancellationToken ct) =>
+                Task.FromResult(_responder(request));
         }
-        private Section CreateSampleSection(int id) => new Section(
-            id: id,
-            subjectId: 1,
-            title: $"Section {id}",
-            description: $"Description {id}",
-            roadmapId: 1,
-            orderNumber: id
-)
-        {
-            Quizzes = new List<Quiz> {
-        new Quiz(id: 1, sectionId: id, orderNumber: 1),
-        new Quiz(id: 2, sectionId: id, orderNumber: 2)
-    },
-            Exam = new Exam(id: 1, sectionId: id)
-        };
+
+        private HttpClient CreateClient(Func<HttpRequestMessage, HttpResponseMessage> fn) =>
+            new HttpClient(new TestHandler(fn));
+
+        private Section SampleSection => new Section(
+            id: 1,
+            subjectId: 2,
+            title: "T",
+            description: "D",
+            roadmapId: 3,
+            orderNumber: 4
+        );
 
         [TestMethod]
-        public async Task AddSection_HttpException_ReturnsZero()
+        public async Task AddSection_Success_ReturnsServerValue()
         {
-            // Arrange
-            var section = CreateSampleSection(1);
-            mockProxy.Setup(p => p.GetAllSections()).ThrowsAsync(new HttpRequestException("HTTP error"));
+            var expected = 123;
+            var client = CreateClient(_ => new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = JsonContent.Create(expected)
+            });
 
-            // Act
-            var result = await sectionService.AddSection(section);
+            var proxy = new SectionServiceProxy(client);
+            var actual = await proxy.AddSection(SampleSection);
 
-            // Assert
-            Assert.AreEqual(0, result);
+            Assert.AreEqual(expected, actual);
         }
 
         [TestMethod]
-        public async Task AddSection_UnexpectedException_ReturnsZero()
+        public async Task AddSection_HttpRequestException_ReturnsZero()
         {
-            // Arrange
-            var section = CreateSampleSection(1);
-            mockProxy.Setup(p => p.GetAllSections()).ThrowsAsync(new System.Exception("Unexpected error"));
+            var client = new HttpClient(new TestHandler(_ => throw new HttpRequestException()));
+            var proxy = new SectionServiceProxy(client);
 
-            // Act
-            var result = await sectionService.AddSection(section);
-
-            // Assert
-            Assert.AreEqual(0, result);
+            Assert.AreEqual(0, await proxy.AddSection(SampleSection));
         }
 
         [TestMethod]
-        public async Task AddSection_NoExistingSections_SetsOrder1()
+        public async Task AddSection_GenericException_ReturnsZero()
         {
-            // Arrange
-            var section = CreateSampleSection(1);
-            mockProxy.Setup(p => p.GetAllSections()).ReturnsAsync(new List<Section>());
-            mockProxy.Setup(p => p.AddSection(section)).ReturnsAsync(1);
+            var client = new HttpClient(new TestHandler(_ => throw new Exception()));
+            var proxy = new SectionServiceProxy(client);
 
-            // Act
-            var result = await sectionService.AddSection(section);
-
-            // Assert
-            Assert.AreEqual(1, section.OrderNumber);
-        }
-
-
-        [TestMethod]
-        public async Task CountSectionsFromRoadmap_HttpException_ReturnsZero()
-        {
-            // Arrange
-            mockProxy.Setup(p => p.CountSectionsFromRoadmap(1)).ThrowsAsync(new HttpRequestException("HTTP error"));
-
-            // Act
-            var result = await sectionService.CountSectionsFromRoadmap(1);
-
-            // Assert
-            Assert.AreEqual(0, result);
+            Assert.AreEqual(0, await proxy.AddSection(SampleSection));
         }
 
         [TestMethod]
-        public async Task GetAllSections_HttpException_ReturnsEmptyList()
+        public async Task CountSectionsFromRoadmap_Success()
         {
-            // Arrange
-            mockProxy.Setup(p => p.GetAllSections()).ThrowsAsync(new HttpRequestException("HTTP error"));
+            var expected = 7;
+            var client = CreateClient(_ => new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = JsonContent.Create(expected)
+            });
+            var proxy = new SectionServiceProxy(client);
 
-            // Act
-            var result = await sectionService.GetAllSections();
+            Assert.AreEqual(expected, await proxy.CountSectionsFromRoadmap(99));
+        }
 
-            // Assert
+        [TestMethod]
+        public async Task CountSectionsFromRoadmap_HttpRequestException_ReturnsZero()
+        {
+            var client = new HttpClient(new TestHandler(_ => throw new HttpRequestException()));
+            var proxy = new SectionServiceProxy(client);
+
+            Assert.AreEqual(0, await proxy.CountSectionsFromRoadmap(1));
+        }
+
+        [TestMethod]
+        public async Task CountSectionsFromRoadmap_GenericException_ReturnsZero()
+        {
+            var client = new HttpClient(new TestHandler(_ => throw new Exception()));
+            var proxy = new SectionServiceProxy(client);
+
+            Assert.AreEqual(0, await proxy.CountSectionsFromRoadmap(1));
+        }
+
+        [TestMethod]
+        public async Task DeleteSection_NoError_Completes()
+        {
+            var client = CreateClient(_ => new HttpResponseMessage(HttpStatusCode.OK));
+            var proxy = new SectionServiceProxy(client);
+
+            await proxy.DeleteSection(5);
+            Assert.IsTrue(true);
+        }
+
+        [TestMethod]
+        public async Task DeleteSection_HttpException_Handled()
+        {
+            var client = new HttpClient(new TestHandler(_ => throw new HttpRequestException()));
+            var proxy = new SectionServiceProxy(client);
+
+            await proxy.DeleteSection(5);
+            Assert.IsTrue(true);
+        }
+
+        [TestMethod]
+        public async Task DeleteSection_GenericException_Handled()
+        {
+            var client = new HttpClient(new TestHandler(_ => throw new Exception()));
+            var proxy = new SectionServiceProxy(client);
+
+            await proxy.DeleteSection(5);
+            Assert.IsTrue(true);
+        }
+
+        [TestMethod]
+        public async Task GetAllSections_Success()
+        {
+            var list = new List<Section> { SampleSection };
+            var client = CreateClient(_ => new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = JsonContent.Create(list)
+            });
+            var proxy = new SectionServiceProxy(client);
+
+            var result = await proxy.GetAllSections();
+            Assert.AreEqual(1, result.Count);
+        }
+
+        [TestMethod]
+        public async Task GetAllSections_HttpException_ReturnsEmpty()
+        {
+            var client = new HttpClient(new TestHandler(_ => throw new HttpRequestException()));
+            var proxy = new SectionServiceProxy(client);
+
+            var result = await proxy.GetAllSections();
             Assert.AreEqual(0, result.Count);
         }
 
         [TestMethod]
-        public async Task GetByRoadmapId_HttpException_ReturnsEmptyList()
+        public async Task GetAllSections_GenericException_ReturnsEmpty()
         {
-            // Arrange
-            mockProxy.Setup(p => p.GetByRoadmapId(1)).ThrowsAsync(new HttpRequestException("HTTP error"));
+            var client = new HttpClient(new TestHandler(_ => throw new Exception()));
+            var proxy = new SectionServiceProxy(client);
 
-            // Act
-            var result = await sectionService.GetByRoadmapId(1);
-
-            // Assert
+            var result = await proxy.GetAllSections();
             Assert.AreEqual(0, result.Count);
         }
 
+        [TestMethod]
+        public async Task GetByRoadmapId_Success()
+        {
+            var list = new List<Section> { SampleSection };
+            var client = CreateClient(_ => new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = JsonContent.Create(list)
+            });
+            var proxy = new SectionServiceProxy(client);
+
+            var result = await proxy.GetByRoadmapId(2);
+            Assert.AreEqual(1, result.Count);
+        }
+
+        [TestMethod]
+        public async Task GetByRoadmapId_HttpException_ReturnsEmpty()
+        {
+            var client = new HttpClient(new TestHandler(_ => throw new HttpRequestException()));
+            var proxy = new SectionServiceProxy(client);
+
+            var result = await proxy.GetByRoadmapId(2);
+            Assert.AreEqual(0, result.Count);
+        }
+
+        [TestMethod]
+        public async Task GetByRoadmapId_GenericException_ReturnsEmpty()
+        {
+            var client = new HttpClient(new TestHandler(_ => throw new Exception()));
+            var proxy = new SectionServiceProxy(client);
+
+            var result = await proxy.GetByRoadmapId(2);
+            Assert.AreEqual(0, result.Count);
+        }
+
+        [TestMethod]
+        public async Task GetSectionById_Success()
+        {
+            var client = CreateClient(_ => new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = JsonContent.Create(SampleSection)
+            });
+            var proxy = new SectionServiceProxy(client);
+
+            var result = await proxy.GetSectionById(3);
+            Assert.IsNotNull(result);
+            Assert.AreEqual(3, result.Id);
+        }
 
         [TestMethod]
         public async Task GetSectionById_HttpException_ReturnsNull()
         {
-            // Arrange
-            mockProxy.Setup(p => p.GetSectionById(1)).ThrowsAsync(new HttpRequestException("HTTP error"));
+            var client = new HttpClient(new TestHandler(_ => throw new HttpRequestException()));
+            var proxy = new SectionServiceProxy(client);
 
-            // Act
-            var result = await sectionService.GetSectionById(1);
+            Assert.IsNull(await proxy.GetSectionById(3));
+        }
 
-            // Assert
-            Assert.IsNull(result);
+        [TestMethod]
+        public async Task GetSectionById_GenericException_ReturnsNull()
+        {
+            var client = new HttpClient(new TestHandler(_ => throw new Exception()));
+            var proxy = new SectionServiceProxy(client);
+
+            Assert.IsNull(await proxy.GetSectionById(3));
+        }
+
+        [TestMethod]
+        public async Task LastOrderNumberFromRoadmap_Success()
+        {
+            var expected = 88;
+            var client = CreateClient(_ => new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = JsonContent.Create(expected)
+            });
+            var proxy = new SectionServiceProxy(client);
+
+            Assert.AreEqual(expected, await proxy.LastOrderNumberFromRoadmap(4));
         }
 
         [TestMethod]
         public async Task LastOrderNumberFromRoadmap_HttpException_ReturnsZero()
         {
-            // Arrange
-            mockProxy.Setup(p => p.LastOrderNumberFromRoadmap(1)).ThrowsAsync(new HttpRequestException("HTTP error"));
+            var client = new HttpClient(new TestHandler(_ => throw new HttpRequestException()));
+            var proxy = new SectionServiceProxy(client);
 
-            // Act
-            var result = await sectionService.LastOrderNumberFromRoadmap(1);
+            Assert.AreEqual(0, await proxy.LastOrderNumberFromRoadmap(4));
+        }
 
-            // Assert
-            Assert.AreEqual(0, result);
+        [TestMethod]
+        public async Task LastOrderNumberFromRoadmap_GenericException_ReturnsZero()
+        {
+            var client = new HttpClient(new TestHandler(_ => throw new Exception()));
+            var proxy = new SectionServiceProxy(client);
+
+            Assert.AreEqual(0, await proxy.LastOrderNumberFromRoadmap(4));
+        }
+
+        [TestMethod]
+        public async Task UpdateSection_NoError_Completes()
+        {
+            var client = CreateClient(_ => new HttpResponseMessage(HttpStatusCode.OK));
+            var proxy = new SectionServiceProxy(client);
+
+            await proxy.UpdateSection(SampleSection);
+            Assert.IsTrue(true);
+        }
+
+        [TestMethod]
+        public async Task UpdateSection_HttpException_Handled()
+        {
+            var client = new HttpClient(new TestHandler(_ => throw new HttpRequestException()));
+            var proxy = new SectionServiceProxy(client);
+
+            await proxy.UpdateSection(SampleSection);
+            Assert.IsTrue(true);
+        }
+
+        [TestMethod]
+        public async Task UpdateSection_GenericException_Handled()
+        {
+            var client = new HttpClient(new TestHandler(_ => throw new Exception()));
+            var proxy = new SectionServiceProxy(client);
+
+            await proxy.UpdateSection(SampleSection);
+            Assert.IsTrue(true);
+        }
+
+        [TestMethod]
+        public async Task TrackCompletion_Success()
+        {
+            var client = CreateClient(_ => new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = JsonContent.Create(true)
+            });
+            var proxy = new SectionServiceProxy(client);
+
+            Assert.IsTrue(await proxy.TrackCompletion(7, true));
         }
 
         [TestMethod]
         public async Task TrackCompletion_HttpException_ReturnsFalse()
         {
-            // Arrange
-            mockProxy.Setup(p => p.TrackCompletion(1, true)).ThrowsAsync(new HttpRequestException("HTTP error"));
+            var client = new HttpClient(new TestHandler(_ => throw new HttpRequestException()));
+            var proxy = new SectionServiceProxy(client);
 
-            // Act
-            var result = await sectionService.TrackCompletion(1, true);
-
-            // Assert
-            Assert.IsFalse(result);
+            Assert.IsFalse(await proxy.TrackCompletion(7, true));
         }
 
         [TestMethod]
-        public async Task TrackCompletion_NullSection_ReturnsFalse()
+        public async Task TrackCompletion_GenericException_ReturnsFalse()
         {
-            // Arrange
-            mockProxy.Setup(p => p.GetSectionById(1)).ReturnsAsync((Section)null);
+            var client = new HttpClient(new TestHandler(_ => throw new Exception()));
+            var proxy = new SectionServiceProxy(client);
 
-            // Act
-            var result = await sectionService.TrackCompletion(1, true);
-
-            // Assert
-            Assert.IsFalse(result);
+            Assert.IsFalse(await proxy.TrackCompletion(7, true));
         }
 
         [TestMethod]
-        public async Task GetSectionById_NotFound_ReturnsNull()
+        public async Task GetSectionDependencies_Success()
         {
-            // Arrange
-            mockProxy.Setup(p => p.GetSectionById(1)).ReturnsAsync((Section)null);
+            var deps = new List<SectionDependency>
+            {
+                new SectionDependency { SectionId = 1, IsCompleted = true }
+            };
 
-            // Act
-            var result = await sectionService.GetSectionById(1);
+            var client = CreateClient(_ => new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = JsonContent.Create(deps)
+            });
+            var proxy = new SectionServiceProxy(client);
 
-            // Assert
-            Assert.IsNull(result);
-        }
+            // act
+            var result = await proxy.GetSectionDependencies(5);
 
-
-        [TestMethod]
-        public async Task ValidateDependencies_HttpException_ReturnsFalse()
-        {
-            // Arrange
-            mockProxy.Setup(p => p.GetSectionDependencies(1)).ThrowsAsync(new HttpRequestException("HTTP error"));
-
-            // Act
-            var result = await sectionService.ValidateDependencies(1);
-
-            // Assert
-            Assert.IsFalse(result);
+            // assert
+            Assert.AreEqual(1, result.Count);
+            Assert.AreEqual(1, result[0].SectionId);
+            Assert.IsTrue(result[0].IsCompleted);
         }
 
         [TestMethod]
-        public async Task ValidateDependencies_NullDependencies_ReturnsFalse()
+        public async Task GetSectionDependencies_HttpException_ReturnsEmpty()
         {
-            // Arrange
-            mockProxy.Setup(p => p.GetSectionDependencies(1))
-                     .ReturnsAsync((List<SectionDependency>)null);
+            var client = new HttpClient(new TestHandler(_ => throw new HttpRequestException()));
+            var proxy = new SectionServiceProxy(client);
 
-            // Act
-            var result = await sectionService.ValidateDependencies(1);
+            var result = await proxy.GetSectionDependencies(5);
+            Assert.AreEqual(0, result.Count);
+        }
 
-            // Assert
-            Assert.IsFalse(result);
+        [TestMethod]
+        public async Task GetSectionDependencies_GenericException_ReturnsEmpty()
+        {
+            var client = new HttpClient(new TestHandler(_ => throw new Exception()));
+            var proxy = new SectionServiceProxy(client);
+
+            var result = await proxy.GetSectionDependencies(5);
+            Assert.AreEqual(0, result.Count);
         }
     }
 }
