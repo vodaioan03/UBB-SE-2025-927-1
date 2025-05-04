@@ -8,7 +8,7 @@ using Duo.Models.Quizzes;
 
 namespace Duo.Services
 {
-    public class UserServiceProxy
+    public class UserServiceProxy : IUserService
     {
         private readonly HttpClient httpClient;
         private const string BaseUrl = "api/user";

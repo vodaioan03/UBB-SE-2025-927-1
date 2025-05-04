@@ -1,4 +1,5 @@
-﻿using System.Net.Http;
+﻿using System;
+using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using System.Collections.Generic;
@@ -36,7 +37,6 @@ namespace Duo.Services
 
         public async Task<List<Exam>> GetAllAvailableExamsAsync()
         {
-
             try
             {
                 var result = await httpClient.GetFromJsonAsync<List<Exam>>($"{url}exam/get-available");
@@ -71,7 +71,6 @@ namespace Duo.Services
 
         public async Task<Exam> GetExamByIdAsync(int id)
         {
-
             try
             {
                 var result = await httpClient.GetFromJsonAsync<Exam>($"{url}exam/get?id={id}");
@@ -209,7 +208,6 @@ namespace Duo.Services
             }
         }
 
-
         public async Task AddExerciseToQuizAsync(int quizId, int exerciseId)
         {
             try
@@ -300,6 +298,22 @@ namespace Duo.Services
             {
                 throw new QuizServiceProxyException("Failed to submit quiz.", ex);
             }
+        }
+    }
+
+    [Serializable]
+    public class QuizServiceProxyException : Exception
+    {
+        public QuizServiceProxyException()
+        {
+        }
+
+        public QuizServiceProxyException(string? message) : base(message)
+        {
+        }
+
+        public QuizServiceProxyException(string? message, Exception? innerException) : base(message, innerException)
+        {
         }
     }
 }
