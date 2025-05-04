@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using Duo.Services.Interfaces;
 
 #pragma warning disable IDE0079 // Remove unnecessary suppression
 #pragma warning disable SA1009 // Closing paranthesis should not be followed by a space
@@ -9,9 +10,14 @@ namespace Duo.Services
     /// <summary>
     /// Service responsible for managing coin-related operations for users.
     /// </summary>
-    public class CoinsService(CoinsServiceProxy serviceProxy) : ICoinsService
+    public class CoinsService : ICoinsService
     {
-        private readonly CoinsServiceProxy serviceProxy = serviceProxy;
+        private readonly ICoinsServiceProxy serviceProxy;
+
+        public CoinsService(ICoinsServiceProxy serviceProxy)
+        {
+            this.serviceProxy = serviceProxy;
+        }
 
         /// <summary>
         /// Gets the coin balance for a specific user.

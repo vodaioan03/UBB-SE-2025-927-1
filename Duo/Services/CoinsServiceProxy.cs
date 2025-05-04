@@ -2,6 +2,7 @@
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
+using Duo.Services.Interfaces;
 
 namespace Duo.Services
 {
@@ -12,7 +13,7 @@ namespace Duo.Services
     /// Initializes a new instance of the <see cref="CoinsServiceProxy"/> class.
     /// </remarks>
     /// <param name="httpClient">The HTTP client used to send requests to the Coins API.</param>
-    public class CoinsServiceProxy(HttpClient httpClient)
+    public class CoinsServiceProxy(HttpClient httpClient) : ICoinsServiceProxy
     {
         private readonly HttpClient httpClient = httpClient;
         private readonly string url = "https://localhost:7174/";
