@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Duo.Models;
+using Duo.Services.Interfaces;
 
 namespace Duo.Services
 {
@@ -11,12 +12,12 @@ namespace Duo.Services
     /// </summary>
     public class CourseService : ICourseService
     {
-        private readonly CourseServiceProxy courseServiceProxy;
+        private readonly ICourseServiceProxy courseServiceProxy;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="CourseServiceProxy"/> class.
+        /// Initializes a new instance of the <see cref="ICourseServiceProxy"/> class.
         /// </summary>
-        public CourseService(CourseServiceProxy courseServiceProxy)
+        public CourseService(ICourseServiceProxy courseServiceProxy)
         {
             this.courseServiceProxy = courseServiceProxy;
         }
