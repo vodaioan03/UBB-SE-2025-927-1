@@ -26,7 +26,15 @@ namespace Duo.Services
         /// </summary>
         public async Task<List<Course>> GetCoursesAsync()
         {
-            return await courseServiceProxy.GetAllCourses();
+            try
+            {
+                return await courseServiceProxy.GetAllCourses();
+            }
+            catch (Exception e)
+            {
+                Console.Error.WriteLine($"Error occurred while retrieving the courses: " + e);
+                return new List<Course>();
+            }
         }
 
         /// <summary>
@@ -34,7 +42,15 @@ namespace Duo.Services
         /// </summary>
         public async Task<List<Tag>> GetTagsAsync()
         {
-            return await courseServiceProxy.GetAllTags();
+            try
+            {
+                return await courseServiceProxy.GetAllTags();
+            }
+            catch (Exception e)
+            {
+                Console.Error.WriteLine($"Error occurred while retrieving the tags: " + e);
+                return new List<Tag>();
+            }
         }
 
         /// <summary>
@@ -42,7 +58,15 @@ namespace Duo.Services
         /// </summary>
         public async Task<List<Tag>> GetCourseTagsAsync(int courseId)
         {
-            return await courseServiceProxy.GetTagsForCourse(courseId);
+            try
+            {
+                return await courseServiceProxy.GetTagsForCourse(courseId);
+            }
+            catch (Exception e)
+            {
+                Console.Error.WriteLine($"Error occurred while retrieving the course tags: " + e);
+                return new List<Tag>();
+            }
         }
 
         /// <summary>
@@ -50,9 +74,16 @@ namespace Duo.Services
         /// </summary>
         public async Task OpenModuleAsync(int userId, int moduleId)
         {
-            if (!await courseServiceProxy.IsModuleOpen(userId, moduleId))
+            try
             {
-                await courseServiceProxy.OpenModule(userId, moduleId);
+                if (!await courseServiceProxy.IsModuleOpen(userId, moduleId))
+                {
+                    await courseServiceProxy.OpenModule(userId, moduleId);
+                }
+            }
+            catch (Exception e)
+            {
+                Console.Error.WriteLine($"Error occurent while trying to open the module: " + e);
             }
         }
 
@@ -61,7 +92,15 @@ namespace Duo.Services
         /// </summary>
         public async Task<List<Module>> GetModulesAsync(int courseId)
         {
-            return await courseServiceProxy.GetModulesByCourseId(courseId);
+            try
+            {
+                return await courseServiceProxy.GetModulesByCourseId(courseId);
+            }
+            catch (Exception e)
+            {
+                Console.Error.WriteLine($"Error occurred while retrieving modules: {e}");
+                return new List<Module>();
+            }
         }
 
         /// <summary>
@@ -69,8 +108,16 @@ namespace Duo.Services
         /// </summary>
         public async Task<List<Module>> GetNormalModulesAsync(int courseId)
         {
-            var modules = await courseServiceProxy.GetModulesByCourseId(courseId);
-            return modules.Where(m => !m.IsBonus).ToList();
+            try
+            {
+                var modules = await courseServiceProxy.GetModulesByCourseId(courseId);
+                return modules.Where(m => !m.IsBonus).ToList();
+            }
+            catch (Exception e)
+            {
+                Console.Error.WriteLine($"Error occurred while retrieving normal modules: {e}");
+                return new List<Module>();
+            }
         }
 
         /// <summary>
@@ -78,13 +125,21 @@ namespace Duo.Services
         /// </summary>
         public async Task<bool> EnrollInCourseAsync(int userId, int courseId)
         {
-            if (await courseServiceProxy.IsUserEnrolled(userId, courseId))
+            try
             {
+                if (await courseServiceProxy.IsUserEnrolled(userId, courseId))
+                {
+                    return false;
+                }
+
+                await courseServiceProxy.EnrollUser(userId, courseId);
+                return true;
+            }
+            catch (Exception e)
+            {
+                Console.Error.WriteLine($"Error occurred during enrollment: {e}");
                 return false;
             }
-
-            await courseServiceProxy.EnrollUser(userId, courseId);
-            return true;
         }
 
         /// <summary>
@@ -92,11 +147,18 @@ namespace Duo.Services
         /// </summary>
         public async Task CompleteModuleAsync(int userId, int moduleId, int courseId)
         {
-            await courseServiceProxy.CompleteModule(userId, moduleId);
-
-            if (await courseServiceProxy.IsCourseCompleted(userId, courseId))
+            try
             {
-                await courseServiceProxy.MarkCourseAsCompleted(userId, courseId);
+                await courseServiceProxy.CompleteModule(userId, moduleId);
+
+                if (await courseServiceProxy.IsCourseCompleted(userId, courseId))
+                {
+                    await courseServiceProxy.MarkCourseAsCompleted(userId, courseId);
+                }
+            }
+            catch (Exception e)
+            {
+                Console.Error.WriteLine($"Error occurred while completing module: {e}");
             }
         }
 
@@ -105,7 +167,15 @@ namespace Duo.Services
         /// </summary>
         public async Task<bool> IsUserEnrolledAsync(int userId, int courseId)
         {
-            return await courseServiceProxy.IsUserEnrolled(userId, courseId);
+            try
+            {
+                return await courseServiceProxy.IsUserEnrolled(userId, courseId);
+            }
+            catch (Exception e)
+            {
+                Console.Error.WriteLine($"Error occurred checking enrollment status: {e}");
+                return false;
+            }
         }
 
         /// <summary>
@@ -113,7 +183,15 @@ namespace Duo.Services
         /// </summary>
         public async Task<bool> IsModuleCompletedAsync(int userId, int moduleId)
         {
-            return await courseServiceProxy.IsModuleCompleted(userId, moduleId);
+            try
+            {
+                return await courseServiceProxy.IsModuleCompleted(userId, moduleId);
+            }
+            catch (Exception e)
+            {
+                Console.Error.WriteLine($"Error occurred checking module completion: {e}");
+                return false;
+            }
         }
 
         /// <summary>
@@ -121,58 +199,66 @@ namespace Duo.Services
         /// </summary>
         public async Task<List<Course>> GetFilteredCoursesAsync(string searchText, bool filterPremium, bool filterFree, bool filterEnrolled, bool filterNotEnrolled, List<int> selectedTagIds, int userId)
         {
-            var courses = await courseServiceProxy.GetAllCourses();
+            try
+            {
+                var courses = await courseServiceProxy.GetAllCourses();
 
-            if (!string.IsNullOrWhiteSpace(searchText))
-            {
-                courses = courses.Where(c => c.Title.Contains(searchText, StringComparison.OrdinalIgnoreCase)).ToList();
-            }
-
-            if (filterPremium && filterFree)
-            {
-                courses = new List<Course>();
-            }
-            else if (filterPremium)
-            {
-                courses = courses.Where(c => c.IsPremium).ToList();
-            }
-            else if (filterFree)
-            {
-                courses = courses.Where(c => !c.IsPremium).ToList();
-            }
-
-            if (filterEnrolled && filterNotEnrolled)
-            {
-                courses = new List<Course>();
-            }
-            else if (filterEnrolled)
-            {
-                courses = (await Task.WhenAll(courses.Select(async c => new { c, enrolled = await courseServiceProxy.IsUserEnrolled(userId, c.CourseId) })))
-                    .Where(x => x.enrolled)
-                    .Select(x => x.c)
-                    .ToList();
-            }
-            else if (filterNotEnrolled)
-            {
-                courses = (await Task.WhenAll(courses.Select(async c => new { c, enrolled = await courseServiceProxy.IsUserEnrolled(userId, c.CourseId) })))
-                    .Where(x => !x.enrolled)
-                    .Select(x => x.c)
-                    .ToList();
-            }
-
-            if (selectedTagIds.Count > 0)
-            {
-                courses = (await Task.WhenAll(courses.Select(async c =>
+                if (!string.IsNullOrWhiteSpace(searchText))
                 {
-                    var tags = await courseServiceProxy.GetTagsForCourse(c.CourseId);
-                    return new { c, tags };
-                })))
-                .Where(x => selectedTagIds.All(id => x.tags.Select(t => t.TagId).Contains(id)))
-                .Select(x => x.c)
-                .ToList();
-            }
+                    courses = courses.Where(c => c.Title.Contains(searchText, StringComparison.OrdinalIgnoreCase)).ToList();
+                }
 
-            return courses;
+                if (filterPremium && filterFree)
+                {
+                    courses = new List<Course>();
+                }
+                else if (filterPremium)
+                {
+                    courses = courses.Where(c => c.IsPremium).ToList();
+                }
+                else if (filterFree)
+                {
+                    courses = courses.Where(c => !c.IsPremium).ToList();
+                }
+
+                if (filterEnrolled && filterNotEnrolled)
+                {
+                    courses = new List<Course>();
+                }
+                else if (filterEnrolled)
+                {
+                    courses = (await Task.WhenAll(courses.Select(async c => new { c, enrolled = await courseServiceProxy.IsUserEnrolled(userId, c.CourseId) })))
+                        .Where(x => x.enrolled)
+                        .Select(x => x.c)
+                        .ToList();
+                }
+                else if (filterNotEnrolled)
+                {
+                    courses = (await Task.WhenAll(courses.Select(async c => new { c, enrolled = await courseServiceProxy.IsUserEnrolled(userId, c.CourseId) })))
+                        .Where(x => !x.enrolled)
+                        .Select(x => x.c)
+                        .ToList();
+                }
+
+                if (selectedTagIds.Count > 0)
+                {
+                    courses = (await Task.WhenAll(courses.Select(async c =>
+                    {
+                        var tags = await courseServiceProxy.GetTagsForCourse(c.CourseId);
+                        return new { c, tags };
+                    })))
+                    .Where(x => selectedTagIds.All(id => x.tags.Select(t => t.TagId).Contains(id)))
+                    .Select(x => x.c)
+                    .ToList();
+                }
+
+                return courses;
+            }
+            catch (Exception e)
+            {
+                Console.Error.WriteLine($"Error occurred filtering courses: {e}");
+                return new List<Course>();
+            }
         }
 
         /// <summary>
@@ -180,7 +266,14 @@ namespace Duo.Services
         /// </summary>
         public async Task UpdateTimeSpentAsync(int userId, int courseId, int seconds)
         {
-            await courseServiceProxy.UpdateTimeSpent(userId, courseId, seconds);
+            try
+            {
+                await courseServiceProxy.UpdateTimeSpent(userId, courseId, seconds);
+            }
+            catch (Exception e)
+            {
+                Console.Error.WriteLine($"Error occurred updating time spent: {e}");
+            }
         }
 
         /// <summary>
@@ -188,7 +281,15 @@ namespace Duo.Services
         /// </summary>
         public async Task<int> GetTimeSpentAsync(int userId, int courseId)
         {
-            return await courseServiceProxy.GetTimeSpent(userId, courseId);
+            try
+            {
+                return await courseServiceProxy.GetTimeSpent(userId, courseId);
+            }
+            catch (Exception e)
+            {
+                Console.Error.WriteLine($"Error occurred retrieving time spent: {e}");
+                return 0;
+            }
         }
 
         /// <summary>
@@ -196,13 +297,21 @@ namespace Duo.Services
         /// </summary>
         public async Task<bool> ClickModuleImageAsync(int userId, int moduleId)
         {
-            if (await courseServiceProxy.IsModuleImageClicked(userId, moduleId))
+            try
             {
+                if (await courseServiceProxy.IsModuleImageClicked(userId, moduleId))
+                {
+                    return false;
+                }
+
+                await courseServiceProxy.ClickModuleImage(userId, moduleId);
+                return true;
+            }
+            catch (Exception e)
+            {
+                Console.Error.WriteLine($"Error occurred clicking module image: {e}");
                 return false;
             }
-
-            await courseServiceProxy.ClickModuleImage(userId, moduleId);
-            return true;
         }
 
         /// <summary>
@@ -210,7 +319,15 @@ namespace Duo.Services
         /// </summary>
         public async Task<bool> IsModuleInProgressAsync(int userId, int moduleId)
         {
-            return await courseServiceProxy.IsModuleOpen(userId, moduleId);
+            try
+            {
+                return await courseServiceProxy.IsModuleOpen(userId, moduleId);
+            }
+            catch (Exception e)
+            {
+                Console.Error.WriteLine($"Error occurred checking module in progress: {e}");
+                return false;
+            }
         }
 
         /// <summary>
@@ -218,7 +335,15 @@ namespace Duo.Services
         /// </summary>
         public async Task<bool> IsModuleAvailableAsync(int userId, int moduleId)
         {
-            return await courseServiceProxy.IsModuleAvailable(userId, moduleId);
+            try
+            {
+                return await courseServiceProxy.IsModuleAvailable(userId, moduleId);
+            }
+            catch (Exception e)
+            {
+                Console.Error.WriteLine($"Error occurred checking module availability: {e}");
+                return false;
+            }
         }
 
         /// <summary>
@@ -226,7 +351,15 @@ namespace Duo.Services
         /// </summary>
         public async Task<bool> IsCourseCompletedAsync(int userId, int courseId)
         {
-            return await courseServiceProxy.IsCourseCompleted(userId, courseId);
+            try
+            {
+                return await courseServiceProxy.IsCourseCompleted(userId, courseId);
+            }
+            catch (Exception e)
+            {
+                Console.Error.WriteLine($"Error occurred checking course completion: {e}");
+                return false;
+            }
         }
 
         /// <summary>
@@ -234,7 +367,15 @@ namespace Duo.Services
         /// </summary>
         public async Task<int> GetCompletedModulesCountAsync(int userId, int courseId)
         {
-            return await courseServiceProxy.GetCompletedModulesCount(userId, courseId);
+            try
+            {
+                return await courseServiceProxy.GetCompletedModulesCount(userId, courseId);
+            }
+            catch (Exception e)
+            {
+                Console.Error.WriteLine($"Error occurred getting completed modules count: {e}");
+                return 0;
+            }
         }
 
         /// <summary>
@@ -242,7 +383,15 @@ namespace Duo.Services
         /// </summary>
         public async Task<int> GetRequiredModulesCountAsync(int courseId)
         {
-            return await courseServiceProxy.GetRequiredModulesCount(courseId);
+            try
+            {
+                return await courseServiceProxy.GetRequiredModulesCount(courseId);
+            }
+            catch (Exception e)
+            {
+                Console.Error.WriteLine($"Error occurred getting required modules count: {e}");
+                return 0;
+            }
         }
 
         /// <summary>
@@ -250,7 +399,15 @@ namespace Duo.Services
         /// </summary>
         public async Task<bool> ClaimCompletionRewardAsync(int userId, int courseId)
         {
-            return await courseServiceProxy.ClaimCompletionReward(userId, courseId);
+            try
+            {
+                return await courseServiceProxy.ClaimCompletionReward(userId, courseId);
+            }
+            catch (Exception e)
+            {
+                Console.Error.WriteLine($"Error occurred claiming completion reward: {e}");
+                return false;
+            }
         }
 
         /// <summary>
@@ -258,7 +415,15 @@ namespace Duo.Services
         /// </summary>
         public async Task<bool> ClaimTimedRewardAsync(int userId, int courseId, int timeSpent)
         {
-            return await courseServiceProxy.ClaimTimedReward(userId, courseId, timeSpent);
+            try
+            {
+                return await courseServiceProxy.ClaimTimedReward(userId, courseId, timeSpent);
+            }
+            catch (Exception e)
+            {
+                Console.Error.WriteLine($"Error occurred claiming timed reward: {e}");
+                return false;
+            }
         }
 
         /// <summary>
@@ -266,12 +431,28 @@ namespace Duo.Services
         /// </summary>
         public async Task<int> GetCourseTimeLimitAsync(int courseId)
         {
-            return await courseServiceProxy.GetCourseTimeLimit(courseId);
+            try
+            {
+                return await courseServiceProxy.GetCourseTimeLimit(courseId);
+            }
+            catch (Exception e)
+            {
+                Console.Error.WriteLine($"Error occurred retrieving course time limit: {e}");
+                return 0;
+            }
         }
 
         public async Task<bool> BuyBonusModuleAsync(int userId, int moduleId, int courseId)
         {
-            return await courseServiceProxy.BuyBonusModule(userId, moduleId, courseId);
+            try
+            {
+                return await courseServiceProxy.BuyBonusModule(userId, moduleId, courseId);
+            }
+            catch (Exception e)
+            {
+                Console.Error.WriteLine($"Error occurred buying bonus module: {e}");
+                return false;
+            }
         }
     }
 }

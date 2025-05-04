@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using Duo.Exceptions;
 using Duo.Models.Exercises;
 using Duo.Models.Quizzes;
 using Duo.Models.Quizzes.API;
@@ -19,16 +17,8 @@ namespace Duo.Services
 
         public async Task<List<Quiz>> Get()
         {
-            try
-            {
-                return await serviceProxy.GetAsync();
-            }
-            catch (Exception ex)
-            {
-                throw new QuizServiceException("Failed to get quizzes.", ex);
-            }
+            return await serviceProxy.GetAsync();
         }
-
         public async Task<List<Exam>> GetAllAvailableExams()
         {
             try
@@ -40,216 +30,102 @@ namespace Duo.Services
                 throw new QuizServiceException("Failed to retrieve available exams.", ex);
             }
         }
-
         public async Task<Quiz> GetQuizById(int quizId)
         {
-            try
-            {
-                return await serviceProxy.GetQuizByIdAsync(quizId);
-            }
-            catch (Exception ex)
-            {
-                throw new QuizServiceException($"Failed to get quiz with ID {quizId}.", ex);
-            }
+            return await serviceProxy.GetQuizByIdAsync(quizId);
         }
 
         public async Task<Exam> GetExamById(int examId)
         {
-            try
-            {
-                return await serviceProxy.GetExamByIdAsync(examId);
-            }
-            catch (Exception ex)
-            {
-                throw new QuizServiceException($"Failed to get exam with ID {examId}.", ex);
-            }
+            return await serviceProxy.GetExamByIdAsync(examId);
         }
 
         public async Task<List<Quiz>> GetAllQuizzesFromSection(int sectionId)
         {
-            try
-            {
-                return await serviceProxy.GetAllQuizzesFromSectionAsync(sectionId);
-            }
-            catch (Exception ex)
-            {
-                throw new QuizServiceException($"Failed to get quizzes from section {sectionId}.", ex);
-            }
+            return await serviceProxy.GetAllQuizzesFromSectionAsync(sectionId);
         }
 
         public async Task<int> CountQuizzesFromSection(int sectionId)
         {
-            try
-            {
-                return await serviceProxy.CountQuizzesFromSectionAsync(sectionId);
-            }
-            catch (Exception ex)
-            {
-                throw new QuizServiceException($"Failed to count quizzes in section {sectionId}.", ex);
-            }
+            return await serviceProxy.CountQuizzesFromSectionAsync(sectionId);
         }
 
         public async Task<int> LastOrderNumberFromSection(int sectionId)
         {
-            try
-            {
-                return await serviceProxy.LastOrderNumberFromSectionAsync(sectionId);
-            }
-            catch (Exception ex)
-            {
-                throw new QuizServiceException($"Failed to get last order number from section {sectionId}.", ex);
-            }
+            return await serviceProxy.LastOrderNumberFromSectionAsync(sectionId);
         }
 
         public async Task<Exam?> GetExamFromSection(int sectionId)
         {
-            try
-            {
-                return await serviceProxy.GetExamFromSectionAsync(sectionId);
-            }
-            catch (Exception ex)
-            {
-                throw new QuizServiceException($"Failed to get exam from section {sectionId}.", ex);
-            }
+            return await serviceProxy.GetExamFromSectionAsync(sectionId);
         }
 
         public async Task DeleteQuiz(int quizId)
         {
-            try
-            {
-                await serviceProxy.DeleteQuizAsync(quizId);
-            }
-            catch (Exception ex)
-            {
-                throw new QuizServiceException($"Failed to delete quiz with ID {quizId}.", ex);
-            }
+            await serviceProxy.DeleteQuizAsync(quizId);
         }
 
         public async Task UpdateQuiz(Quiz quiz)
         {
-            try
-            {
-                await serviceProxy.UpdateQuizAsync(quiz);
-            }
-            catch (Exception ex)
-            {
-                throw new QuizServiceException($"Failed to update quiz with ID {quiz.Id}.", ex);
-            }
+            await serviceProxy.UpdateQuizAsync(quiz);
         }
 
         public async Task<int> CreateQuiz(Quiz quiz)
         {
-            try
-            {
-                await serviceProxy.CreateQuizAsync(quiz);
-                return quiz.Id;
-            }
-            catch (Exception ex)
-            {
-                throw new QuizServiceException("Failed to create quiz.", ex);
-            }
+            await serviceProxy.CreateQuizAsync(quiz);
+            return quiz.Id;
         }
 
         public async Task AddExercisesToQuiz(int quizId, List<Exercise> exercises)
         {
-            try
+            var exerciseIds = new List<int>();
+            foreach (var exercise in exercises)
             {
-                var exerciseIds = new List<int>();
-                foreach (var exercise in exercises)
-                {
-                    exerciseIds.Add(exercise.Id);
-                }
-                await serviceProxy.AddExercisesToQuizAsync(quizId, exerciseIds);
+                exerciseIds.Add(exercise.Id);
             }
-            catch (Exception ex)
-            {
-                throw new QuizServiceException($"Failed to add exercises to quiz with ID {quizId}.", ex);
-            }
+            await serviceProxy.AddExercisesToQuizAsync(quizId, exerciseIds);
         }
 
         public async Task AddExerciseToQuiz(int quizId, int exerciseId)
         {
-            try
-            {
-                await serviceProxy.AddExerciseToQuizAsync(quizId, exerciseId);
-            }
-            catch (Exception ex)
-            {
-                throw new QuizServiceException($"Failed to add exercise {exerciseId} to quiz {quizId}.", ex);
-            }
+            await serviceProxy.AddExerciseToQuizAsync(quizId, exerciseId);
         }
 
         public async Task RemoveExerciseFromQuiz(int quizId, int exerciseId)
         {
-            try
-            {
-                await serviceProxy.RemoveExerciseFromQuizAsync(quizId, exerciseId);
-            }
-            catch (Exception ex)
-            {
-                throw new QuizServiceException($"Failed to remove exercise {exerciseId} from quiz {quizId}.", ex);
-            }
+            await serviceProxy.RemoveExerciseFromQuizAsync(quizId, exerciseId);
         }
 
         public async Task DeleteExam(int examId)
         {
-            try
-            {
-                await serviceProxy.DeleteExamAsync(examId);
-            }
-            catch (Exception ex)
-            {
-                throw new QuizServiceException($"Failed to delete exam with ID {examId}.", ex);
-            }
+            await serviceProxy.DeleteExamAsync(examId);
         }
 
         public async Task UpdateExam(Exam exam)
         {
-            try
-            {
-                await serviceProxy.UpdateExamAsync(exam);
-            }
-            catch (Exception ex)
-            {
-                throw new QuizServiceException($"Failed to update exam with ID {exam.Id}.", ex);
-            }
+            await serviceProxy.UpdateExamAsync(exam);
         }
 
         public async Task<int> CreateExam(Exam exam)
         {
-            try
-            {
-                await serviceProxy.CreateExamAsync(exam);
-                return exam.Id;
-            }
-            catch (Exception ex)
-            {
-                throw new QuizServiceException("Failed to create exam.", ex);
-            }
+            await serviceProxy.CreateExamAsync(exam);
+            return exam.Id;
         }
-
+        /*
+        public async Task<QuizModel> FetchQuizAsync(int quizId)
+        {
+            var model = await httpClient.GetFromJsonAsync<QuizModel>($"quiz/fetch?id={quizId}");
+            return model!;
+        }
+        */
         public async Task SubmitQuizAsync(QuizSubmission submission)
         {
-            try
-            {
-                await serviceProxy.SubmitQuizAsync(submission);
-            }
-            catch (Exception ex)
-            {
-                throw new QuizServiceException("Failed to submit quiz.", ex);
-            }
+            await serviceProxy.SubmitQuizAsync(submission);
         }
 
         public async Task<QuizResult> GetResultAsync(int quizId)
         {
-            try
-            {
-                return await serviceProxy.GetResultAsync(quizId);
-            }
-            catch (Exception ex)
-            {
-                throw new QuizServiceException($"Failed to get result for quiz with ID {quizId}.", ex);
-            }
+            return await serviceProxy.GetResultAsync(quizId);
         }
     }
 }
