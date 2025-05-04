@@ -51,13 +51,27 @@ namespace Duo.Api.Controllers
                 return BadRequest("Email is required.");
             }
 
-            await repository.AddUserAsync(user);
+            var newUser = new User
+            {
+                Username = user.Username,
+                Email = user.Email,
+                CoinBalance = user.CoinBalance,
+                NumberOfCompletedSections = user.NumberOfCompletedSections,
+                NumberOfCompletedQuizzesInSection = user.NumberOfCompletedQuizzesInSection,
+                LastLoginTime = DateTime.UtcNow
+            };
+
+            await repository.AddUserAsync(newUser);
 
             return CreatedAtAction(nameof(GetUserById), new { id = user.UserId }, new
             {
                 user.UserId,
                 user.Username,
-                user.Email
+                user.Email,
+                user.CoinBalance,
+                user.NumberOfCompletedSections,
+                user.NumberOfCompletedQuizzesInSection,
+                user.LastLoginTime
             });
         }
 
@@ -93,7 +107,7 @@ namespace Duo.Api.Controllers
             await this.repository.UpdateUserAsync(user);
 
             return Ok(user);
-    }
+        }
 
         /// <summary>
         /// Retrieves a user by their ID.
@@ -141,7 +155,7 @@ namespace Duo.Api.Controllers
 
             await repository.UpdateUserAsync(existingUser);
 
-            return NoContent();
+            return Ok(new { message = "User updated successfully." });
         }
 
         /// <summary>
@@ -161,7 +175,7 @@ namespace Duo.Api.Controllers
 
             await repository.DeleteUserAsync(id);
 
-            return NoContent();
+            return Ok();
         }
 
         #endregion

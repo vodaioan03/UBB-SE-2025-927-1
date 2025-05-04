@@ -63,14 +63,14 @@ namespace Duo
             services.AddSingleton<IUserRepository, UserRepository>();
 
             // User
-            services.AddSingleton<UserServiceProxy>(sp =>
+            services.AddSingleton<IUserServiceProxy>(sp =>
             {
                 var httpClient = sp.GetRequiredService<HttpClient>();
                 return new UserServiceProxy(httpClient);
             });
             services.AddSingleton<IUserService>(sp =>
             {
-                var proxy = sp.GetRequiredService<UserServiceProxy>();
+                var proxy = sp.GetRequiredService<IUserServiceProxy>();
                 return new UserService(proxy);
             });
 
