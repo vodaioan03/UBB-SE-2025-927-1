@@ -264,7 +264,7 @@ namespace Duo.Tests.Services
         {
             // Arrange
             var course = CreateSampleCourse(1);
-            course.Title = "Test Course"; // Ensure title matches search
+            course.Title = "Test Course";
             var tag = new Tag { TagId = 10 };
 
             mockProxy.Setup(p => p.GetAllCourses()).ReturnsAsync(new List<Course> { course });
