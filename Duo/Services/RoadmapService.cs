@@ -6,14 +6,15 @@ using System.Text;
 using System.Threading.Tasks;
 using Duo.Models.Roadmap;
 using Duo.Repositories;
+using Duo.Services.Interfaces;
 
 namespace Duo.Services
 {
     public class RoadmapService : IRoadmapService
     {
-        private RoadmapServiceProxy serviceProxy;
+        private IRoadmapServiceProxy serviceProxy;
 
-        public RoadmapService(RoadmapServiceProxy serviceProxy)
+        public RoadmapService(IRoadmapServiceProxy serviceProxy)
         {
             this.serviceProxy = serviceProxy;
         }
@@ -66,7 +67,7 @@ namespace Duo.Services
             catch (Exception ex)
             {
                 Debug.WriteLine($"Error adding roadmap: {ex.Message}");
-                return -1;
+                return 0;
             }
         }
 

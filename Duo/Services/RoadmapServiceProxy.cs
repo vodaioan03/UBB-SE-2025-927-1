@@ -6,10 +6,11 @@ using System.Net.Http.Json;
 using System.Text;
 using System.Threading.Tasks;
 using Duo.Models.Roadmap;
+using Duo.Services.Interfaces;
 
 namespace Duo.Services
 {
-    public class RoadmapServiceProxy : IRoadmapService
+    public class RoadmapServiceProxy : IRoadmapService, IRoadmapServiceProxy
     {
         private readonly HttpClient httpClient;
         private readonly string url = "https://localhost:7174/";
