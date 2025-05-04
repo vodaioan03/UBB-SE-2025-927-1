@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -17,29 +18,68 @@ namespace Duo.Services
             this.serviceProxy = serviceProxy;
         }
 
-        public async Task<List<Roadmap>> GetAllRoadmaps()
+        public async Task<List<Roadmap>> GetAllAsync()
         {
-            return await serviceProxy.GetAllAsync();
+            try
+            {
+                return await serviceProxy.GetAllAsync();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error fetching roadmaps: {ex.Message}");
+                return new List<Roadmap>();
+            }
         }
 
-        public async Task<Roadmap> GetRoadmapById(int roadmapId)
+        public async Task<Roadmap> GetByIdAsync(int roadmapId)
         {
-            return await serviceProxy.GetByIdAsync(roadmapId);
+            try
+            {
+                return await serviceProxy.GetByIdAsync(roadmapId);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error fetching roadmap by ID: {ex.Message}");
+                return null;
+            }
         }
 
-        public async Task<Roadmap> GetByName(string roadmapName)
+        public async Task<Roadmap> GetByNameAsync(string roadmapName)
         {
-            return await serviceProxy.GetByNameAsync(roadmapName);
+            try
+            {
+                return await serviceProxy.GetByNameAsync(roadmapName);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error fetching roadmap by name: {ex.Message}");
+                return null;
+            }
         }
 
-        public async Task<int> AddRoadmap(Roadmap roadmap)
+        public async Task<int> AddAsync(Roadmap roadmap)
         {
-            return await serviceProxy.AddAsync(roadmap);
+            try
+            {
+                return await serviceProxy.AddAsync(roadmap);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error adding roadmap: {ex.Message}");
+                return -1;
+            }
         }
 
-        public async Task DeleteRoadmap(Roadmap roadmap)
+        public async Task DeleteAsync(Roadmap roadmap)
         {
-            await serviceProxy.DeleteAsync(roadmap.Id);
+            try
+            {
+                await serviceProxy.DeleteAsync(roadmap);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error deleting roadmap: {ex.Message}");
+            }
         }
     }
 }
