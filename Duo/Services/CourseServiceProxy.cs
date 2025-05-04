@@ -5,11 +5,10 @@ using System.Text.Json;
 using System.Text;
 using System.Threading.Tasks;
 using Duo.Models;
-using Duo.Services.Interfaces;
 
 namespace Duo.Services
 {
-    public class CourseServiceProxy : ICourseServiceProxy
+    public class CourseServiceProxy
     {
         private readonly HttpClient httpClient;
         private readonly string url = "https://localhost:7174";
