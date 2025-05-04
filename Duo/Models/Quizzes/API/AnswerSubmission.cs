@@ -7,5 +7,4 @@ namespace Duo.Models.Quizzes.API
         public string? WrittenAnswer { get; set; }
         public int? AssociatedPairId { get; set; }
     }
-
 }
