@@ -12,14 +12,21 @@ namespace Duo.Services
     /// </summary>
     public class SectionService : ISectionService
     {
-        private readonly SectionServiceProxy sectionServiceProxy;
+        private readonly ISectionServiceProxy sectionServiceProxy;
 
-        public SectionService(SectionServiceProxy sectionServiceProxy)
+        /// <summary>
+        /// Creates a new instance of SectionService using the given proxy.
+        /// </summary>
+        public SectionService(ISectionServiceProxy sectionServiceProxy)
         {
-            this.sectionServiceProxy = sectionServiceProxy;
+            this.sectionServiceProxy = sectionServiceProxy ?? throw new ArgumentNullException(nameof(sectionServiceProxy));
         }
 
-        public SectionService(ISectionServiceProxy @object)
+        /// <summary>
+        /// Optional overload to allow passing the concrete proxy directly.
+        /// </summary>
+        public SectionService(SectionServiceProxy concreteProxy)
+            : this((ISectionServiceProxy)concreteProxy)
         {
         }
 
