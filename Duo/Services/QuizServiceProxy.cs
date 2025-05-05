@@ -6,10 +6,11 @@ using System.Net.Http.Json;
 using Duo.Exceptions;
 using Duo.Models.Quizzes;
 using Duo.Models.Quizzes.API;
+using Duo.Services.Interfaces;
 
 namespace Duo.Services
 {
-    public class QuizServiceProxy
+    public class QuizServiceProxy : IQuizServiceProxy
     {
         private readonly HttpClient httpClient;
         private readonly string url = "https://localhost:7174/";
