@@ -30,8 +30,14 @@ namespace Duo.Services
         }
         public async Task<List<Exam>> GetAllAvailableExams()
         {
-            // return await serviceProxy.GetAllAvailableExamsAsync();
-            throw new System.NotImplementedException();
+            try
+            {
+                return await serviceProxy.GetAllAvailableExamsAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new QuizServiceException("Failed to retrieve available exams.", ex);
+            }
         }
         public async Task<Quiz> GetQuizById(int quizId)
         {

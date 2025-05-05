@@ -1,8 +1,9 @@
 ﻿using System;
-using System.Net.Http;
-using System.Net.Http.Json;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using System.Net.Http;
+using System.Net.Http.Json;
+using Duo.Exceptions;
 using Duo.Models.Quizzes;
 using Duo.Models.Quizzes.API;
 
@@ -193,7 +194,7 @@ namespace Duo.Services
         public async Task AddExercisesToQuizAsync(int quizId, List<int> exerciseIds)
         {
             try
-             {
+            {
                 var formData = new MultipartFormDataContent();
                 formData.Add(new StringContent(quizId.ToString()), "quizId");
                 foreach (var exerciseId in exerciseIds)
@@ -298,22 +299,6 @@ namespace Duo.Services
             {
                 throw new QuizServiceProxyException("Failed to submit quiz.", ex);
             }
-        }
-    }
-
-    [Serializable]
-    public class QuizServiceProxyException : Exception
-    {
-        public QuizServiceProxyException()
-        {
-        }
-
-        public QuizServiceProxyException(string? message) : base(message)
-        {
-        }
-
-        public QuizServiceProxyException(string? message, Exception? innerException) : base(message, innerException)
-        {
         }
     }
 }
