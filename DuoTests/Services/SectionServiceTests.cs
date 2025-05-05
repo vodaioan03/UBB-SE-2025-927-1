@@ -1,219 +1,294 @@
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
-using System;
-using System.Collections.Generic;
-using System.Net.Http;
-using System.Threading.Tasks;
+﻿using Duo.Models.Exercises;
+using Duo.Models.Quizzes;
 using Duo.Models.Sections;
 using Duo.Services;
 using Duo.Services.Interfaces;
-using Duo.Models.Quizzes;
+using Moq;
 
 namespace Duo.Tests.Services
 {
     [TestClass]
-    public class SectionServiceTests
+    public sealed class SectionServiceTests
     {
-        private Mock<ISectionServiceProxy> mockProxy;
-        private SectionService sectionService;
+        private Mock<ISectionServiceProxy> proxyMock = null!;
+        private SectionService service = null!;
+
+        #region Test Initialization
 
         [TestInitialize]
-        public void Setup()
+        public void Init()
         {
-            mockProxy = new Mock<ISectionServiceProxy>();
-            sectionService = new SectionService(mockProxy.Object); 
-        }
-        private Section CreateSampleSection(int id) => new Section(
-            id: id,
-            subjectId: 1,
-            title: $"Section {id}",
-            description: $"Description {id}",
-            roadmapId: 1,
-            orderNumber: id
-)
-        {
-            Quizzes = new List<Quiz> {
-        new Quiz(id: 1, sectionId: id, orderNumber: 1),
-        new Quiz(id: 2, sectionId: id, orderNumber: 2)
-    },
-            Exam = new Exam(id: 1, sectionId: id)
-        };
-
-        [TestMethod]
-        public async Task AddSection_HttpException_ReturnsZero()
-        {
-            // Arrange
-            var section = CreateSampleSection(1);
-            mockProxy.Setup(p => p.GetAllSections()).ThrowsAsync(new HttpRequestException("HTTP error"));
-
-            // Act
-            var result = await sectionService.AddSection(section);
-
-            // Assert
-            Assert.AreEqual(0, result);
+            this.proxyMock = new Mock<ISectionServiceProxy>(MockBehavior.Strict);
+            this.service = new SectionService(this.proxyMock.Object);
         }
 
-        [TestMethod]
-        public async Task AddSection_UnexpectedException_ReturnsZero()
+        #endregion
+
+        #region Helpers
+
+        private sealed class TestExercise : Exercise
         {
-            // Arrange
-            var section = CreateSampleSection(1);
-            mockProxy.Setup(p => p.GetAllSections()).ThrowsAsync(new System.Exception("Unexpected error"));
+            public TestExercise(int id)
+                : base(id, question: $"Q{id}", difficulty: Models.Difficulty.Easy)
+            {
+            }
+        }
 
-            // Act
-            var result = await sectionService.AddSection(section);
+        private static Exercise DummyEx(int id) => new TestExercise(id);
 
-            // Assert
-            Assert.AreEqual(0, result);
+        private static Quiz MakeValidQuiz(int id)
+        {
+            var q = new Quiz(id, sectionId: null, orderNumber: null);
+            for (var i = 0; i < 10; i++)
+            {
+                q.AddExercise(DummyEx(id * 100 + i));
+            }
+            return q;
+        }
+
+        private static Exam MakeValidExam(int id)
+        {
+            var e = new Exam(id, sectionId: null);
+            for (var i = 0; i < 25; i++)
+            {
+                e.AddExercise(DummyEx(id * 1000 + i));
+            }
+            return e;
+        }
+
+        private static Section NewValidSection(int id)
+        {
+            var s = new Section
+            {
+                Id = id,
+                Title = $"Title {id}",
+                Description = $"Desc {id}",
+                RoadmapId = 1,
+                OrderNumber = null
+            };
+
+            s.AddQuiz(MakeValidQuiz(id * 10));
+            s.AddQuiz(MakeValidQuiz(id * 10 + 1));
+            s.AddExam(MakeValidExam(id));
+            return s;
+        }
+
+        private static SectionDependency Dep(bool done) => new() { IsCompleted = done };
+
+        #endregion
+
+        [TestMethod]
+        public async Task CountSectionsFromRoadmap_ReturnsCount()
+        {
+            this.proxyMock.Setup(p => p.CountSectionsFromRoadmap(5)).ReturnsAsync(4);
+
+            var count = await this.service.CountSectionsFromRoadmap(5);
+
+            Assert.AreEqual(4, count);
+            this.proxyMock.VerifyAll();
+        }
+
+        [DataTestMethod]
+        [DataRow(typeof(HttpRequestException))]
+        [DataRow(typeof(Exception))]
+        public async Task CountSectionsFromRoadmap_ReturnsZero_OnErrors(Type exType)
+        {
+            this.proxyMock.Setup(p => p.CountSectionsFromRoadmap(5))
+                          .ThrowsAsync((Exception)Activator.CreateInstance(exType)!);
+
+            var count = await this.service.CountSectionsFromRoadmap(5);
+
+            Assert.AreEqual(0, count);
+            this.proxyMock.VerifyAll();
         }
 
         [TestMethod]
-        public async Task AddSection_NoExistingSections_SetsOrder1()
+        public async Task DeleteSection_CallsProxy()
         {
-            // Arrange
-            var section = CreateSampleSection(1);
-            mockProxy.Setup(p => p.GetAllSections()).ReturnsAsync(new List<Section>());
-            mockProxy.Setup(p => p.AddSection(section)).ReturnsAsync(1);
+            this.proxyMock.Setup(p => p.DeleteSection(7)).Returns(Task.CompletedTask);
 
-            // Act
-            var result = await sectionService.AddSection(section);
+            await this.service.DeleteSection(7);
 
-            // Assert
-            Assert.AreEqual(1, section.OrderNumber);
+            this.proxyMock.VerifyAll();
         }
 
-
-        [TestMethod]
-        public async Task CountSectionsFromRoadmap_HttpException_ReturnsZero()
+        [DataTestMethod]
+        [DataRow(typeof(HttpRequestException))]
+        [DataRow(typeof(Exception))]
+        public async Task DeleteSection_SwallowsErrors(Type exType)
         {
-            // Arrange
-            mockProxy.Setup(p => p.CountSectionsFromRoadmap(1)).ThrowsAsync(new HttpRequestException("HTTP error"));
+            this.proxyMock.Setup(p => p.DeleteSection(7))
+                          .ThrowsAsync((Exception)Activator.CreateInstance(exType)!);
 
-            // Act
-            var result = await sectionService.CountSectionsFromRoadmap(1);
-
-            // Assert
-            Assert.AreEqual(0, result);
+            await this.service.DeleteSection(7);
+            this.proxyMock.VerifyAll();
         }
 
         [TestMethod]
-        public async Task GetAllSections_HttpException_ReturnsEmptyList()
+        public async Task GetAllSections_ReturnsList()
         {
-            // Arrange
-            mockProxy.Setup(p => p.GetAllSections()).ThrowsAsync(new HttpRequestException("HTTP error"));
+            var list = new List<Section> { NewValidSection(1) };
+            this.proxyMock.Setup(p => p.GetAllSections()).ReturnsAsync(list);
 
-            // Act
-            var result = await sectionService.GetAllSections();
+            var result = await this.service.GetAllSections();
 
-            // Assert
+            Assert.AreEqual(1, result.Count);
+            this.proxyMock.VerifyAll();
+        }
+
+        [DataTestMethod]
+        [DataRow(typeof(HttpRequestException))]
+        [DataRow(typeof(Exception))]
+        public async Task GetAllSections_ReturnsEmpty_OnErrors(Type exType)
+        {
+            this.proxyMock.Setup(p => p.GetAllSections())
+                          .ThrowsAsync((Exception)Activator.CreateInstance(exType)!);
+
+            var result = await this.service.GetAllSections();
+
             Assert.AreEqual(0, result.Count);
+            this.proxyMock.VerifyAll();
         }
 
         [TestMethod]
-        public async Task GetByRoadmapId_HttpException_ReturnsEmptyList()
+        public async Task GetByRoadmapId_ReturnsList()
         {
-            // Arrange
-            mockProxy.Setup(p => p.GetByRoadmapId(1)).ThrowsAsync(new HttpRequestException("HTTP error"));
+            var list = new List<Section> { NewValidSection(10) };
+            this.proxyMock.Setup(p => p.GetByRoadmapId(3)).ReturnsAsync(list);
 
-            // Act
-            var result = await sectionService.GetByRoadmapId(1);
+            var result = await this.service.GetByRoadmapId(3);
 
-            // Assert
+            Assert.AreEqual(1, result.Count);
+            this.proxyMock.VerifyAll();
+        }
+
+        [DataTestMethod]
+        [DataRow(typeof(HttpRequestException))]
+        [DataRow(typeof(Exception))]
+        public async Task GetByRoadmapId_ReturnsEmpty_OnErrors(Type exType)
+        {
+            this.proxyMock.Setup(p => p.GetByRoadmapId(3))
+                          .ThrowsAsync((Exception)Activator.CreateInstance(exType)!);
+
+            var result = await this.service.GetByRoadmapId(3);
+
             Assert.AreEqual(0, result.Count);
+            this.proxyMock.VerifyAll();
         }
 
-
         [TestMethod]
-        public async Task GetSectionById_HttpException_ReturnsNull()
+        public async Task GetSectionById_ReturnsSection()
         {
-            // Arrange
-            mockProxy.Setup(p => p.GetSectionById(1)).ThrowsAsync(new HttpRequestException("HTTP error"));
+            var sec = NewValidSection(4);
+            this.proxyMock.Setup(p => p.GetSectionById(4)).ReturnsAsync(sec);
 
-            // Act
-            var result = await sectionService.GetSectionById(1);
+            var result = await this.service.GetSectionById(4);
 
-            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(4, result.Id);
+            this.proxyMock.VerifyAll();
+        }
+
+        [DataTestMethod]
+        [DataRow(typeof(HttpRequestException))]
+        [DataRow(typeof(Exception))]
+        public async Task GetSectionById_ReturnsNull_OnErrors(Type exType)
+        {
+            this.proxyMock.Setup(p => p.GetSectionById(4))
+                          .ThrowsAsync((Exception)Activator.CreateInstance(exType)!);
+
+            var result = await this.service.GetSectionById(4);
+
             Assert.IsNull(result);
+            this.proxyMock.VerifyAll();
         }
 
         [TestMethod]
-        public async Task LastOrderNumberFromRoadmap_HttpException_ReturnsZero()
+        public async Task LastOrderNumberFromRoadmap_ReturnsValue()
         {
-            // Arrange
-            mockProxy.Setup(p => p.LastOrderNumberFromRoadmap(1)).ThrowsAsync(new HttpRequestException("HTTP error"));
+            this.proxyMock.Setup(p => p.LastOrderNumberFromRoadmap(8)).ReturnsAsync(6);
 
-            // Act
-            var result = await sectionService.LastOrderNumberFromRoadmap(1);
+            var value = await this.service.LastOrderNumberFromRoadmap(8);
 
-            // Assert
-            Assert.AreEqual(0, result);
+            Assert.AreEqual(6, value);
+            this.proxyMock.VerifyAll();
+        }
+
+        [DataTestMethod]
+        [DataRow(typeof(HttpRequestException))]
+        [DataRow(typeof(Exception))]
+        public async Task LastOrderNumberFromRoadmap_ReturnsZero_OnErrors(Type exType)
+        {
+            this.proxyMock.Setup(p => p.LastOrderNumberFromRoadmap(8))
+                          .ThrowsAsync((Exception)Activator.CreateInstance(exType)!);
+
+            var value = await this.service.LastOrderNumberFromRoadmap(8);
+
+            Assert.AreEqual(0, value);
+            this.proxyMock.VerifyAll();
         }
 
         [TestMethod]
-        public async Task TrackCompletion_HttpException_ReturnsFalse()
+        public async Task TrackCompletion_ReturnsTrue_OnSuccess()
         {
-            // Arrange
-            mockProxy.Setup(p => p.TrackCompletion(1, true)).ThrowsAsync(new HttpRequestException("HTTP error"));
+            this.proxyMock.Setup(p => p.TrackCompletion(11, true)).ReturnsAsync(true);
 
-            // Act
-            var result = await sectionService.TrackCompletion(1, true);
+            var ok = await this.service.TrackCompletion(11, true);
 
-            // Assert
-            Assert.IsFalse(result);
+            Assert.IsTrue(ok);
+            this.proxyMock.VerifyAll();
+        }
+
+        [DataTestMethod]
+        [DataRow(typeof(HttpRequestException))]
+        [DataRow(typeof(Exception))]
+        public async Task TrackCompletion_ReturnsFalse_OnErrors(Type exType)
+        {
+            this.proxyMock.Setup(p => p.TrackCompletion(11, true))
+                          .ThrowsAsync((Exception)Activator.CreateInstance(exType)!);
+
+            var ok = await this.service.TrackCompletion(11, true);
+
+            Assert.IsFalse(ok);
+            this.proxyMock.VerifyAll();
         }
 
         [TestMethod]
-        public async Task TrackCompletion_NullSection_ReturnsFalse()
+        public async Task ValidateDependencies_ReturnsTrue_AllCompleted()
         {
-            // Arrange
-            mockProxy.Setup(p => p.GetSectionById(1)).ReturnsAsync((Section)null);
+            var deps = new List<SectionDependency> { Dep(true), Dep(true) };
+            this.proxyMock.Setup(p => p.GetSectionDependencies(13)).ReturnsAsync(deps);
 
-            // Act
-            var result = await sectionService.TrackCompletion(1, true);
+            var ok = await this.service.ValidateDependencies(13);
 
-            // Assert
-            Assert.IsFalse(result);
+            Assert.IsTrue(ok);
+            this.proxyMock.VerifyAll();
         }
 
         [TestMethod]
-        public async Task GetSectionById_NotFound_ReturnsNull()
+        public async Task ValidateDependencies_ReturnsFalse_AnyIncomplete()
         {
-            // Arrange
-            mockProxy.Setup(p => p.GetSectionById(1)).ReturnsAsync((Section)null);
+            var deps = new List<SectionDependency> { Dep(true), Dep(false) };
+            this.proxyMock.Setup(p => p.GetSectionDependencies(13)).ReturnsAsync(deps);
 
-            // Act
-            var result = await sectionService.GetSectionById(1);
+            var ok = await this.service.ValidateDependencies(13);
 
-            // Assert
-            Assert.IsNull(result);
+            Assert.IsFalse(ok);
+            this.proxyMock.VerifyAll();
         }
 
-
-        [TestMethod]
-        public async Task ValidateDependencies_HttpException_ReturnsFalse()
+        [DataTestMethod]
+        [DataRow(typeof(HttpRequestException))]
+        [DataRow(typeof(Exception))]
+        public async Task ValidateDependencies_ReturnsFalse_OnErrors(Type exType)
         {
-            // Arrange
-            mockProxy.Setup(p => p.GetSectionDependencies(1)).ThrowsAsync(new HttpRequestException("HTTP error"));
+            this.proxyMock.Setup(p => p.GetSectionDependencies(13))
+                          .ThrowsAsync((Exception)Activator.CreateInstance(exType)!);
 
-            // Act
-            var result = await sectionService.ValidateDependencies(1);
+            var ok = await this.service.ValidateDependencies(13);
 
-            // Assert
-            Assert.IsFalse(result);
-        }
-
-        [TestMethod]
-        public async Task ValidateDependencies_NullDependencies_ReturnsFalse()
-        {
-            // Arrange
-            mockProxy.Setup(p => p.GetSectionDependencies(1))
-                     .ReturnsAsync((List<SectionDependency>)null);
-
-            // Act
-            var result = await sectionService.ValidateDependencies(1);
-
-            // Assert
-            Assert.IsFalse(result);
+            Assert.IsFalse(ok);
+            this.proxyMock.VerifyAll();
         }
     }
 }
