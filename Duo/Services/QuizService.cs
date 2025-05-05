@@ -5,45 +5,59 @@ using Duo.Exceptions;
 using Duo.Models.Exercises;
 using Duo.Models.Quizzes;
 using Duo.Models.Quizzes.API;
+using Duo.Services.Interfaces;
 
 namespace Duo.Services
 {
     public class QuizService : IQuizService
     {
-        private readonly QuizServiceProxy serviceProxy;
+        private readonly IQuizServiceProxy serviceProxy;
 
-        public QuizService(QuizServiceProxy serviceProxy)
+        /// <summary>
+        /// For production: accepts the concrete proxy, up-casts to the interface.
+        /// </summary>
+        public QuizService(QuizServiceProxy concreteProxy)
+            : this((IQuizServiceProxy)concreteProxy)
         {
-            this.serviceProxy = serviceProxy;
+        }
+
+        /// <summary>
+        /// Testable constructor: accepts the proxy interface directly.
+        /// </summary>
+        public QuizService(IQuizServiceProxy serviceProxy)
+        {
+            this.serviceProxy = serviceProxy ?? throw new ArgumentNullException(nameof(serviceProxy));
         }
 
         public async Task<List<Quiz>> Get()
         {
             try
             {
-                return await serviceProxy.GetAsync();
+                return await serviceProxy.GetAsync().ConfigureAwait(false);
             }
             catch (Exception ex)
             {
                 throw new QuizServiceException("Failed to get quizzes.", ex);
             }
         }
+
         public async Task<List<Exam>> GetAllAvailableExams()
         {
             try
             {
-                return await serviceProxy.GetAllAvailableExamsAsync();
+                return await serviceProxy.GetAllAvailableExamsAsync().ConfigureAwait(false);
             }
             catch (Exception ex)
             {
                 throw new QuizServiceException("Failed to retrieve available exams.", ex);
             }
         }
+
         public async Task<Quiz> GetQuizById(int quizId)
         {
             try
             {
-                return await serviceProxy.GetQuizByIdAsync(quizId);
+                return await serviceProxy.GetQuizByIdAsync(quizId).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -55,7 +69,7 @@ namespace Duo.Services
         {
             try
             {
-                return await serviceProxy.GetExamByIdAsync(examId);
+                return await serviceProxy.GetExamByIdAsync(examId).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -67,7 +81,7 @@ namespace Duo.Services
         {
             try
             {
-                return await serviceProxy.GetAllQuizzesFromSectionAsync(sectionId);
+                return await serviceProxy.GetAllQuizzesFromSectionAsync(sectionId).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -79,7 +93,7 @@ namespace Duo.Services
         {
             try
             {
-                return await serviceProxy.CountQuizzesFromSectionAsync(sectionId);
+                return await serviceProxy.CountQuizzesFromSectionAsync(sectionId).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -91,7 +105,7 @@ namespace Duo.Services
         {
             try
             {
-                return await serviceProxy.LastOrderNumberFromSectionAsync(sectionId);
+                return await serviceProxy.LastOrderNumberFromSectionAsync(sectionId).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -103,7 +117,7 @@ namespace Duo.Services
         {
             try
             {
-                return await serviceProxy.GetExamFromSectionAsync(sectionId);
+                return await serviceProxy.GetExamFromSectionAsync(sectionId).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -115,7 +129,7 @@ namespace Duo.Services
         {
             try
             {
-                await serviceProxy.DeleteQuizAsync(quizId);
+                await serviceProxy.DeleteQuizAsync(quizId).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -127,7 +141,7 @@ namespace Duo.Services
         {
             try
             {
-                await serviceProxy.UpdateQuizAsync(quiz);
+                await serviceProxy.UpdateQuizAsync(quiz).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -139,7 +153,7 @@ namespace Duo.Services
         {
             try
             {
-                await serviceProxy.CreateQuizAsync(quiz);
+                await serviceProxy.CreateQuizAsync(quiz).ConfigureAwait(false);
                 return quiz.Id;
             }
             catch (Exception ex)
@@ -152,12 +166,13 @@ namespace Duo.Services
         {
             try
             {
-                var exerciseIds = new List<int>();
-                foreach (var exercise in exercises)
+                var ids = new List<int>();
+                foreach (var ex in exercises)
                 {
-                    exerciseIds.Add(exercise.Id);
+                    ids.Add(ex.Id);
                 }
-                await serviceProxy.AddExercisesToQuizAsync(quizId, exerciseIds);
+
+                await serviceProxy.AddExercisesToQuizAsync(quizId, ids).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -169,7 +184,7 @@ namespace Duo.Services
         {
             try
             {
-                await serviceProxy.AddExerciseToQuizAsync(quizId, exerciseId);
+                await serviceProxy.AddExerciseToQuizAsync(quizId, exerciseId).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -181,7 +196,7 @@ namespace Duo.Services
         {
             try
             {
-                await serviceProxy.RemoveExerciseFromQuizAsync(quizId, exerciseId);
+                await serviceProxy.RemoveExerciseFromQuizAsync(quizId, exerciseId).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -193,7 +208,7 @@ namespace Duo.Services
         {
             try
             {
-                await serviceProxy.DeleteExamAsync(examId);
+                await serviceProxy.DeleteExamAsync(examId).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -205,7 +220,7 @@ namespace Duo.Services
         {
             try
             {
-                await serviceProxy.UpdateExamAsync(exam);
+                await serviceProxy.UpdateExamAsync(exam).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -217,7 +232,7 @@ namespace Duo.Services
         {
             try
             {
-                await serviceProxy.CreateExamAsync(exam);
+                await serviceProxy.CreateExamAsync(exam).ConfigureAwait(false);
                 return exam.Id;
             }
             catch (Exception ex)
@@ -230,7 +245,7 @@ namespace Duo.Services
         {
             try
             {
-                await serviceProxy.SubmitQuizAsync(submission);
+                await serviceProxy.SubmitQuizAsync(submission).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -242,7 +257,7 @@ namespace Duo.Services
         {
             try
             {
-                return await serviceProxy.GetResultAsync(quizId);
+                return await serviceProxy.GetResultAsync(quizId).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
