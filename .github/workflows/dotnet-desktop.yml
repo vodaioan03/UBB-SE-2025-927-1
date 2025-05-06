@@ -33,10 +33,6 @@ jobs:
       with:
         dotnet-version: 8.0.x
 
-    # Install Windows App SDK and any other required workloads
-    - name: Install Windows App SDK
-      run: dotnet workload install microsoft.windowsappsdk
-
     # Restore dependencies using dotnet restore (ensures all NuGet packages are restored)
     - name: Restore dependencies
       run: dotnet restore $env:Solution_Name
