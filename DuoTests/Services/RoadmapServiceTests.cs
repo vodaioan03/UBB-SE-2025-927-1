@@ -2,7 +2,6 @@ using Duo.Models.Exercises;
 using Duo.Models.Quizzes;
 using Duo.Models.Roadmap;
 using Duo.Models.Sections;
-using Duo.Repositories;
 using Duo.Services;
 using Duo.Services.Interfaces;
 using Moq;
