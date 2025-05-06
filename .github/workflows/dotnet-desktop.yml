@@ -76,9 +76,16 @@ jobs:
       uses: microsoft/setup-msbuild@v2
 
     # Install .NET Core and Workloads
-    - name: Install .NET Core Workloads
+    - name: Fix Windows App SDK path for XamlCompiler.exe
+      shell: pwsh
       run: |
-        dotnet workload install windowsdesktop
+        $SdkDir = "$Env:USERPROFILE\.nuget\packages\microsoft.windowsappsdk"
+        $SdkVersion = Get-ChildItem "$SdkDir" | Sort-Object Name -Descending | Select-Object -First 1
+        $XamlCompilerPath = Join-Path $SdkVersion.FullName "tools\net6.0\..\net472"
+        echo "##[debug]XamlCompiler path: $XamlCompilerPath"
+        $env:Path = "$XamlCompilerPath;$env:Path"
+        echo "XamlCompiler path fixed."
+
 
     # Execute all unit tests in the solution
     - name: Execute unit tests
