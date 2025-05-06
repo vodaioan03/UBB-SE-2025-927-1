@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Mvc;
 namespace Duo.Api.Controllers
 {
     [ApiController]
-    [Route("api/coins")]
     [ExcludeFromCodeCoverage]
     public class CoinsController(IRepository repository) : BaseController(repository)
     {
@@ -47,7 +46,6 @@ namespace Duo.Api.Controllers
             }
             catch (Exception ex)
             {
-                // Log the exception and return a meaningful error response
                 Console.Error.WriteLine($"Error spending coins: {ex.Message}");
                 return StatusCode(500, "An error occurred while processing the transaction.");
             }

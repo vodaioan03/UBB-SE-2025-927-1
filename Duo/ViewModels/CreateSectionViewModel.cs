@@ -55,8 +55,8 @@ namespace Duo.ViewModels
             SaveButtonCommand = new RelayCommand((_) => _ = CreateSection());
 
             RemoveQuizCommand = new RelayCommandWithParameter<Quiz>(RemoveSelectedQuiz);
-            GetQuizesAsync();
-            GetExamAsync();
+            _ = Task.Run(async () => await GetQuizesAsync());
+            _ = Task.Run(async () => await GetExamAsync());
         }
 
         public string SubjectText

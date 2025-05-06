@@ -41,8 +41,8 @@ namespace Duo.ViewModels
             DeleteQuizCommand = new RelayCommandWithParameter<Quiz>(quiz => _ = DeleteQuiz(quiz));
             OpenSelectExercisesCommand = new RelayCommand((_) => _ = OpenSelectExercises());
             RemoveExerciseFromQuizCommand = new RelayCommandWithParameter<Exercise>(exercise => _ = RemoveExerciseFromQuiz(exercise));
-            LoadExercisesAsync();
-            InitializeViewModel();
+            _ = Task.Run(async () => await LoadExercisesAsync());
+            _ = Task.Run(async () => await InitializeViewModel());
         }
 
         public Quiz SelectedQuiz
@@ -51,7 +51,7 @@ namespace Duo.ViewModels
             set
             {
                 selectedQuiz = value;
-                UpdateQuizExercises(SelectedQuiz);
+                _ = Task.Run(async () => await UpdateQuizExercises(SelectedQuiz));
                 OnPropertyChanged();
             }
         }

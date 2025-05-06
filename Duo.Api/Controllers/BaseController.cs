@@ -9,7 +9,7 @@ namespace Duo.Api.Controllers
     /// Provides common functionality and access to the repository layer.
     /// </summary>
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     [ExcludeFromCodeCoverage]
     public class BaseController : ControllerBase
     {

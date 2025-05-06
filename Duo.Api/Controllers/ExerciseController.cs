@@ -18,7 +18,6 @@ namespace Duo.Api.Controllers
     /// </remarks>
     /// <param name="repository">The repository instance for data access.</param>
     [ApiController]
-    [Route("api/[controller]")]
     [ExcludeFromCodeCoverage]
     public class ExerciseController(IRepository repository) : BaseController(repository)
     {
@@ -59,6 +58,10 @@ namespace Duo.Api.Controllers
             try
             {
                 var exercise = await repository.GetExerciseByIdAsync(id);
+                if (exercise == null)
+                {
+                    return NotFound($"Exercise with ID {id} not found.");
+                }
                 var exercises = new List<Exercise> { exercise };
                 var mergedExercises = MergeExercises(exercises);
 
@@ -88,14 +91,21 @@ namespace Duo.Api.Controllers
                 return BadRequest("Invalid quiz ID.");
             }
 
-            var quiz = await repository.GetQuizByIdAsync(quizId);
-            if (quiz == null)
+            try
             {
-                return NotFound();
-            }
+                var quiz = await repository.GetQuizByIdAsync(quizId);
+                if (quiz == null)
+                {
+                    return NotFound();
+                }
 
-            var exercises = quiz.Exercises?.ToList() ?? [];
-            return Ok(exercises);
+                var exercises = quiz.Exercises?.ToList() ?? [];
+                return Ok(exercises);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
         }
 
         /// <summary>
@@ -111,14 +121,21 @@ namespace Duo.Api.Controllers
                 return BadRequest("Invalid exam ID.");
             }
 
-            var exam = await repository.GetExamByIdAsync(examId);
-            if (exam == null)
+            try
             {
-                return NotFound();
-            }
+                var exam = await repository.GetExamByIdAsync(examId);
+                if (exam == null)
+                {
+                    return NotFound();
+                }
 
-            var exercises = exam.Exercises?.ToList() ?? [];
-            return Ok(exercises);
+                var exercises = exam.Exercises?.ToList() ?? [];
+                return Ok(exercises);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
         }
 
         /// <summary>
@@ -134,17 +151,24 @@ namespace Duo.Api.Controllers
                 return BadRequest("Invalid payload.");
             }
 
-            var exercise = new MultipleChoiceExercise
+            try
             {
-                Question = dto.Question,
-                Difficulty = dto.Difficulty,
-            };
+                var exercise = new MultipleChoiceExercise
+                {
+                    Question = dto.Question,
+                    Difficulty = dto.Difficulty,
+                };
 
-            await repository.AddExerciseAsync(exercise);
-            return CreatedAtRoute(
-              routeName: "GetExerciseById",
-              routeValues: new { id = exercise.ExerciseId },
-              value: exercise);
+                await repository.AddExerciseAsync(exercise);
+                return CreatedAtRoute(
+                  routeName: "GetExerciseById",
+                  routeValues: new { id = exercise.ExerciseId },
+                  value: exercise);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
         }
 
         /// <summary>
@@ -160,14 +184,21 @@ namespace Duo.Api.Controllers
                 return BadRequest("Invalid exercise ID.");
             }
 
-            var existingExercise = await repository.GetExerciseByIdAsync(id);
-            if (existingExercise == null)
+            try
             {
-                return NotFound();
-            }
+                var existingExercise = await repository.GetExerciseByIdAsync(id);
+                if (existingExercise == null)
+                {
+                    return NotFound();
+                }
 
-            await repository.DeleteExerciseAsync(id);
-            return NoContent();
+                await repository.DeleteExerciseAsync(id);
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
         }
 
         /// <summary>

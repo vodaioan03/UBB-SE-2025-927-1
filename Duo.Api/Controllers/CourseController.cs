@@ -17,7 +17,6 @@ namespace Duo.Api.Controllers
     /// </remarks>
     /// <param name="repository">The repository instance to be used for data access.</param>
     [ApiController]
-    [Route("course")]
     [ExcludeFromCodeCoverage]
     public class CourseController(IRepository repository) : BaseController(repository)
     {
