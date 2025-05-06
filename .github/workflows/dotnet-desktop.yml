@@ -7,7 +7,8 @@ on:
     branches: [ "dev" ]
 
 jobs:
-  build:
+  build-test:
+
     strategy:
       matrix:
         configuration: [Debug, Release]
@@ -16,7 +17,7 @@ jobs:
 
     env:
       Solution_Name: Duo/Duo.sln
-      Test_Project_Path: Duo.Api.Tests/Duo.Api.Tests.csproj
+      Test_Project_Path: DuoTests/DuoTests.csproj
 
     steps:
     - name: Checkout code
@@ -36,15 +37,7 @@ jobs:
       run: dotnet restore $env:Solution_Name
 
     - name: Build solution
-      run: dotnet build $env:Solution_Name --configuration ${{ matrix.configuration }} --no-restore
+      run: dotnet build $env:Solution_Name --configuration ${{ matrix.configuration }} --runtime win-x64 --no-restore -p:PlatformTarget=x64
 
-    - name: Run unit tests
-      run: dotnet test $env:Test_Project_Path --configuration ${{ matrix.configuration }}
-
-    # OPTIONAL: Restore & package Windows Application Packaging project (.wapproj)
-    # Uncomment and configure below if using MSIX/app packaging
-    # - name: Restore app for packaging
-    #   run: msbuild $env:Solution_Name /t:Restore /p:Configuration=${{ matrix.configuration }}
-    #
-    # - name: Create app package (if using .wapproj)
-    #   run: msbuild path/to/your/package.wapproj /p:Configuration=${{ matrix.configuration }} /p:AppxBundle=Always
+    - name: Run tests
+      run: dotnet test $env:Test_Project_Path --configuration ${{ matrix.configuration }} --no-build --verbosity normal
