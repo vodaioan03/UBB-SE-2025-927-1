@@ -26,8 +26,8 @@ jobs:
       with:
         dotnet-version: 8.0.x
     - name: Restore dependencies
-      run: dotnet restore $env:Project_Path
+      run: dotnet restore $Project_Path
     - name: Build
-      run: dotnet build $env:Project_Path --no-restore
+      run: dotnet build $Project_Path --no-restore
     - name: Test
-      run: dotnet test $env:Test_Project_Path --no-build --verbosity normal
+      run: dotnet test $Test_Project_Path --no-build --verbosity normal
