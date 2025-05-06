@@ -9,7 +9,6 @@ using System.Windows.Input;
 using Duo.Commands;
 using Duo.Models;
 using Duo.Models.Exercises;
-using Duo.Repositories;
 using Duo.Services;
 using Duo.ViewModels.Base;
 

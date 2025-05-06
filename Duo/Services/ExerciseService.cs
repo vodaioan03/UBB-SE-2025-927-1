@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Duo.Models.Exercises;
 using Duo.Models.Quizzes;
-using Duo.Repositories;
 
 namespace Duo.Services
 {

@@ -2,7 +2,6 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using Duo.Models;
-using Duo.Repository;
 using Duo.Services;
 using Duo.ViewModels;
 using Microsoft.UI.Xaml;

@@ -21,7 +21,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Duo.Data;
 using Duo.ViewModels.ExerciseViewModels;
 using Duo.Services;
-using Duo.Repositories;
 using Duo.ViewModels;
 using Duo.ViewModels.Roadmap;
 using Duo.Helpers;
@@ -60,8 +59,6 @@ namespace Duo
             services.AddSingleton<IConfiguration>(configuration);
             services.AddSingleton<DatabaseConnection>();
 
-            services.AddSingleton<IUserRepository, UserRepository>();
-
             // User
             services.AddSingleton<IUserServiceProxy>(sp =>
             {
@@ -86,9 +83,6 @@ namespace Duo
                 return new ExerciseService(proxy);
             });
 
-            services.AddSingleton<IExamRepository, ExamRepository>();
-            services.AddSingleton<IQuizRepository, QuizRepository>();
-
             // Quiz
             services.AddSingleton<QuizServiceProxy>(sp =>
             {
@@ -101,8 +95,6 @@ namespace Duo
                 return new QuizService(proxy);
             });
 
-            services.AddSingleton<ISectionRepository, SectionRepository>();
-
             // Section
             services.AddSingleton<SectionServiceProxy>(sp =>
             {
@@ -114,8 +106,6 @@ namespace Duo
                 var proxy = sp.GetRequiredService<SectionServiceProxy>();
                 return new SectionService(proxy);
             });
-
-            services.AddSingleton<IRoadmapRepository, RoadmapRepository>();
 
             // Roadmap
             services.AddSingleton<RoadmapServiceProxy>(
@@ -132,12 +122,6 @@ namespace Duo
                 });
 
             services.AddSingleton<IExerciseViewFactory, ExerciseViewFactory>();
-            services.AddSingleton<IUserRepository, UserRepository>();
-            services.AddSingleton<IExerciseRepository, ExerciseRepository>();
-            services.AddSingleton<IExamRepository, ExamRepository>();
-            services.AddSingleton<IQuizRepository, QuizRepository>();
-            services.AddSingleton<ISectionRepository, SectionRepository>();
-            services.AddSingleton<IRoadmapRepository, RoadmapRepository>();
 
             services.AddTransient<FillInTheBlankExerciseViewModel>();
             services.AddTransient<MultipleChoiceExerciseViewModel>();
