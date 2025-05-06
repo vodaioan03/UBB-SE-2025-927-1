@@ -7,45 +7,36 @@ on:
     branches: [ "dev" ]
 
 jobs:
-
   build:
-
     strategy:
       matrix:
         configuration: [Debug, Release]
+        platform: [x64]
 
-    runs-on: windows-latest  # For a list of available runner types, refer to
-                             # https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idruns-on
+    runs-on: windows-latest
 
     env:
-      Solution_Name: Duo/Duo.sln                       # Replace with your solution name, i.e. MyWpfApp.sln.
-      Test_Project_Path: DuoTests/DuoTests.csproj      # Replace with the path to your test project, i.e. MyWpfApp.Tests\MyWpfApp.Tests.csproj.
+      Solution_Name: Duo/Duo.sln
+      Test_Project_Path: DuoTests/DuoTests.csproj
 
     steps:
-    - name: Checkout code
+    - name: Checkout
       uses: actions/checkout@v4
       with:
         fetch-depth: 0
 
-    # Set up .NET SDK
-    - name: Setup .NET SDK
+    - name: Install .NET Core
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 8.0.x
 
-    # Restore dependencies using dotnet restore (ensures all NuGet packages are restored)
-    - name: Restore dependencies
-      run: dotnet restore $env:Solution_Name
+    - name: Setup MSBuild.exe
+      uses: microsoft/setup-msbuild@v2
 
-    # Clean the build output directory (optional)
-    - name: Clean the build
-      run: dotnet clean $env:Solution_Name --configuration ${{ matrix.configuration }}
+    - name: Restore the application
+      run: msbuild $env:Solution_Name /t:Restore /p:Configuration=$env:Configuration /p:Platform=${{ matrix.platform }}
+      env:
+        Configuration: ${{ matrix.configuration }}
 
-    # Build the project
-    - name: Build the project
-      run: dotnet build $env:Solution_Name --configuration ${{ matrix.configuration }}
-
-    # Execute all unit tests in the solution
-    - name: Run unit tests
-      run: dotnet test $env:Test_Project_Path --configuration ${{ matrix.configuration }}
-
+    - name: Execute unit tests
+      run: dotnet test $env:Test_Project_Path
