@@ -74,6 +74,12 @@ jobs:
     # Add  MSBuild to the PATH: https://github.com/microsoft/setup-msbuild
     - name: Setup MSBuild.exe
       uses: microsoft/setup-msbuild@v2
+      
+    # Install .NET Core and Workloads
+    - name: Install .NET Core Workloads
+      run: |
+        dotnet workload install microsoft-net-sdk-windowsdesktop
+        dotnet workload install microsoft-windowsapp-sdk
 
     # Execute all unit tests in the solution
     - name: Execute unit tests
