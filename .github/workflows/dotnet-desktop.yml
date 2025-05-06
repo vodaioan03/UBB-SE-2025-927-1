@@ -78,7 +78,7 @@ jobs:
     # Install .NET Core and Workloads
     - name: Install .NET Core Workloads
       run: |
-        	dotnet workload install windowsdesktop
+        dotnet workload install windowsdesktop
 
     # Execute all unit tests in the solution
     - name: Execute unit tests
