@@ -44,8 +44,8 @@ namespace Duo.ViewModels
                 return Task.CompletedTask;
             });
             RemoveExerciseFromQuizCommand = new RelayCommandWithParameter<Exercise>(exercise => _ = RemoveExerciseFromExam(exercise));
-            LoadExercisesAsync();
-            InitializeViewModel();
+            _ = Task.Run(async () => await LoadExercisesAsync());
+            _ = Task.Run(async () => await InitializeViewModel());
         }
 
         public Exam SelectedExam
@@ -54,7 +54,7 @@ namespace Duo.ViewModels
             set
             {
                 selectedExam = value;
-                UpdateExamExercises(SelectedExam);
+                _ = Task.Run(async () => await UpdateExamExercises(SelectedExam));
                 OnPropertyChanged();
             }
         }

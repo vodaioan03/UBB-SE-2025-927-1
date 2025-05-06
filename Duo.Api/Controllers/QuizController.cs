@@ -20,7 +20,6 @@ namespace Duo.Api.Controllers
     /// </remarks>
     /// <param name="repository">The repository instance for data access.</param>
     [ApiController]
-    [Route("quiz")]
     [ExcludeFromCodeCoverage]
     public class QuizController(IRepository repository) : BaseController(repository)
     {
@@ -32,8 +31,15 @@ namespace Duo.Api.Controllers
         [HttpPost("add")]
         public async Task<IActionResult> AddQuiz([FromForm] Quiz quiz)
         {
-            await repository.AddQuizAsync(quiz);
-            return Ok(quiz);
+            try
+            {
+                await repository.AddQuizAsync(quiz);
+                return Ok(quiz);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
         }
 
         /// <summary>
@@ -42,13 +48,20 @@ namespace Duo.Api.Controllers
         [HttpGet("get")]
         public async Task<IActionResult> GetQuiz([FromQuery] int id)
         {
-            var quiz = await repository.GetQuizByIdAsync(id);
-            if (quiz == null)
+            try
             {
-                return NotFound();
-            }
+                var quiz = await repository.GetQuizByIdAsync(id);
+                if (quiz == null)
+                {
+                    return NotFound();
+                }
 
-            return Ok(quiz);
+                return Ok(quiz);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
         }
 
         /// <summary>
@@ -57,8 +70,15 @@ namespace Duo.Api.Controllers
         [HttpGet("list")]
         public async Task<IActionResult> ListQuizzes()
         {
-            var quizzes = await repository.GetQuizzesFromDbAsync();
-            return Ok(quizzes);
+            try
+            {
+                var quizzes = await repository.GetQuizzesFromDbAsync();
+                return Ok(quizzes);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
         }
 
         /// <summary>
@@ -67,14 +87,21 @@ namespace Duo.Api.Controllers
         [HttpPut("update")]
         public async Task<IActionResult> UpdateQuiz([FromForm] Quiz updatedQuiz)
         {
-            var quiz = await repository.GetQuizByIdAsync(updatedQuiz.Id);
-            if (quiz == null)
+            try
             {
-                return NotFound();
-            }
+                var quiz = await repository.GetQuizByIdAsync(updatedQuiz.Id);
+                if (quiz == null)
+                {
+                    return NotFound();
+                }
 
-            await repository.UpdateQuizAsync(updatedQuiz);
-            return Ok(updatedQuiz);
+                await repository.UpdateQuizAsync(updatedQuiz);
+                return Ok(updatedQuiz);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
         }
 
         /// <summary>
@@ -83,14 +110,21 @@ namespace Duo.Api.Controllers
         [HttpDelete("delete")]
         public async Task<IActionResult> DeleteQuiz([FromQuery] int id)
         {
-            var quiz = await repository.GetQuizByIdAsync(id);
-            if (quiz == null)
+            try
             {
-                return NotFound();
-            }
+                var quiz = await repository.GetQuizByIdAsync(id);
+                if (quiz == null)
+                {
+                    return NotFound();
+                }
 
-            await repository.DeleteQuizAsync(id);
-            return Ok();
+                await repository.DeleteQuizAsync(id);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
         }
 
         /// <summary>
@@ -99,8 +133,15 @@ namespace Duo.Api.Controllers
         [HttpGet("get-all-section")]
         public async Task<IActionResult> GetAllQuizzesFromSection([FromQuery] int sectionId)
         {
-            var quizzes = await repository.GetAllQuizzesFromSectionAsync(sectionId);
-            return Ok(quizzes);
+            try
+            {
+                var quizzes = await repository.GetAllQuizzesFromSectionAsync(sectionId);
+                return Ok(quizzes);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
         }
 
         /// <summary>
@@ -109,8 +150,15 @@ namespace Duo.Api.Controllers
         [HttpGet("count-from-section")]
         public async Task<IActionResult> CountQuizzesFromSection([FromQuery] int sectionId)
         {
-            var count = await repository.CountQuizzesFromSectionAsync(sectionId);
-            return Ok(count);
+            try
+            {
+                var count = await repository.CountQuizzesFromSectionAsync(sectionId);
+                return Ok(count);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
         }
 
         /// <summary>
@@ -119,8 +167,15 @@ namespace Duo.Api.Controllers
         [HttpGet("last-order")]
         public async Task<IActionResult> GetLastOrderNumberFromSection([FromQuery] int sectionId)
         {
-            var lastOrder = await repository.GetLastOrderNumberFromSectionAsync(sectionId);
-            return Ok(lastOrder);
+            try
+            {
+                var lastOrder = await repository.GetLastOrderNumberFromSectionAsync(sectionId);
+                return Ok(lastOrder);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
         }
 
         /// <summary>
@@ -129,8 +184,15 @@ namespace Duo.Api.Controllers
         [HttpPost("add-exercises")]
         public async Task<IActionResult> AddExercisesToQuiz([FromForm] int quizId, [FromForm] List<int> exercises)
         {
-            await repository.AddExercisesToQuizAsync(quizId, exercises);
-            return Ok();
+            try
+            {
+                await repository.AddExercisesToQuizAsync(quizId, exercises);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
         }
 
         /// <summary>
@@ -139,8 +201,15 @@ namespace Duo.Api.Controllers
         [HttpPost("add-exercise")]
         public async Task<IActionResult> AddExerciseToQuiz([FromForm] int quizId, [FromForm] int exerciseId)
         {
-            await repository.AddExerciseToQuizAsync(quizId, exerciseId);
-            return Ok();
+            try
+            {
+                await repository.AddExerciseToQuizAsync(quizId, exerciseId);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
         }
 
         /// <summary>
@@ -149,8 +218,15 @@ namespace Duo.Api.Controllers
         [HttpDelete("remove-exercise")]
         public async Task<IActionResult> RemoveExerciseFromQuiz([FromQuery] int quizId, [FromQuery] int exerciseId)
         {
-            await repository.RemoveExerciseFromQuizAsync(quizId, exerciseId);
-            return Ok();
+            try
+            {
+                await repository.RemoveExerciseFromQuizAsync(quizId, exerciseId);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
         }
 
         /// <summary>
@@ -159,34 +235,41 @@ namespace Duo.Api.Controllers
         [HttpPost("submit")]
         public async Task<IActionResult> SubmitQuiz([FromBody] QuizSubmission submission)
         {
-            var quiz = await repository.GetQuizByIdAsync(submission.QuizId);
-            if (quiz == null)
+            try
             {
-                return NotFound();
-            }
-
-            var submissionEntity = new QuizSubmissionEntity
-            {
-                QuizId = submission.QuizId,
-                StartTime = DateTime.Now.AddMinutes(-5),
-                EndTime = DateTime.Now,
-            };
-
-            foreach (var answer in submission.Answers)
-            {
-                var question = quiz.Exercises.FirstOrDefault(q => q.ExerciseId == answer.QuestionId);
-                if (question != null)
+                var quiz = await repository.GetQuizByIdAsync(submission.QuizId);
+                if (quiz == null)
                 {
-                    submissionEntity.Answers.Add(new AnswerSubmissionEntity
-                    {
-                        QuestionId = answer.QuestionId,
-                        IsCorrect = CheckIfCorrect(question, answer)
-                    });
+                    return NotFound();
                 }
-            }
 
-            await repository.SaveQuizSubmissionAsync(submissionEntity);
-            return Ok();
+                var submissionEntity = new QuizSubmissionEntity
+                {
+                    QuizId = submission.QuizId,
+                    StartTime = DateTime.Now.AddMinutes(-5),
+                    EndTime = DateTime.Now,
+                };
+
+                foreach (var answer in submission.Answers)
+                {
+                    var question = quiz.Exercises.FirstOrDefault(q => q.ExerciseId == answer.QuestionId);
+                    if (question != null)
+                    {
+                        submissionEntity.Answers.Add(new AnswerSubmissionEntity
+                        {
+                            QuestionId = answer.QuestionId,
+                            IsCorrect = CheckIfCorrect(question, answer)
+                        });
+                    }
+                }
+
+                await repository.SaveQuizSubmissionAsync(submissionEntity);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
         }
 
         /// <summary>
@@ -240,21 +323,28 @@ namespace Duo.Api.Controllers
         [HttpGet("get-result")]
         public async Task<IActionResult> GetQuizResult([FromQuery] int quizId)
         {
-            var submission = await repository.GetSubmissionByQuizIdAsync(quizId);
-            if (submission == null)
+            try
             {
-                return NotFound();
+                var submission = await repository.GetSubmissionByQuizIdAsync(quizId);
+                if (submission == null)
+                {
+                    return NotFound();
+                }
+
+                var result = new QuizResult
+                {
+                    QuizId = quizId,
+                    TotalQuestions = submission.Answers.Count,
+                    CorrectAnswers = submission.Answers.Count(a => a.IsCorrect),
+                    TimeTaken = submission.EndTime - submission.StartTime
+                };
+
+                return Ok(result);
             }
-
-            var result = new QuizResult
+            catch (Exception ex)
             {
-                QuizId = quizId,
-                TotalQuestions = submission.Answers.Count,
-                CorrectAnswers = submission.Answers.Count(a => a.IsCorrect),
-                TimeTaken = submission.EndTime - submission.StartTime
-            };
-
-            return Ok(result);
+                return StatusCode(500, ex.Message);
+            }
         }
 
         #endregion

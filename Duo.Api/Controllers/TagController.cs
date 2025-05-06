@@ -17,7 +17,6 @@ namespace Duo.Api.Controllers
     /// </remarks>
     /// <param name="repository">The repository instance for data access.</param>
     [ApiController]
-    [Route("tag")]
     [ExcludeFromCodeCoverage]
     public class TagController(IRepository repository) : BaseController(repository)
     {
@@ -35,8 +34,15 @@ namespace Duo.Api.Controllers
         [HttpPost("add")]
         public async Task<IActionResult> AddTag([FromForm] Tag tag)
         {
-            await repository.AddTagAsync(tag);
-            return Ok(tag);
+            try
+            {
+                await repository.AddTagAsync(tag);
+                return Ok(tag);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
         }
 
         /// <summary>
@@ -47,13 +53,20 @@ namespace Duo.Api.Controllers
         [HttpGet("get")]
         public async Task<IActionResult> GetTag([FromQuery] int id)
         {
-            var tag = await repository.GetTagByIdAsync(id);
-            if (tag == null)
+            try
             {
-                return NotFound();
-            }
+                var tag = await repository.GetTagByIdAsync(id);
+                if (tag == null)
+                {
+                    return NotFound();
+                }
 
-            return Ok(tag);
+                return Ok(tag);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
         }
 
         /// <summary>
@@ -63,8 +76,15 @@ namespace Duo.Api.Controllers
         [HttpGet("list")]
         public async Task<IActionResult> ListTags()
         {
-            var tags = await repository.GetTagsFromDbAsync();
-            return Ok(tags);
+            try
+            {
+                var tags = await repository.GetTagsFromDbAsync();
+                return Ok(tags);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
         }
 
         /// <summary>

@@ -18,7 +18,6 @@ namespace Duo.Api.Controllers
     /// </remarks>
     /// <param name="repository">The repository instance for data access.</param>
     [ApiController]
-    [Route("user")]
     [ExcludeFromCodeCoverage]
     public class UserController(IRepository repository) : BaseController(repository)
     {
@@ -61,18 +60,24 @@ namespace Duo.Api.Controllers
                 LastLoginTime = DateTime.UtcNow
             };
 
-            await repository.AddUserAsync(newUser);
-
-            return CreatedAtAction(nameof(GetUserById), new { id = user.UserId }, new
+            try
             {
-                user.UserId,
-                user.Username,
-                user.Email,
-                user.CoinBalance,
-                user.NumberOfCompletedSections,
-                user.NumberOfCompletedQuizzesInSection,
-                user.LastLoginTime
-            });
+                await repository.AddUserAsync(newUser);
+                return CreatedAtAction(nameof(GetUserById), new { id = user.UserId }, new
+                {
+                    user.UserId,
+                    user.Username,
+                    user.Email,
+                    user.CoinBalance,
+                    user.NumberOfCompletedSections,
+                    user.NumberOfCompletedQuizzesInSection,
+                    user.LastLoginTime
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
         }
 
         /// <summary>
@@ -102,11 +107,16 @@ namespace Duo.Api.Controllers
                 return Unauthorized("Invalid email.");
             }
 
-            // Log in time
             user.LastLoginTime = DateTime.UtcNow;
-            await this.repository.UpdateUserAsync(user);
-
-            return Ok(user);
+            try
+            {
+                await this.repository.UpdateUserAsync(user);
+                return Ok(user);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
         }
 
         /// <summary>
@@ -117,14 +127,20 @@ namespace Duo.Api.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetUserById(int id)
         {
-            var user = await repository.GetUserByIdAsync(id);
-
-            if (user == null)
+            try
             {
-                return NotFound("User not found.");
-            }
+                var user = await repository.GetUserByIdAsync(id);
 
-            return Ok(user);
+                if (user == null)
+                {
+                    return NotFound("User not found.");
+                }
+                return Ok(user);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
         }
 
         /// <summary>
@@ -135,27 +151,34 @@ namespace Duo.Api.Controllers
         [HttpPut("update")]
         public async Task<IActionResult> Update([FromBody] User user)
         {
-            if (user == null || user.UserId <= 0)
+            try
             {
-                return BadRequest("Valid user data is required.");
+                if (user == null || user.UserId <= 0)
+                {
+                    return BadRequest("Valid user data is required.");
+                }
+
+                var existingUser = await repository.GetUserByIdAsync(user.UserId);
+
+                if (existingUser == null)
+                {
+                    return NotFound("User not found.");
+                }
+
+                // Update user properties
+                existingUser.Username = user.Username;
+                existingUser.Email = user.Email;
+                existingUser.NumberOfCompletedSections = user.NumberOfCompletedSections;
+                existingUser.NumberOfCompletedQuizzesInSection = user.NumberOfCompletedQuizzesInSection;
+
+                await repository.UpdateUserAsync(existingUser);
+
+                return Ok(new { message = "User updated successfully." });
             }
-
-            var existingUser = await repository.GetUserByIdAsync(user.UserId);
-
-            if (existingUser == null)
+            catch (Exception ex)
             {
-                return NotFound("User not found.");
+                return StatusCode(500, ex.Message);
             }
-
-            // Update user properties
-            existingUser.Username = user.Username;
-            existingUser.Email = user.Email;
-            existingUser.NumberOfCompletedSections = user.NumberOfCompletedSections;
-            existingUser.NumberOfCompletedQuizzesInSection = user.NumberOfCompletedQuizzesInSection;
-
-            await repository.UpdateUserAsync(existingUser);
-
-            return Ok(new { message = "User updated successfully." });
         }
 
         /// <summary>

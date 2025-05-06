@@ -19,7 +19,6 @@ namespace Duo.Api.Controllers
     /// </remarks>
     /// <param name="repository">The repository instance for data access.</param>
     [ApiController]
-    [Route("exam")]
     [ExcludeFromCodeCoverage]
     public class ExamController(IRepository repository) : BaseController(repository)
     {
@@ -33,8 +32,15 @@ namespace Duo.Api.Controllers
         [HttpPost("add")]
         public async Task<IActionResult> AddExam([FromForm] Exam exam)
         {
-            await repository.AddExamAsync(exam);
-            return Ok(exam);
+            try
+            {
+                await repository.AddExamAsync(exam);
+                return Ok(exam);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
         }
 
         /// <summary>
@@ -45,13 +51,19 @@ namespace Duo.Api.Controllers
         [HttpGet("get")]
         public async Task<IActionResult> GetExam([FromQuery] int id)
         {
-            var exam = await repository.GetExamByIdAsync(id);
-            if (exam == null)
+            try
             {
-                return NotFound();
+                var exam = await repository.GetExamByIdAsync(id);
+                if (exam == null)
+                {
+                    return NotFound();
+                }
+                return Ok(exam);
             }
-
-            return Ok(exam);
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
         }
 
         /// <summary>
@@ -61,8 +73,15 @@ namespace Duo.Api.Controllers
         [HttpGet("list")]
         public async Task<IActionResult> ListExams()
         {
-            var exams = await repository.GetExamsFromDbAsync();
-            return Ok(exams);
+            try
+            {
+                var exams = await repository.GetExamsFromDbAsync();
+                return Ok(exams);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
         }
 
         /// <summary>
@@ -73,14 +92,21 @@ namespace Duo.Api.Controllers
         [HttpPut("update")]
         public async Task<IActionResult> UpdateExam([FromForm] Exam updatedExam)
         {
-            var exam = await repository.GetExamByIdAsync(updatedExam.Id);
-            if (exam == null)
+            try
             {
-                return NotFound();
-            }
+                var exam = await repository.GetExamByIdAsync(updatedExam.Id);
+                if (exam == null)
+                {
+                    return NotFound();
+                }
 
-            await repository.UpdateExamAsync(updatedExam);
-            return Ok(updatedExam);
+                await repository.UpdateExamAsync(updatedExam);
+                return Ok(updatedExam);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
         }
 
         /// <summary>
@@ -91,14 +117,21 @@ namespace Duo.Api.Controllers
         [HttpDelete("delete")]
         public async Task<IActionResult> DeleteExam([FromQuery] int id)
         {
-            var exam = await repository.GetExamByIdAsync(id);
-            if (exam == null)
+            try
             {
-                return NotFound();
-            }
+                var exam = await repository.GetExamByIdAsync(id);
+                if (exam == null)
+                {
+                    return NotFound();
+                }
 
-            await repository.DeleteExamAsync(id);
-            return Ok();
+                await repository.DeleteExamAsync(id);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
         }
 
         /// <summary>
@@ -109,13 +142,20 @@ namespace Duo.Api.Controllers
         [HttpGet("get-from-section")]
         public async Task<IActionResult> GetExamFromSection([FromQuery] int sectionId)
         {
-            var exam = await repository.GetExamFromSectionAsync(sectionId);
-            if (exam == null)
+            try
             {
-                return NotFound();
-            }
+                var exam = await repository.GetExamFromSectionAsync(sectionId);
+                if (exam == null)
+                {
+                    return NotFound();
+                }
 
-            return Ok(exam);
+                return Ok(exam);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
         }
 
         /// <summary>
@@ -125,8 +165,15 @@ namespace Duo.Api.Controllers
         [HttpGet("get-available")]
         public async Task<IActionResult> GetAvailableExams()
         {
-            var exams = await repository.GetAvailableExamsAsync();
-            return Ok(exams);
+            try
+            {
+                var exams = await repository.GetAvailableExamsAsync();
+                return Ok(exams);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
         }
 
         #endregion

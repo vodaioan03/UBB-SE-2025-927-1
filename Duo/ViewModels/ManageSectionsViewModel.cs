@@ -37,7 +37,7 @@ namespace Duo.ViewModels
             {
                 Debug.WriteLine(ex);
             }
-            LoadSectionsAsync();
+            _ = Task.Run(async () => await LoadSectionsAsync());
             DeleteSectionCommand = new RelayCommandWithParameter<Section>(section => _ = DeleteSection(section));
         }
         public Section SelectedSection
@@ -46,7 +46,7 @@ namespace Duo.ViewModels
             set
             {
                 selectedSection = value;
-                UpdateSectionQuizes(SelectedSection);
+                _ = Task.Run(async () => await UpdateSectionQuizes(SelectedSection));
                 OnPropertyChanged();
             }
         }

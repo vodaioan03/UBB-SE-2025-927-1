@@ -49,7 +49,7 @@ namespace Duo.ViewModels
             {
                 Debug.WriteLine(ex);
             }
-            LoadExercisesAsync();
+            _ = Task.Run(async () => await LoadExercisesAsync());
             SaveButtonCommand = new RelayCommand((_) => _ = CreateQuiz());
 
             OpenSelectExercisesCommand = new RelayCommand(async (_) => await Task.Run(() => OpenSelectExercises()));
