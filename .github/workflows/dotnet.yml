@@ -26,7 +26,7 @@ jobs:
       with:
         dotnet-version: 8.0.x
     - name: Restore dependencies
-      run: dotnet restore $env:Solution_Name
+      run: dotnet restore $env:Project_Path
     - name: Build
       run: dotnet build $env:Project_Path --no-restore
     - name: Test
