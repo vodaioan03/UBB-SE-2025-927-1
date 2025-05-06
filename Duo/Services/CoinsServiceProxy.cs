@@ -13,7 +13,9 @@ namespace Duo.Services
     /// Initializes a new instance of the <see cref="CoinsServiceProxy"/> class.
     /// </remarks>
     /// <param name="httpClient">The HTTP client used to send requests to the Coins API.</param>
+#pragma warning disable SA1009 // Closing parenthesis should be spaced correctly
     public class CoinsServiceProxy(HttpClient httpClient) : ICoinsServiceProxy
+#pragma warning restore SA1009 // Closing parenthesis should be spaced correctly
     {
         private readonly HttpClient httpClient = httpClient;
         private readonly string url = "https://localhost:7174/";
