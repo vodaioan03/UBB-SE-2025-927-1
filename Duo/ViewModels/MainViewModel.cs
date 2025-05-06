@@ -31,7 +31,23 @@ namespace Duo.ViewModels
         /// <summary>
         /// Observable collection of courses to be displayed.
         /// </summary>
-        public ObservableCollection<Course> DisplayedCourses { get; private set; }
+        private ObservableCollection<Course> displayedCourses;
+        public ObservableCollection<Course> DisplayedCourses
+        {
+            get
+            {
+                return displayedCourses;
+            }
+
+            set
+            {
+                if (displayedCourses != value)
+                {
+                    displayedCourses = value;
+                    OnPropertyChanged(nameof(DisplayedCourses));
+                }
+            }
+        }
 
         /// <summary>
         /// Observable collection of available tags.
@@ -159,7 +175,8 @@ namespace Duo.ViewModels
 
         private async void InitializeAsync()
         {
-            DisplayedCourses = new ObservableCollection<Course>(await this.courseService.GetCoursesAsync());
+            var courseList = await this.courseService.GetCoursesAsync();
+            DisplayedCourses = new ObservableCollection<Course>(courseList);
             AvailableTags = new ObservableCollection<Tag>(await this.courseService.GetTagsAsync());
             foreach (var tag in AvailableTags)
             {
