@@ -46,12 +46,12 @@ namespace Duo.Services
 
         public async Task<List<Module>> GetModulesByCourseId(int courseId)
         {
-            return await httpClient.GetFromJsonAsync<List<Module>>($"{url}/api/module/list?courseId={courseId}");
+            return await httpClient.GetFromJsonAsync<List<Module>>($"{url}/api/module/list/course/{courseId}");
         }
 
         public async Task<Module> GetModule(int moduleId)
         {
-            return await httpClient.GetFromJsonAsync<Module>($"{url}/api/module/get?id={moduleId}");
+            return await httpClient.GetFromJsonAsync<Module>($"{url}/api/module/{moduleId}");
         }
 
         public async Task<bool> IsModuleOpen(int userId, int moduleId)
@@ -66,7 +66,7 @@ namespace Duo.Services
 
         public async Task<bool> IsUserEnrolled(int userId, int courseId)
         {
-            return await httpClient.GetFromJsonAsync<bool>($"{url}/api/course/isEnrolled?userId={userId}&courseId={courseId}");
+            return await httpClient.GetFromJsonAsync<bool>($"{url}/api/course/is-enrolled?userId={userId}&courseId={courseId}");
         }
 
         public async Task CompleteModule(int userId, int moduleId)
@@ -91,7 +91,7 @@ namespace Duo.Services
 
         public async Task<int> GetTimeSpent(int userId, int courseId)
         {
-            return await httpClient.GetFromJsonAsync<int>($"{url}/api/course/timeSpent?userId={userId}&courseId={courseId}");
+            return await httpClient.GetFromJsonAsync<int>($"{url}/api/course/get-time?userId={userId}&courseId={courseId}");
         }
 
         public async Task ClickModuleImage(int userId, int moduleId)
