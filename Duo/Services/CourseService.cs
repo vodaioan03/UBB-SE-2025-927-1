@@ -63,7 +63,6 @@ namespace Duo.Services
         public async Task<List<Module>> GetModulesAsync(int courseId)
         {
             return await courseServiceProxy.GetModulesByCourseId(courseId);
-
         }
 
         /// <summary>
