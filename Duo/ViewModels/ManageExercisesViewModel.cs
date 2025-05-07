@@ -70,7 +70,7 @@ namespace Duo.ViewModels
             Debug.WriteLine(exercise);
             try
             {
-                await exerciseService.DeleteExercise(exercise.Id);
+                await exerciseService.DeleteExercise(exercise.ExerciseId);
                 await LoadExercisesAsync();
             }
             catch (Exception ex)

@@ -206,12 +206,12 @@ namespace Duo.ViewModels
                 if (QuizId != -1)
                 {
                     Exercises = await exerciseService.GetAllExercisesFromQuiz(QuizId);
-                    CurrentQuiz.ExerciseList = Exercises;
+                    CurrentQuiz.Exercises = Exercises;
                 }
                 else
                 {
                     Exercises = await exerciseService.GetAllExercisesFromExam(ExamId);
-                    CurrentExam.ExerciseList = Exercises;
+                    CurrentExam.Exercises = Exercises;
                 }
 
                 CurrentExerciseIndex = 0;

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -27,10 +28,16 @@ namespace Duo.Views.Pages
         public CreateExamPage()
         {
             this.InitializeComponent();
+            this.Loaded += CreateExamPage_Loaded;
+        }
+
+        private void CreateExamPage_Loaded(object sender, RoutedEventArgs e)
+        {
             ViewModel.ShowListViewModal += ViewModel_openSelectExercises;
             ViewModel.RequestGoBack += ViewModel_RequestGoBack;
             ViewModel.ShowErrorMessageRequested += ViewModel_ShowErrorMessageRequested;
         }
+
         private async void ViewModel_ShowErrorMessageRequested(object sender, (string Title, string Message) e)
         {
             await ShowErrorMessage(e.Title, e.Message);
@@ -66,6 +73,16 @@ namespace Duo.Views.Pages
                 DefaultButton = ContentDialogButton.Primary,
                 XamlRoot = this.XamlRoot
             };
+
+            if (this.XamlRoot is not null)
+            {
+                dialog.XamlRoot = this.XamlRoot;
+            }
+            else
+            {
+                Debug.WriteLine("XamlRoot is null. Cannot show dialog.");
+                return;
+            }
 
             var listView = new ListView
             {

@@ -7,7 +7,7 @@ public abstract class BaseQuiz
 {
     public int Id { get; set; }
     public int? SectionId { get; set; }
-    public List<Exercise> ExerciseList { get; set; } = new ();
+    public List<Exercise> Exercises { get; set; } = new ();
     private int numberOfAnswersGiven = 0;
     private int numberOfCorrectAnswers = 0;
 
@@ -24,9 +24,9 @@ public abstract class BaseQuiz
 
     public bool AddExercise(Exercise exercise)
     {
-        if (ExerciseList.Count < maxExercises)
+        if (Exercises.Count < maxExercises)
         {
-            ExerciseList.Add(exercise);
+            Exercises.Add(exercise);
             return true;
         }
         return false;
@@ -34,12 +34,12 @@ public abstract class BaseQuiz
 
     public bool RemoveExercise(Exercise exercise)
     {
-        return ExerciseList.Remove(exercise);
+        return Exercises.Remove(exercise);
     }
 
     public bool IsValid()
     {
-        return ExerciseList.Count == maxExercises;
+        return Exercises.Count == maxExercises;
     }
 
     public double GetPassingThreshold()
@@ -49,7 +49,7 @@ public abstract class BaseQuiz
 
     public int GetNumberOfAnswersGiven()
     {
-        return ExerciseList.Count;
+        return Exercises.Count;
     }
 
     public int GetNumberOfCorrectAnswers()
@@ -67,6 +67,6 @@ public abstract class BaseQuiz
         var progress = numberOfAnswersGiven > 0
             ? $"Progress: {numberOfCorrectAnswers}/{numberOfAnswersGiven} ({((double)numberOfCorrectAnswers / numberOfAnswersGiven) * 100:F1}%)"
             : "Not started";
-        return $"Quiz {Id} (Section: {SectionId ?? 0}) - {ExerciseList.Count}/{maxExercises} exercises - {progress}";
+        return $"Quiz {Id} (Section: {SectionId ?? 0}) - {Exercises.Count}/{maxExercises} exercises - {progress}";
     }
 }

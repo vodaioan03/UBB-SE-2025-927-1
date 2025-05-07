@@ -20,6 +20,11 @@ public class FillInTheBlankExercise : Exercise
         Type = "FillInTheBlank";
     }
 
+    public FillInTheBlankExercise()
+    {
+        Type = "FillInTheBlank";
+    }
+
     public bool ValidateAnswer(List<string> userAnswers)
     {
         if (userAnswers == null || userAnswers.Count != PossibleCorrectAnswers.Count)

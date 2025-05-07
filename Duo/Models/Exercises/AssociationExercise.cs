@@ -22,6 +22,11 @@ public class AssociationExercise : Exercise
         Type = "Association";
     }
 
+    public AssociationExercise()
+    {
+        Type = "Association";
+    }
+
     public bool ValidateAnswer(List<(string, string)> userPairs)
     {
         if (userPairs == null || userPairs.Count != FirstAnswersList.Count)

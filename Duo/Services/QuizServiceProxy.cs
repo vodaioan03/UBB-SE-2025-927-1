@@ -13,7 +13,7 @@ namespace Duo.Services
     public class QuizServiceProxy : IQuizServiceProxy
     {
         private readonly HttpClient httpClient;
-        private readonly string url = "https://localhost:7174/";
+        private readonly string url = "https://localhost:7174/api/";
 
         public QuizServiceProxy(HttpClient httpClient)
         {
@@ -112,7 +112,10 @@ namespace Duo.Services
 
         public async Task CreateQuizAsync(Quiz quiz)
         {
-                await httpClient.PostAsJsonAsync($"{url}quiz/add", quiz);
+            // serialize json and print
+            var json = System.Text.Json.JsonSerializer.Serialize(quiz);
+
+            await httpClient.PostAsJsonAsync($"{url}quiz/add", quiz);
         }
 
         public async Task AddExercisesToQuizAsync(int quizId, List<int> exerciseIds)

@@ -72,7 +72,7 @@ namespace Duo.ViewModels
                     await UpdateQuizExercises(SelectedQuiz);
                 }
 
-                foreach (var exercise in quizToBeDeleted.ExerciseList)
+                foreach (var exercise in quizToBeDeleted.Exercises)
                 {
                     AvailableExercises.Add(exercise);
                 }
@@ -174,7 +174,7 @@ namespace Duo.ViewModels
 
                 SelectedQuiz.AddExercise(selectedExercise);
 
-                await quizService.AddExerciseToQuiz(SelectedQuiz.Id, selectedExercise.Id);
+                await quizService.AddExerciseToQuiz(SelectedQuiz.Id, selectedExercise.ExerciseId);
                 await UpdateQuizExercises(SelectedQuiz);
             }
             catch (Exception ex)
@@ -190,7 +190,7 @@ namespace Duo.ViewModels
             Debug.WriteLine("Removing exercise...");
             try
             {
-                await quizService.RemoveExerciseFromQuiz(SelectedQuiz.Id, selectedExercise.Id);
+                await quizService.RemoveExerciseFromQuiz(SelectedQuiz.Id, selectedExercise.ExerciseId);
                 SelectedQuiz.RemoveExercise(selectedExercise);
                 await UpdateQuizExercises(SelectedQuiz);
             }

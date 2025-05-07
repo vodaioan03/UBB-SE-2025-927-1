@@ -46,17 +46,17 @@ namespace Duo.Services
         static public void ValidateExam(Exam exam)
         {
             // Each exam consists of 25 exercises
-            if (exam.ExerciseList == null || exam.ExerciseList.Count != 25)
+            if (exam.Exercises == null || exam.Exercises.Count != 25)
             {
                 throw new ValidationException("An exam must contain exactly 25 exercises");
             }
 
-            if (!exam.ExerciseList.Any())
+            if (!exam.Exercises.Any())
             {
                 throw new ValidationException("An exam must have exercises");
             }
 
-            foreach (var exercise in exam.ExerciseList)
+            foreach (var exercise in exam.Exercises)
             {
                 ValidationHelper.ValidateGenericExercise(exercise);
             }
@@ -64,12 +64,12 @@ namespace Duo.Services
 
         static public void ValidateQuiz(Quiz quiz)
         {
-            if (quiz.ExerciseList == null || quiz.ExerciseList.Count != 10)
+            if (quiz.Exercises == null || quiz.Exercises.Count != 10)
             {
                 throw new ValidationException("A quiz must contain exactly 10 exercises");
             }
 
-            if (!quiz.ExerciseList.Any())
+            if (!quiz.Exercises.Any())
             {
                 throw new ValidationException("A quiz must have exercises");
             }
@@ -79,7 +79,7 @@ namespace Duo.Services
                 throw new ValidationException("Order number must be a positive value if set");
             }
 
-            foreach (var exercise in quiz.ExerciseList)
+            foreach (var exercise in quiz.Exercises)
             {
                 ValidationHelper.ValidateGenericExercise(exercise);
             }

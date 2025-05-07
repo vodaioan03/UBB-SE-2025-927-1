@@ -51,6 +51,11 @@ namespace Duo.Models.Exercises
             TimeInSeconds = timeInSeconds;
         }
 
+        public FlashcardExercise()
+        {
+            Type = "Flashcard";
+        }
+
         // Helper method to determine default time based on difficulty
         private int GetDefaultTimeForDifficulty(Difficulty difficulty)
         {
@@ -80,7 +85,7 @@ namespace Duo.Models.Exercises
 
         public override string ToString()
         {
-            return $"Id: {Id},  Difficulty: {Difficulty}, Time: {TimeInSeconds}s, Answer: {Answer}";
+            return $"Id: {ExerciseId},  Difficulty: {Difficulty}, Time: {TimeInSeconds}s, Answer: {Answer}";
         }
     }
 }

@@ -122,7 +122,59 @@ namespace Duo.Services
             {
                 var response = await httpClient.GetAsync($"{url}api/Exercise");
                 response.EnsureSuccessStatusCode();
-                var exercises = await response.Content.ReadFromJsonAsync<List<Exercise>>();
+
+                string responseJson = await response.Content.ReadAsStringAsync();
+
+                // var exercises = await response.Content.ReadFromJsonAsync<List<Exercise>>();
+                var exercises = new List<Exercise>();
+                using JsonDocument doc = JsonDocument.Parse(responseJson);
+                foreach (var element in doc.RootElement.EnumerateArray())
+                {
+                    var type = element.GetProperty("type").GetString();
+
+                    switch (type)
+                    {
+                        case "MultipleChoice":
+                        {
+                            var mc = element.Deserialize<MultipleChoiceExercise>(new JsonSerializerOptions
+                            {
+                                PropertyNameCaseInsensitive = true
+                            });
+                            exercises.Add(mc);
+                            break;
+                        }
+                        case "FillInTheBlank":
+                        {
+                                var fib = element.Deserialize<FillInTheBlankExercise>(new JsonSerializerOptions
+                                {
+                                    PropertyNameCaseInsensitive = true
+                                });
+                                exercises.Add(fib);
+                                break;
+                        }
+                        case "Association":
+                        {
+                                var association = element.Deserialize<AssociationExercise>(new JsonSerializerOptions
+                                {
+                                    PropertyNameCaseInsensitive = true
+                                });
+                                exercises.Add(association);
+                                break;
+                        }
+                        case "Flashcard":
+                        {
+                                var flashcard = element.Deserialize<FlashcardExercise>(new JsonSerializerOptions
+                                {
+                                    PropertyNameCaseInsensitive = true
+                                });
+                                exercises.Add(flashcard);
+                                break;
+                        }
+                        // Add more cases here if needed (e.g., "Flashcard")
+                        default:
+                            throw new Exception($"Unknown type: {type}");
+                    }
+                }
                 return exercises ?? new List<Exercise>();
             }
             catch (HttpRequestException ex)

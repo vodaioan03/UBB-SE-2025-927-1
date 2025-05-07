@@ -46,8 +46,8 @@ namespace Duo.ViewModels
             _ = Task.Run(async () => await LoadExercisesAsync());
             SaveButtonCommand = new RelayCommand((_) => _ = CreateExam());
             // Update the RelayCommand initialization for OpenSelectExercisesCommand to match the expected signature.
-            OpenSelectExercisesCommand = new RelayCommand(async (_) => await Task.Run(OpenSelectExercises));
-            // OpenSelectExercisesCommand = new RelayCommand(OpenSelectExercises);
+            // OpenSelectExercisesCommand = new RelayCommand(async (_) => await Task.Run(OpenSelectExercises));
+            OpenSelectExercisesCommand = new RelayCommand(_ => OpenSelectExercises());
             RemoveExerciseCommand = new RelayCommandWithParameter<Exercise>(RemoveExercise);
         }
 
