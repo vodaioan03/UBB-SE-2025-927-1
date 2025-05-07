@@ -72,7 +72,7 @@ namespace Duo.ViewModels
         public bool CoinVisibility => CurrentCourse.IsPremium && !IsEnrolled;
 
         /// <summary>Gets the current coin balance of the user</summary>
-        private int coinBalance;
+        private int coinBalance = 100;
         public int CoinBalance
         {
             get => coinBalance;
@@ -89,6 +89,7 @@ namespace Duo.ViewModels
         public async Task<int> GetCoinBalanceAsync(int currentUserId)
         {
             CoinBalance = await coinsService.GetCoinBalanceAsync(currentUserId);
+            Debug.WriteLine($"Coin balance: {CoinBalance}");
             return CoinBalance;
         }
 
@@ -235,7 +236,7 @@ namespace Duo.ViewModels
 
             var httpClient = new System.Net.Http.HttpClient();
             var defaultServiceProxy = serviceProxy ?? new CourseServiceProxy(httpClient);
-
+            coinBalance = 100;
             this.courseService = courseService ?? new CourseService(defaultServiceProxy);
             this.coinsService = coinsService ?? new CoinsService(new CoinsServiceProxy(httpClient));
 

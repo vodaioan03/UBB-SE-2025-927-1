@@ -425,6 +425,7 @@ namespace Duo.Api.Repositories
         /// <returns>A list of courses that match the filter criteria.</returns>
         public Task<List<Course>> GetFilteredCoursesAsync(string searchText, bool filterPremium, bool filterFree, bool filterEnrolled, bool filterNotEnrolled, int userId);
 
+        public Task<int> GetCompletedModulesCountAsync(int userId, int courseId);
         #endregion
 
         #region Exams

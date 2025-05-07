@@ -224,6 +224,20 @@ namespace Duo.Api.Repositories
         }
 
         /// <summary>
+        /// Asynchronously retrieves the count of completed modules for a user by their unique identifier.
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <param name="moduleId"></param>
+        /// <returns></returns>
+        public async Task<int> GetCompletedModulesCountAsync(int userId, int moduleId)
+        {
+            var completedModules = await context.UserProgresses
+                .Where(up => up.UserId == userId && up.ModuleId == moduleId && up.Status == "completed")
+                .ToListAsync();
+            return completedModules.Count;
+        }
+
+        /// <summary>
         /// Asynchronously completes a module for a user by its unique identifier.
         /// </summary>
         /// <param name="userId">The unique identifier of the user completing the module.</param>
