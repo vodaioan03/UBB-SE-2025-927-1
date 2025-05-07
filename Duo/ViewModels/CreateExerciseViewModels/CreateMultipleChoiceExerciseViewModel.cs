@@ -46,6 +46,7 @@ namespace Duo.ViewModels.CreateExerciseViewModels
             {
                 multipleChoiceAnswerModels.Add(new ()
                 {
+                    AnswerModelId = 0,
                     Answer = answer.Value,
                     IsCorrect = answer.IsCorrect
                 });

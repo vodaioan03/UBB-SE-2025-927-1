@@ -1,6 +1,8 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 using DotNetEnv;
+using Duo.Api.Models.Exercises;
 using Duo.Api.Persistence;
 using Duo.Api.Repositories;
 using Microsoft.EntityFrameworkCore;

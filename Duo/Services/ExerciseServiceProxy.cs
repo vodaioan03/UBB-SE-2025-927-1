@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Duo.Models.Exercises;
 
@@ -28,8 +29,65 @@ namespace Duo.Services
             }
             try
             {
-                var response = await httpClient.PostAsJsonAsync($"{url}api/Exercise", exercise);
-                response.EnsureSuccessStatusCode();
+                switch (exercise.Type)
+                {
+                    case "Association":
+                        {
+                            var typedExercise = (AssociationExercise)exercise;
+                            var json = JsonSerializer.Serialize(typedExercise, new JsonSerializerOptions
+                            {
+                                WriteIndented = true // makes it more readable
+                            });
+
+                            // Then send it manually:
+                            var content = new StringContent(json, Encoding.UTF8, "application/json");
+                            var response = await httpClient.PostAsync($"{url}api/Exercise", content);
+                            response.EnsureSuccessStatusCode();
+                            break;
+                        }
+                    case "Flashcard":
+                        {
+                            var typedExercise = (FlashcardExercise)exercise;
+                            var json = JsonSerializer.Serialize(typedExercise, new JsonSerializerOptions
+                            {
+                                WriteIndented = true // makes it more readable
+                            });
+
+                            // Then send it manually:
+                            var content = new StringContent(json, Encoding.UTF8, "application/json");
+                            var response = await httpClient.PostAsync($"{url}api/Exercise", content);
+                            response.EnsureSuccessStatusCode();
+                            break;
+                        }
+                    case "MultipleChoice":
+                        {
+                            var typedExercise = (MultipleChoiceExercise)exercise;
+                            var json = JsonSerializer.Serialize(typedExercise, new JsonSerializerOptions
+                            {
+                                WriteIndented = true // makes it more readable
+                            });
+
+                            // Then send it manually:
+                            var content = new StringContent(json, Encoding.UTF8, "application/json");
+                            var response = await httpClient.PostAsync($"{url}api/Exercise", content);
+                            response.EnsureSuccessStatusCode();
+                            break;
+                        }
+                    case "FillInTheBlank":
+                        {
+                            var typedExercise = (FillInTheBlankExercise)exercise;
+                            var json = JsonSerializer.Serialize(typedExercise, new JsonSerializerOptions
+                            {
+                                WriteIndented = true // makes it more readable
+                            });
+
+                            // Then send it manually:
+                            var content = new StringContent(json, Encoding.UTF8, "application/json");
+                            var response = await httpClient.PostAsync($"{url}api/Exercise", content);
+                            response.EnsureSuccessStatusCode();
+                            break;
+                        }
+                }
             }
             catch (HttpRequestException ex)
             {

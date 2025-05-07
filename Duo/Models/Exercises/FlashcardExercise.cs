@@ -4,7 +4,6 @@ namespace Duo.Models.Exercises
 {
     public class FlashcardExercise : Exercise
     {
-        public string Type { get; } = "Flashcard";
         public int TimeInSeconds { get; }
 
         private string answer;
@@ -36,6 +35,7 @@ namespace Duo.Models.Exercises
 
             // Default time based on difficulty
             TimeInSeconds = GetDefaultTimeForDifficulty(difficulty);
+            Type = "Flashcard";
         }
 
         // Constructor for database repository support
@@ -80,7 +80,7 @@ namespace Duo.Models.Exercises
 
         public override string ToString()
         {
-            return $"Id: {Id},  Difficulty: {Difficulty}, Time: {TimeInSeconds}s";
+            return $"Id: {Id},  Difficulty: {Difficulty}, Time: {TimeInSeconds}s, Answer: {Answer}";
         }
     }
 }

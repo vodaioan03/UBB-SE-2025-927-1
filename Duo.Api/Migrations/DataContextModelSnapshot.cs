@@ -105,7 +105,6 @@ namespace Duo.Api.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Type")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("ExerciseId");
@@ -122,8 +121,11 @@ namespace Duo.Api.Migrations
 
             modelBuilder.Entity("Duo.Api.Models.Exercises.MultipleChoiceAnswerModel", b =>
                 {
-                    b.Property<string>("AnswerModelId")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<int>("AnswerModelId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AnswerModelId"));
 
                     b.Property<string>("Answer")
                         .HasColumnType("nvarchar(max)");

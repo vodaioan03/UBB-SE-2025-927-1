@@ -14,7 +14,9 @@ using Duo.ViewModels.Base;
 using Duo.ViewModels.CreateExerciseViewModels;
 using Duo.Views.Components;
 using Duo.Views.Components.CreateExerciseComponents;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 
 namespace Duo.ViewModels
 {

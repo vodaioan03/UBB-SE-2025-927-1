@@ -8,6 +8,8 @@ public abstract class Exercise
     public string Question { get; set; }
     public Difficulty Difficulty { get; set; }
 
+    public string Type { get; set; }
+
     protected Exercise(int id, string question, Difficulty difficulty)
     {
         Id = id;

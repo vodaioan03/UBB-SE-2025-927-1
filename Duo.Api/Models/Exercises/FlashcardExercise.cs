@@ -64,7 +64,7 @@ namespace Duo.Api.Models.Exercises
         /// </summary>
         public FlashcardExercise()
         {
-            Type = "Flashcard";
+            //Type = "Flashcard";
         }
 
         #endregion

@@ -1,4 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization.Metadata;
+using System.Text.Json;
 using Duo.Api.DTO.Requests;
 using Duo.Api.Models.Exercises;
 using Duo.Api.Repositories;
@@ -144,8 +146,28 @@ namespace Duo.Api.Controllers
         /// <param name="exercise">The exercise to add.</param>
         /// <returns>The created exercise.</returns>
         [HttpPost]
-        public async Task<ActionResult> AddExercise([FromBody] Exercise exercise)
+        public async Task<ActionResult> AddExercise([FromBody] JsonElement rawJson)
         {
+
+            string json = rawJson.GetRawText();
+
+            using var doc = JsonDocument.Parse(json);
+            if (!doc.RootElement.TryGetProperty("Type", out var typeProp))
+            {
+                return BadRequest("Missing 'type' discriminator.");
+            }
+
+            var type = typeProp.GetString();
+
+            Exercise? exercise = type switch
+            {
+                "Flashcard" => JsonSerializer.Deserialize<FlashcardExercise>(json),
+                "MultipleChoice" => JsonSerializer.Deserialize<MultipleChoiceExercise>(json),
+                "FillInTheBlank" => JsonSerializer.Deserialize<FillInTheBlankExercise>(json),
+                "Association" => JsonSerializer.Deserialize<AssociationExercise>(json),
+                _ => null
+            };
+
             if (exercise == null)
             {
                 return this.BadRequest("Invalid payload.");
@@ -171,6 +193,8 @@ namespace Duo.Api.Controllers
                         MultipleChoiceExercise multipleChoiceExercise = (MultipleChoiceExercise)exercise;
                         await this.repository.AddExerciseAsync(multipleChoiceExercise);
                         break;
+                    default:
+                        throw new InvalidOperationException("Invalid exercise type.");
                 }
 
                 return this.CreatedAtRoute(

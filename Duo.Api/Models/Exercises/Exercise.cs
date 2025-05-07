@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 using Duo.Api.Models.Quizzes;
 using Microsoft.EntityFrameworkCore;
 
@@ -14,6 +15,11 @@ namespace Duo.Api.Models.Exercises
     /// Configured for Table-Per-Hierarchy (TPH) inheritance to allow different exercise types
     /// to share a single database table with a discriminator column.
     /// </summary>
+    [JsonPolymorphic(TypeDiscriminatorPropertyName = "type")]
+    [JsonDerivedType(typeof(FlashcardExercise), "Flashcard")]
+    [JsonDerivedType(typeof(MultipleChoiceExercise), "MultipleChoice")]
+    [JsonDerivedType(typeof(FillInTheBlankExercise), "FillInTheBlank")]
+    [JsonDerivedType(typeof(AssociationExercise), "Association")]
     [Index(nameof(Question))] // Optimizes search queries on the Question field
     [ExcludeFromCodeCoverage]
     [Serializable]
@@ -55,7 +61,7 @@ namespace Duo.Api.Models.Exercises
         /// <summary>
         /// The discriminator column for TPH inheritance.
         /// </summary>
-        public string Type { get; protected set; }
+        public string? Type { get; set; }
         #endregion
 
         #region Constructors

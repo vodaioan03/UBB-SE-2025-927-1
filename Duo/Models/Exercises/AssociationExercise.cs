@@ -19,6 +19,7 @@ public class AssociationExercise : Exercise
 
         FirstAnswersList = firstAnswers;
         SecondAnswersList = secondAnswers;
+        Type = "Association";
     }
 
     public bool ValidateAnswer(List<(string, string)> userPairs)

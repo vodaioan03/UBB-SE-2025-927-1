@@ -17,6 +17,7 @@ public class FillInTheBlankExercise : Exercise
         }
 
         PossibleCorrectAnswers = possibleCorrectAnswers;
+        Type = "FillInTheBlank";
     }
 
     public bool ValidateAnswer(List<string> userAnswers)

@@ -17,6 +17,7 @@ public class MultipleChoiceExercise : Exercise
         }
 
         Choices = choices;
+        Type = "MultipleChoice";
     }
 
     public bool ValidateAnswer(List<string> userAnswers)

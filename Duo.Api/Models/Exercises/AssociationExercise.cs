@@ -43,7 +43,7 @@ namespace Duo.Api.Models.Exercises
         [JsonConstructorAttribute]
         public AssociationExercise()
         {
-            Type = "Association";
+            //Type = "Association";
         }
 
         #endregion

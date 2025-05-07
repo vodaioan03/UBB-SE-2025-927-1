@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Duo.Api.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20250507092837_AddExerciseInheritanceAndQuizRelation")]
-    partial class AddExerciseInheritanceAndQuizRelation
+    [Migration("20250507145803_AnswerId")]
+    partial class AnswerId
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -108,7 +108,6 @@ namespace Duo.Api.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Type")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("ExerciseId");
@@ -125,8 +124,11 @@ namespace Duo.Api.Migrations
 
             modelBuilder.Entity("Duo.Api.Models.Exercises.MultipleChoiceAnswerModel", b =>
                 {
-                    b.Property<string>("AnswerModelId")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<int>("AnswerModelId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AnswerModelId"));
 
                     b.Property<string>("Answer")
                         .HasColumnType("nvarchar(max)");

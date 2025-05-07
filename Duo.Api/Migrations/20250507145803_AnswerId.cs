@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Duo.Api.Migrations
 {
     /// <inheritdoc />
-    public partial class InitSchema : Migration
+    public partial class AnswerId : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -38,6 +38,7 @@ namespace Duo.Api.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Question = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Difficulty = table.Column<int>(type: "int", nullable: false),
+                    Type = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     ExerciseType = table.Column<string>(type: "nvarchar(21)", maxLength: 21, nullable: false),
                     FirstAnswersList = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     SecondAnswersList = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -132,7 +133,8 @@ namespace Duo.Api.Migrations
                 name: "MultipleChoiceAnswerModel",
                 columns: table => new
                 {
-                    AnswerModelId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    AnswerModelId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     Answer = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     IsCorrect = table.Column<bool>(type: "bit", nullable: false),
                     ExerciseId = table.Column<int>(type: "int", nullable: false)

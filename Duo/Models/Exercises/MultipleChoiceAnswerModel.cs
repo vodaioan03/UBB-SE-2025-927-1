@@ -4,6 +4,7 @@ namespace Duo.Models.Exercises;
 
 public class MultipleChoiceAnswerModel
 {
+    public int AnswerModelId { get; set; }
     public string Answer { get; set; }
     public bool IsCorrect { get; set; }
 
