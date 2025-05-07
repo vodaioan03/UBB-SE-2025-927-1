@@ -48,7 +48,7 @@ namespace Duo.Api.Controllers
         /// </summary>
         /// <param name="id">The ID of the exam to retrieve.</param>
         /// <returns>The exam if found; otherwise, NotFound.</returns>
-        [HttpGet("get")]
+        [HttpGet("get-by-id")]
         public async Task<IActionResult> GetExam([FromQuery] int id)
         {
             try
@@ -70,8 +70,8 @@ namespace Duo.Api.Controllers
         /// Lists all exams in the database.
         /// </summary>
         /// <returns>A list of all exams.</returns>
-        [HttpGet("list")]
-        public async Task<IActionResult> ListExams()
+        [HttpGet("get-all")]
+        public async Task<IActionResult> GetAllExams()
         {
             try
             {
@@ -87,21 +87,21 @@ namespace Duo.Api.Controllers
         /// <summary>
         /// Updates an existing exam.
         /// </summary>
-        /// <param name="updatedExam">The updated exam data, including Id.</param>
+        /// <param name="modifiedExam">The updated exam data, including Id.</param>
         /// <returns>The updated exam if found; otherwise, NotFound.</returns>
-        [HttpPut("update")]
-        public async Task<IActionResult> UpdateExam([FromForm] Exam updatedExam)
+        [HttpPut("modify")]
+        public async Task<IActionResult> ModifyExam([FromForm] Exam modifiedExam)
         {
             try
             {
-                var exam = await repository.GetExamByIdAsync(updatedExam.Id);
+                var exam = await repository.GetExamByIdAsync(modifiedExam.Id);
                 if (exam == null)
                 {
                     return NotFound();
                 }
 
-                await repository.UpdateExamAsync(updatedExam);
-                return Ok(updatedExam);
+                await repository.UpdateExamAsync(modifiedExam);
+                return Ok(modifiedExam);
             }
             catch (Exception ex)
             {
