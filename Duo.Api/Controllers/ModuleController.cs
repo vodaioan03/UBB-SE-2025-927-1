@@ -235,6 +235,19 @@ namespace Duo.Api.Controllers
             }
         }
 
+        [HttpGet("isCompleted")]
+        public async Task<IActionResult> IsCompleted(int moduleId, int userId)
+        {
+            try
+            {
+                var isCompleted = await repository.IsModuleCompletedAsync(moduleId, userId);
+                return Ok(isCompleted);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(new { message = e.Message });
+            }
+        }
         #endregion
     }
 }
