@@ -1,3 +1,4 @@
+using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
@@ -177,15 +178,22 @@ namespace Duo.ViewModels
 
         private async void InitializeAsync()
         {
-            var courseList = await this.courseService.GetCoursesAsync();
-            DisplayedCourses = new ObservableCollection<Course>(courseList);
-            AvailableTags = new ObservableCollection<Tag>(await this.courseService.GetTagsAsync());
-            foreach (var tag in AvailableTags)
+            try
             {
-                tag.PropertyChanged += OnTagSelectionChanged;
-            }
+                var courseList = await this.courseService.GetCoursesAsync();
+                DisplayedCourses = new ObservableCollection<Course>(courseList);
+                AvailableTags = new ObservableCollection<Tag>(await this.courseService.GetTagsAsync());
+                foreach (var tag in AvailableTags)
+                {
+                    tag.PropertyChanged += OnTagSelectionChanged;
+                }
 
-            ResetAllFiltersCommand = new RelayCommand(ResetAllFilters);
+                ResetAllFiltersCommand = new RelayCommand(ResetAllFilters);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
         }
 
         /// <summary>
@@ -230,29 +238,37 @@ namespace Duo.ViewModels
         /// </summary>
         private async void ApplyAllFilters()
         {
-            if (AvailableTags == null)
+            try
             {
-                return;
+                if (AvailableTags == null)
+                {
+                    return;
+                }
+
+                DisplayedCourses.Clear();
+
+                var selectedTagIds = AvailableTags
+                    .Where(tag => tag.IsSelected)
+                    .Select(tag => tag.TagId)
+                    .ToList();
+
+                var filteredCourses = await courseService.GetFilteredCoursesAsync(
+                    searchQuery,
+                    filterByPremium,
+                    filterByFree,
+                    filterByEnrolled,
+                    filterByNotEnrolled,
+                    selectedTagIds,
+                    CurrentUserId); // Added the missing 'userId' parameter
+
+                foreach (var course in filteredCourses)
+                {
+                    DisplayedCourses.Add(course);
+                }
             }
-
-            var selectedTagIds = AvailableTags
-                .Where(tag => tag.IsSelected)
-                .Select(tag => tag.TagId)
-                .ToList();
-
-            var filteredCourses = await courseService.GetFilteredCoursesAsync(
-                searchQuery,
-                filterByPremium,
-                filterByFree,
-                filterByEnrolled,
-                filterByNotEnrolled,
-                selectedTagIds,
-                CurrentUserId); // Added the missing 'userId' parameter
-
-            DisplayedCourses.Clear();
-            foreach (var course in filteredCourses)
+            catch (Exception e)
             {
-                DisplayedCourses.Add(course);
+                Console.WriteLine(e.Message);
             }
         }
     }

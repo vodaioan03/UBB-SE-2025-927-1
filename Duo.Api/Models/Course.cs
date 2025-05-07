@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Duo.Api.Models
@@ -52,6 +53,8 @@ namespace Duo.Api.Models
         /// Gets or sets the difficulty level of the course (e.g., Beginner, Intermediate, Advanced).
         /// </summary>
         public required string Difficulty { get; set; }
+
+        public List<Enrollment>? Enrollments { get; set; }
 
         #endregion
 
