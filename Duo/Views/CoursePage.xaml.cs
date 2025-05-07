@@ -1,4 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Threading.Tasks;
+using System;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Duo.Models;
@@ -22,7 +24,7 @@ namespace Duo.Views
             this.InitializeComponent();
         }
 
-        protected override void OnNavigatedTo(Microsoft.UI.Xaml.Navigation.NavigationEventArgs e)
+        protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             if (e.Parameter is CourseViewModel vm)
             {
@@ -30,7 +32,34 @@ namespace Duo.Views
                 this.DataContext = viewModel;
                 ModulesListView.ItemClick += ModulesListView_ItemClick;
                 vm.StartCourseProgressTimer();
+
+                // Subscribe to error message event
+                vm.ShowErrorMessageRequested += ViewModel_ShowErrorMessageRequested;
             }
+        }
+
+        /// <summary>
+        /// Displays an error message from the ViewModel.
+        /// </summary>
+        private async void ViewModel_ShowErrorMessageRequested(object? sender, (string Title, string Message) e)
+        {
+            await ShowErrorMessage(e.Title, e.Message);
+        }
+
+        /// <summary>
+        /// Shows a ContentDialog with an error message.
+        /// </summary>
+        private async Task ShowErrorMessage(string title, string message)
+        {
+            var dialog = new ContentDialog
+            {
+                Title = title,
+                Content = message,
+                CloseButtonText = "OK",
+                XamlRoot = this.XamlRoot
+            };
+
+            await dialog.ShowAsync();
         }
 
         private void BackButton_Click(object sender, RoutedEventArgs e)
@@ -51,16 +80,14 @@ namespace Duo.Views
                     this.Frame.Navigate(typeof(ModulePage), (moduleDisplay.Module, viewModel));
                     return;
                 }
+
                 if (moduleDisplay.Module!.IsBonus)
                 {
                     await viewModel.AttemptBonusModulePurchaseAsync(moduleDisplay.Module, CurrentUserId);
                 }
-                var dialog = new ContentDialog
-                {
-                    Title = "Module Locked",
-                    Content = "You need to complete the previous modules to unlock this one.",
-                    CloseButtonText = "OK"
-                };
+
+                // Use RaiseErrorMessage instead of inline dialog
+                viewModel.RaiseErrorMessage("Module Locked", "You need to complete the previous modules to unlock this one.");
             }
         }
     }
