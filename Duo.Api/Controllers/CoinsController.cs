@@ -13,7 +13,7 @@ namespace Duo.Api.Controllers
     {
         #region Methods
 
-        [HttpGet("balance/{userId}")]
+        [HttpGet("get-balance-by-user-id/{userId}")]
         public async Task<ActionResult<int>> GetUserCoinBalance(int userId)
         {
             try
@@ -29,7 +29,7 @@ namespace Duo.Api.Controllers
             }
         }
 
-        [HttpPost("spend")]
+        [HttpPost("add-spent-coins")]
         public async Task<ActionResult> SpendCoins([FromBody] SpendCoinsRequest request)
         {
             try
@@ -67,8 +67,8 @@ namespace Duo.Api.Controllers
             }
         }
 
-        [HttpPost("dailybonus")]
-        public async Task<ActionResult> ApplyDailyLoginBonus([FromBody] DailyBonusRequest request)
+        [HttpPost("add-dailybonus")]
+        public async Task<ActionResult> AddDailyLoginBonus([FromBody] DailyBonusRequest request)
         {
             try
             {
