@@ -49,6 +49,11 @@ namespace Duo.Api.Persistence
         /// Gets or sets the courses in the database.
         /// </summary>
         public DbSet<Course> Courses { get; set; }
+
+        /// <summary>
+        /// Gets or sets the enrollments in the database.
+        /// </summary>
+        public DbSet<Enrollment> Enrollments { get; set; }
         public DbSet<QuizSubmissionEntity> QuizSubmissions { get; set; }
         public DbSet<AnswerSubmissionEntity> AnswerSubmissions { get; set; }
 
@@ -128,6 +133,26 @@ namespace Duo.Api.Persistence
                 .HasMany(e => e.Exercises)
                 .WithMany(e => e.Exams)
                 .UsingEntity(j => j.ToTable("ExamExercises"));
+
+            modelBuilder.Entity<Enrollment>(entity =>
+            {
+                entity.HasKey(e => new { e.UserId, e.CourseId });
+
+                entity.Property(e => e.UserId).IsRequired();
+                entity.Property(e => e.CourseId).IsRequired();
+
+                entity.HasOne(e => e.User)
+                    .WithMany(u => u.Enrollments)
+                    .HasForeignKey(e => e.UserId)
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .IsRequired();
+
+                entity.HasOne(e => e.Course)
+                    .WithMany(c => c.Enrollments)
+                    .HasForeignKey(e => e.CourseId)
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .IsRequired();
+            });
         }
 
         /// <summary>
