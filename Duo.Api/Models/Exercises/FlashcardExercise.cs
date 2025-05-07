@@ -10,15 +10,6 @@ namespace Duo.Api.Models.Exercises
     [Serializable]
     public class FlashcardExercise : Exercise
     {
-        #region Constants
-
-        /// <summary>
-        /// Represents the type of the exercise as a constant string.
-        /// </summary>
-        public const string Type = "Flashcard";
-
-        #endregion
-
         #region Fields
 
         /// <summary>
@@ -73,6 +64,7 @@ namespace Duo.Api.Models.Exercises
         /// </summary>
         public FlashcardExercise()
         {
+            Type = "Flashcard";
         }
 
         #endregion

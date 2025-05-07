@@ -52,6 +52,10 @@ namespace Duo.Api.Models.Exercises
         /// </summary>
         public ICollection<Quiz> Quizzes { get; set; } = [];
 
+        /// <summary>
+        /// The discriminator column for TPH inheritance.
+        /// </summary>
+        public string Type { get; protected set; }
         #endregion
 
         #region Constructors

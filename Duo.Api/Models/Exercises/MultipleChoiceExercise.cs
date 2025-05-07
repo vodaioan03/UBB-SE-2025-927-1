@@ -28,6 +28,7 @@ namespace Duo.Api.Models.Exercises
         /// </summary>
         public MultipleChoiceExercise()
         {
+            Type = "MultipleChoice";
         }
 
         #endregion
