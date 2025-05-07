@@ -70,7 +70,7 @@ namespace Duo.Api.Controllers
         /// Lists all exams in the database.
         /// </summary>
         /// <returns>A list of all exams.</returns>
-        [HttpGet("get-all")]
+        [HttpGet("list")]
         public async Task<IActionResult> ListExams()
         {
             try
@@ -89,7 +89,7 @@ namespace Duo.Api.Controllers
         /// </summary>
         /// <param name="updatedExam">The updated exam data, including Id.</param>
         /// <returns>The updated exam if found; otherwise, NotFound.</returns>
-        [HttpPut("modify")]
+        [HttpPut("update")]
         public async Task<IActionResult> UpdateExam([FromForm] Exam updatedExam)
         {
             try
@@ -139,7 +139,7 @@ namespace Duo.Api.Controllers
         /// </summary>
         /// <param name="sectionId">The ID of the section.</param>
         /// <returns>The exam if found; otherwise, NotFound.</returns>
-        [HttpGet("get-exam-by-section-id")]
+        [HttpGet("get-from-section")]
         public async Task<IActionResult> GetExamFromSection([FromQuery] int sectionId)
         {
             try
@@ -162,7 +162,7 @@ namespace Duo.Api.Controllers
         /// Retrieves all available exams.
         /// </summary>
         /// <returns>A list of available exams.</returns>
-        [HttpGet("get-available-exams")]
+        [HttpGet("get-available")]
         public async Task<IActionResult> GetAvailableExams()
         {
             try

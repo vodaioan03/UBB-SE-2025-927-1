@@ -27,7 +27,7 @@ namespace Duo.Api.Controllers
         /// Retrieves all exercises from the database.
         /// </summary>
         /// <returns>A list of all exercises.</returns>
-        [HttpGet("get-all")]
+        [HttpGet]
         public async Task<ActionResult<List<Exercise>>> GetAllExercisesAsync()
         {
             try
@@ -47,7 +47,7 @@ namespace Duo.Api.Controllers
         /// </summary>
         /// <param name="id">The ID of the exercise to retrieve.</param>
         /// <returns>The exercise if found; otherwise, NotFound.</returns>
-        [HttpGet("get")]
+        [HttpGet("{id}", Name = "GetExerciseById")]
         public async Task<ActionResult<Exercise>> GetByIdAsync(int id)
         {
             if (id <= 0)
@@ -83,7 +83,7 @@ namespace Duo.Api.Controllers
         /// </summary>
         /// <param name="quizId">The ID of the quiz.</param>
         /// <returns>A list of exercises associated with the quiz.</returns>
-        [HttpGet("get-exercises-by-quiz-id")]
+        [HttpGet("quiz/{quizId}")]
         public async Task<ActionResult<List<Exercise>>> GetQuizExercises(int quizId)
         {
             if (quizId <= 0)
@@ -113,7 +113,7 @@ namespace Duo.Api.Controllers
         /// </summary>
         /// <param name="examId">The ID of the exam.</param>
         /// <returns>A list of exercises associated with the exam.</returns>
-        [HttpGet("get-exercises-by-exam-id")]
+        [HttpGet("exam/{examId}")]
         public async Task<ActionResult<List<Exercise>>> GetExamExercises(int examId)
         {
             if (examId <= 0)
@@ -143,7 +143,7 @@ namespace Duo.Api.Controllers
         /// </summary>
         /// <param name="exercise">The exercise to add.</param>
         /// <returns>The created exercise.</returns>
-        [HttpPost("add")]
+        [HttpPost]
         public async Task<ActionResult> AddExercise([FromBody] CreateExerciseDto dto)
         {
             if (dto == null)
@@ -176,7 +176,7 @@ namespace Duo.Api.Controllers
         /// </summary>
         /// <param name="id">The ID of the exercise to delete.</param>
         /// <returns>NoContent if deleted; otherwise, NotFound.</returns>
-        [HttpDelete("delete")]
+        [HttpDelete("{id}")]
         public async Task<ActionResult> DeleteExercise(int id)
         {
             if (id <= 0)
