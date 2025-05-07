@@ -367,7 +367,9 @@ namespace Duo.Api.Repositories
         /// <returns>A <see cref="Exercise"/> object representing the exercise with the given ID, or null if not found.</returns>
         public async Task<Exercise?> GetExerciseByIdAsync(int id)
         {
-            return await context.Exercises.FindAsync(id);
+            return await context.Exercises.
+                Include("Choices").
+                FirstOrDefaultAsync(e => e.ExerciseId == id);
         }
 
         /// <summary>
