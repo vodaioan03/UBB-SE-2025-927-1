@@ -17,7 +17,7 @@ namespace Duo.ViewModels
     /// </summary>
     public partial class MainViewModel : BaseViewModel, IMainViewModel
     {
-        private const int CurrentUserId = 0;
+        private int CurrentUserId { get; init; }
 
         private readonly ICourseService courseService;
         private readonly ICoinsService coinsService;
@@ -165,8 +165,10 @@ namespace Duo.ViewModels
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MainViewModel"/> class.
-        public MainViewModel(CoinsServiceProxy serviceProxy, CourseServiceProxy courseServiceProxy, ICourseService? courseService = null, ICoinsService? coinsService = null)
+        public MainViewModel(CoinsServiceProxy serviceProxy, CourseServiceProxy courseServiceProxy, int currentUserId = 1,
+            ICourseService? courseService = null, ICoinsService? coinsService = null)
         {
+            this.CurrentUserId = currentUserId;
             this.courseService = courseService ?? new CourseService(courseServiceProxy);
             this.coinsService = coinsService ?? new CoinsService(serviceProxy);
 
@@ -191,7 +193,7 @@ namespace Duo.ViewModels
         /// </summary>
         public async Task<bool> TryDailyLoginReward()
         {
-            bool loginRewardGranted = await coinsService.ApplyDailyLoginBonusAsync();
+            bool loginRewardGranted = await coinsService.ApplyDailyLoginBonusAsync(CurrentUserId);
             OnPropertyChanged(nameof(UserCoinBalance));
             return loginRewardGranted;
         }
