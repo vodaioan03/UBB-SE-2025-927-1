@@ -45,7 +45,7 @@ namespace Duo.Api.Controllers
         /// <summary>
         /// Retrieves a quiz by its ID.
         /// </summary>
-        [HttpGet("get")]
+        [HttpGet("get-by-id")]
         public async Task<IActionResult> GetQuiz([FromQuery] int id)
         {
             try
@@ -67,7 +67,7 @@ namespace Duo.Api.Controllers
         /// <summary>
         /// Lists all quizzes in the database.
         /// </summary>
-        [HttpGet("list")]
+        [HttpGet("get-all")]
         public async Task<IActionResult> ListQuizzes()
         {
             try
@@ -84,19 +84,19 @@ namespace Duo.Api.Controllers
         /// <summary>
         /// Updates an existing quiz.
         /// </summary>
-        [HttpPut("update")]
-        public async Task<IActionResult> UpdateQuiz([FromForm] Quiz updatedQuiz)
+        [HttpPut("modify")]
+        public async Task<IActionResult> UpdateQuiz([FromForm] Quiz modifiedQuiz)
         {
             try
             {
-                var quiz = await repository.GetQuizByIdAsync(updatedQuiz.Id);
+                var quiz = await repository.GetQuizByIdAsync(modifiedQuiz.Id);
                 if (quiz == null)
                 {
                     return NotFound();
                 }
 
-                await repository.UpdateQuizAsync(updatedQuiz);
-                return Ok(updatedQuiz);
+                await repository.UpdateQuizAsync(modifiedQuiz);
+                return Ok(modifiedQuiz);
             }
             catch (Exception ex)
             {
@@ -147,7 +147,7 @@ namespace Duo.Api.Controllers
         /// <summary>
         /// Retrieves the number of quizzes in a specific section.
         /// </summary>
-        [HttpGet("count-from-section")]
+        [HttpGet("get-quiz-count-from-section")]
         public async Task<IActionResult> CountQuizzesFromSection([FromQuery] int sectionId)
         {
             try
@@ -164,7 +164,7 @@ namespace Duo.Api.Controllers
         /// <summary>
         /// Retrieves the last order number from a specific section.
         /// </summary>
-        [HttpGet("last-order")]
+        [HttpGet("get-last-order-number")]
         public async Task<IActionResult> GetLastOrderNumberFromSection([FromQuery] int sectionId)
         {
             try
@@ -215,7 +215,7 @@ namespace Duo.Api.Controllers
         /// <summary>
         /// Removes an exercise from a quiz.
         /// </summary>
-        [HttpDelete("remove-exercise")]
+        [HttpDelete("delete-exercise")]
         public async Task<IActionResult> RemoveExerciseFromQuiz([FromQuery] int quizId, [FromQuery] int exerciseId)
         {
             try
@@ -232,7 +232,7 @@ namespace Duo.Api.Controllers
         /// <summary>
         /// Submits a quiz with user's answers, checks correctness, and saves the submission.
         /// </summary>
-        [HttpPost("submit")]
+        [HttpPost("add-quiz")]
         public async Task<IActionResult> SubmitQuiz([FromBody] QuizSubmission submission)
         {
             try
