@@ -302,7 +302,7 @@ namespace Duo.ViewModels
                 RequiredModules = await courseService.GetRequiredModulesCountAsync(CurrentCourse.CourseId);
                 TimeLimit = await courseService.GetCourseTimeLimitAsync(CurrentCourse.CourseId);
 
-                await LoadAndOrganizeCourseModules();
+                await LoadAndOrganizeCourseModules(currentUserId);
             }
             catch (Exception e)
             {
@@ -364,7 +364,6 @@ namespace Duo.ViewModels
                         IsCompleted = isCompleted
                     });
                 }
-
             }
             catch (Exception e)
             {
