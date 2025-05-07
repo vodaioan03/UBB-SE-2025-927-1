@@ -14,6 +14,9 @@ namespace Duo.Views
     public sealed partial class CoursePage : Page
     {
         private CourseViewModel? viewModel;
+
+        private int CurrentUserId { get; init; } = 1;
+
         public CoursePage()
         {
             this.InitializeComponent();
@@ -34,12 +37,12 @@ namespace Duo.Views
         {
             if (this.Frame.CanGoBack)
             {
-                viewModel.PauseCourseProgressTimer();
+                viewModel.PauseCourseProgressTimer(CurrentUserId);
                 this.Frame.GoBack();
             }
         }
 
-        private void ModulesListView_ItemClick(object sender, ItemClickEventArgs e)
+        private async void ModulesListView_ItemClick(object sender, ItemClickEventArgs e)
         {
             if (e.ClickedItem is CourseViewModel.ModuleProgressStatus moduleDisplay && viewModel!.IsEnrolled)
             {
@@ -50,7 +53,7 @@ namespace Duo.Views
                 }
                 if (moduleDisplay.Module!.IsBonus)
                 {
-                    viewModel.AttemptBonusModulePurchaseAsync(moduleDisplay.Module);
+                    await viewModel.AttemptBonusModulePurchaseAsync(moduleDisplay.Module, CurrentUserId);
                 }
                 var dialog = new ContentDialog
                 {

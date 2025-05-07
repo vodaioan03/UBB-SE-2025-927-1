@@ -16,6 +16,8 @@ namespace Duo.Views
         // keep this static so that the dialog is only shown once. The page is recreated every time it is navigated to.
         private static bool isDialogShown = false;
 
+        private int CurrentUserId { get; init; } = 1;
+
         public MainPage()
         {
             this.InitializeComponent();
@@ -38,6 +40,7 @@ namespace Duo.Views
             this.DataContext = new MainViewModel(
                 serviceProxy, // Pass the ServiceProxy
                 courseServiceProxy, // Pass the CourseServiceProxy
+                CurrentUserId,
                 courseService, // Pass the CourseService
                 coinsService);
 
@@ -70,11 +73,12 @@ namespace Duo.Views
             }
         }
 
-        private void CoursesListView_ItemClick(object sender, ItemClickEventArgs e)
+        private async void CoursesListView_ItemClick(object sender, ItemClickEventArgs e)
         {
             if (e.ClickedItem is Course selectedCourse)
             {
-                var courseVM = new CourseViewModel(selectedCourse);
+                var courseVM = new CourseViewModel(selectedCourse, CurrentUserId);
+                await courseVM.InitializeAsync(CurrentUserId);
                 this.Frame.Navigate(typeof(CoursePage), courseVM);
             }
         }

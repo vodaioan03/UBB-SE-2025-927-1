@@ -115,7 +115,7 @@ namespace Duo.Api.Controllers
         /// <param name="courseId">The ID of the course.</param>
         /// <returns>True if enrolled; otherwise, false.</returns>
         [HttpGet("is-enrolled")]
-        public async Task<IActionResult> IsEnrolled([FromForm] int userId, [FromForm] int courseId)
+        public async Task<IActionResult> IsEnrolled([FromQuery] int userId, [FromQuery] int courseId)
         {
             var isEnrolled = await repository.IsUserEnrolledInCourseAsync(userId, courseId);
             return Ok(isEnrolled);
@@ -203,7 +203,7 @@ namespace Duo.Api.Controllers
         /// <param name="courseId">The course ID.</param>
         /// <returns>The time spent in seconds.</returns>
         [HttpGet("get-time")]
-        public async Task<IActionResult> GetTimeSpent([FromForm] int userId, [FromForm] int courseId)
+        public async Task<IActionResult> GetTimeSpent([FromQuery] int userId, [FromQuery] int courseId)
         {
             var timeSpent = await repository.GetTimeSpentAsync(userId, courseId);
             return Ok(timeSpent);

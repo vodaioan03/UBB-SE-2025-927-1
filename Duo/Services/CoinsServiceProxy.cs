@@ -18,7 +18,7 @@ namespace Duo.Services
 #pragma warning restore SA1009 // Closing parenthesis should be spaced correctly
     {
         private readonly HttpClient httpClient = httpClient;
-        private readonly string url = "https://localhost:7174/";
+        private readonly string url = "https://localhost:7174";
 
         /// <summary>
         /// Retrieves the coin balance for a specific user.
@@ -27,7 +27,7 @@ namespace Duo.Services
         /// <returns>The user's coin balance, or 0 if an error occurs.</returns>
         public async Task<int> GetUserCoinBalanceAsync(int userId)
         {
-            var response = await httpClient.GetFromJsonAsync<int>($"{url}/coins/balance/{userId}");
+            var response = await httpClient.GetFromJsonAsync<int>($"{url}/api/coins/balance/{userId}");
             return response;
         }
 
@@ -39,7 +39,7 @@ namespace Duo.Services
         /// <returns><c>true</c> if the operation is successful; otherwise, <c>false</c>.</returns>
         public async Task<bool> TrySpendingCoinsAsync(int userId, int cost)
         {
-            var response = await httpClient.PostAsJsonAsync($"{url}/coins/spend", new { UserId = userId, Cost = cost });
+            var response = await httpClient.PostAsJsonAsync($"{url}/api/coins/spend", new { UserId = userId, Cost = cost });
             return response.IsSuccessStatusCode;
         }
 
@@ -51,7 +51,7 @@ namespace Duo.Services
         /// <returns>A task that represents the asynchronous operation.</returns>
         public async Task AddCoinsAsync(int userId, int amount)
         {
-            await httpClient.PostAsJsonAsync($"{url}/coins/add", new { UserId = userId, Amount = amount });
+            await httpClient.PostAsJsonAsync($"{url}/api/coins/add", new { UserId = userId, Amount = amount });
         }
 
         /// <summary>
@@ -61,7 +61,8 @@ namespace Duo.Services
         /// <returns><c>true</c> if the operation is successful; otherwise, <c>false</c>.</returns>
         public async Task<bool> ApplyDailyLoginBonusAsync(int userId)
         {
-            var response = await httpClient.PostAsJsonAsync($"{url}/coins/dailybonus", new { UserId = userId });
+            Console.WriteLine("daily bonus endpoint hit");
+            var response = await httpClient.PostAsJsonAsync($"{url}/api/coins/dailybonus", new { UserId = userId });
             return response.IsSuccessStatusCode;
         }
     }

@@ -15,14 +15,12 @@ namespace Duo.Api.Models
         /// <summary>
         /// Gets or sets the unique identifier of the enrolled user.
         /// </summary>
-        [ForeignKey(nameof(User))]
-        public int UserId { get; set; }
+        public int? UserId { get; set; }
 
         /// <summary>
         /// Gets or sets the unique identifier of the course the user is enrolled in.
         /// </summary>
-        [ForeignKey(nameof(Course))]
-        public int CourseId { get; set; }
+        public int? CourseId { get; set; }
 
         /// <summary>
         /// Gets or sets the date and time when the user enrolled in the course.
@@ -42,12 +40,12 @@ namespace Duo.Api.Models
         /// <summary>
         /// Navigation property to the related user.
         /// </summary>
-        public User User { get; set; } = null!;
+        public User? User { get; set; } = null!;
 
         /// <summary>
         /// Navigation property to the related course.
         /// </summary>
-        public Course Course { get; set; } = null!;
+        public Course? Course { get; set; } = null!;
 
         #endregion
 

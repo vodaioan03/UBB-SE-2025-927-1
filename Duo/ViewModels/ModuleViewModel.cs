@@ -4,6 +4,7 @@ using Duo.Commands;
 using Duo.Models;
 using Duo.Services;
 using Windows.System;
+using Windows.UI.Core;
 
 namespace Duo.ViewModels
 {
@@ -19,16 +20,18 @@ namespace Duo.ViewModels
 
         public ICommand ModuleImageClickCommand { get; set; }
 
-        public ModuleViewModel(Models.Module module, ICourseViewModel courseVM,
+        public ModuleViewModel(Models.Module module, ICourseViewModel courseVM, int userId = 1,
                     ICourseService? courseServiceOverride = null,
                     ICoinsService? coinsServiceOverride = null)
         {
+            this.UserId = userId;
+
             courseService = courseServiceOverride ?? new CourseService(new CourseServiceProxy(new System.Net.Http.HttpClient()));
             coinsService = coinsServiceOverride ?? new CoinsService(new CoinsServiceProxy(new System.Net.Http.HttpClient()));
 
             CurrentModule = module;
             // Fix for CS0029: Await the asynchronous method to get the result
-            IsCompleted = courseService.IsModuleCompletedAsync(0, module.ModuleId).GetAwaiter().GetResult();
+            IsCompleted = courseService.IsModuleCompletedAsync(UserId, module.ModuleId).GetAwaiter().GetResult();
 
             courseViewModel = courseVM;
 
@@ -36,7 +39,7 @@ namespace Duo.ViewModels
             ModuleImageClickCommand = new RelayCommand(HandleModuleImageClick);
             courseViewModel = courseVM;
 
-            courseService.OpenModuleAsync(0, module.ModuleId);
+            courseService.OpenModuleAsync(UserId, module.ModuleId);
 
             _ = InitializeAsync();
         }
@@ -90,10 +93,10 @@ namespace Duo.ViewModels
 
         private void ExecuteCompleteModule(object? parameter)
         {
-            courseViewModel.MarkModuleAsCompletedAndCheckRewards(CurrentModule.ModuleId);
+            courseViewModel.MarkModuleAsCompletedAndCheckRewards(CurrentModule.ModuleId, UserId);
             IsCompleted = true;
             OnPropertyChanged(nameof(IsCompleted));
-            courseViewModel.RefreshCourseModulesDisplay();
+            courseViewModel.RefreshCourseModulesDisplay(UserId);
         }
 
         public async Task ExecuteModuleImageClick(object? obj)
@@ -101,7 +104,7 @@ namespace Duo.ViewModels
             if (courseService.ClickModuleImageAsync(0, CurrentModule.ModuleId).GetAwaiter().GetResult())
             {
                 OnPropertyChanged(nameof(CoinBalance));
-                courseViewModel.RefreshCourseModulesDisplay();
+                courseViewModel.RefreshCourseModulesDisplay(UserId);
             }
         }
     }

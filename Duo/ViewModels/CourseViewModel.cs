@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
@@ -85,9 +86,9 @@ namespace Duo.ViewModels
             }
         }
 
-        public async Task<int> GetCoinBalanceAsync()
+        public async Task<int> GetCoinBalanceAsync(int currentUserId)
         {
-            CoinBalance = await coinsService.GetCoinBalanceAsync(0);
+            CoinBalance = await coinsService.GetCoinBalanceAsync(currentUserId);
             return CoinBalance;
         }
 
@@ -105,8 +106,15 @@ namespace Duo.ViewModels
 
         private async Task LoadTagsAsync()
         {
-            var tagList = await courseService.GetCourseTagsAsync(CurrentCourse.CourseId);
-            Tags = new ObservableCollection<Tag>(tagList);
+            try
+            {
+                var tagList = await courseService.GetCourseTagsAsync(CurrentCourse.CourseId);
+                Tags = new ObservableCollection<Tag>(tagList);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
         }
 
         /// <summary>
@@ -218,7 +226,7 @@ namespace Duo.ViewModels
         /// <param name="timerService">The timer service for course progress tracking (optional)</param>
         /// <param name="notificationTimerService">The timer service for notifications (optional)</param>
         /// <exception cref="ArgumentNullException">Thrown when course is null</exception>
-        public CourseViewModel(Course course, ICourseService? courseService = null,
+        public CourseViewModel(Course course, int currentUserId = 1, ICourseService? courseService = null,
             ICoinsService? coinsService = null, IDispatcherTimerService? timerService = null,
             IDispatcherTimerService? notificationTimerService = null, INotificationHelper? notificationHelper = null,
             CourseServiceProxy? serviceProxy = null)
@@ -232,9 +240,11 @@ namespace Duo.ViewModels
             this.coinsService = coinsService ?? new CoinsService(new CoinsServiceProxy(httpClient));
 
             InitializeTimersAndNotificationHelper(timerService, notificationTimerService, notificationHelper);
-
-            InitializeProperties();
-            LoadInitialData();
+        }
+        public async Task InitializeAsync(int currentUserId)
+        {
+            await InitializeProperties(currentUserId);
+            await LoadInitialData(currentUserId);
         }
 
         /// <summary>
@@ -259,31 +269,45 @@ namespace Duo.ViewModels
         /// <summary>
         /// Initializes key ViewModel properties such as enrollment status and enrollment command.
         /// </summary>
-        private async Task InitializeProperties()
+        private async Task InitializeProperties(int currentUserId)
         {
-            IsEnrolled = await courseService.IsUserEnrolledAsync(0, CurrentCourse.CourseId);
+            try
+            {
+                IsEnrolled = await courseService.IsUserEnrolledAsync(currentUserId, CurrentCourse.CourseId);
 
-            EnrollCommand = new RelayCommand(
-                async (parameter) => await EnrollUserInCourseAsync(parameter),
-                async (parameter) => await CanUserEnrollInCourseAsync(parameter));
+                EnrollCommand = new RelayCommand(
+                    async (parameter) => await EnrollUserInCourseAsync(parameter, currentUserId),
+                    async (parameter) => await CanUserEnrollInCourseAsync(parameter, currentUserId));
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
         }
 
         /// <summary>
         /// Loads the initial course-related data such as time spent, modules completed,
         /// time remaining, and initializes the course module structure.
         /// </summary>
-        private async Task LoadInitialData()
+        private async Task LoadInitialData(int currentUserId)
         {
-            totalSecondsSpentOnCourse = await courseService.GetTimeSpentAsync(0, CurrentCourse.CourseId);
-            lastSavedTimeInSeconds = totalSecondsSpentOnCourse;
-            courseCompletionTimeLimitInSeconds = CurrentCourse.TimeToComplete - totalSecondsSpentOnCourse;
-            FormattedTimeRemaining = FormatTimeRemainingDisplay(courseCompletionTimeLimitInSeconds - totalSecondsSpentOnCourse);
+            try
+            {
+                totalSecondsSpentOnCourse = await courseService.GetTimeSpentAsync(currentUserId, CurrentCourse.CourseId);
+                lastSavedTimeInSeconds = totalSecondsSpentOnCourse;
+                courseCompletionTimeLimitInSeconds = CurrentCourse.TimeToComplete - totalSecondsSpentOnCourse;
+                FormattedTimeRemaining = FormatTimeRemainingDisplay(courseCompletionTimeLimitInSeconds - totalSecondsSpentOnCourse);
 
-            CompletedModules = await courseService.GetCompletedModulesCountAsync(0, CurrentCourse.CourseId);
-            RequiredModules = await courseService.GetRequiredModulesCountAsync(CurrentCourse.CourseId);
-            TimeLimit = await courseService.GetCourseTimeLimitAsync(CurrentCourse.CourseId);
+                CompletedModules = await courseService.GetCompletedModulesCountAsync(currentUserId, CurrentCourse.CourseId);
+                RequiredModules = await courseService.GetRequiredModulesCountAsync(CurrentCourse.CourseId);
+                TimeLimit = await courseService.GetCourseTimeLimitAsync(CurrentCourse.CourseId);
 
-            await LoadAndOrganizeCourseModules();
+                await LoadAndOrganizeCourseModules(currentUserId);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
         }
         #endregion
 
@@ -317,26 +341,33 @@ namespace Duo.ViewModels
         /// <summary>
         /// Loads and organizes all modules for the current course with their progress status
         /// </summary>
-        public async Task LoadAndOrganizeCourseModules()
+        public async Task LoadAndOrganizeCourseModules(int currentUserId)
         {
-            var modules = (await courseService.GetModulesAsync(CurrentCourse.CourseId))
+            try
+            {
+                var modules = (await courseService.GetModulesAsync(CurrentCourse.CourseId))
                            .OrderBy(module => module.Position)
                            .ToList();
 
-            ModuleRoadmap.Clear();
+                ModuleRoadmap.Clear();
 
             for (int index = 0; index < modules.Count; index++)
             {
                 var module = modules[index];
-                bool isCompleted = await courseService.IsModuleCompletedAsync(0, module.ModuleId);
-                bool isUnlocked = await GetModuleUnlockStatus(module, index);
+                bool isCompleted = await courseService.IsModuleCompletedAsync(currentUserId, module.ModuleId);
+                bool isUnlocked = await GetModuleUnlockStatus(module, index, currentUserId);
 
-                ModuleRoadmap.Add(new ModuleProgressStatus
-                {
-                    Module = module,
-                    IsUnlocked = isUnlocked,
-                    IsCompleted = isCompleted
-                });
+                    ModuleRoadmap.Add(new ModuleProgressStatus
+                    {
+                        Module = module,
+                        IsUnlocked = isUnlocked,
+                        IsCompleted = isCompleted
+                    });
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
             }
 
             OnPropertyChanged(nameof(ModuleRoadmap));
@@ -348,51 +379,66 @@ namespace Duo.ViewModels
         /// <param name="module">The module to check</param>
         /// <param name="moduleIndex">The index of the module in the collection</param>
         /// <returns>True if the module should be unlocked, otherwise false</returns>
-        private async Task<bool> GetModuleUnlockStatus(Module module, int moduleIndex)
+        private async Task<bool> GetModuleUnlockStatus(Module module, int moduleIndex, int currentUserId)
         {
-            if (!module.IsBonus)
+            try
             {
-                return IsEnrolled &&
-                       (moduleIndex == 0 ||
-                        await courseService.IsModuleCompletedAsync(0, ModuleRoadmap[moduleIndex - 1].Module!.ModuleId));
+                if (!module.IsBonus)
+                {
+                    return IsEnrolled &&
+                           (moduleIndex == 0 ||
+                            await courseService.IsModuleCompletedAsync(currentUserId, ModuleRoadmap[moduleIndex - 1].Module!.ModuleId));
+                }
+                return await courseService.IsModuleInProgressAsync(currentUserId, module.ModuleId);
             }
-            return await courseService.IsModuleInProgressAsync(0, module.ModuleId);
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+                return false;
+            }
         }
 
         /// <summary>
         /// Determines if the user can enroll in the course
         /// </summary>
-        private async Task<bool> CanUserEnrollInCourseAsync(object? parameter)
+        private async Task<bool> CanUserEnrollInCourseAsync(object? parameter, int currentUserId)
         {
-            int coinBalance = await GetCoinBalanceAsync();
+            int coinBalance = await GetCoinBalanceAsync(currentUserId);
             return !IsEnrolled && coinBalance >= CurrentCourse.Cost;
         }
 
         /// <summary>
         /// Enrolls the user in the current course
         /// </summary>
-        private async Task EnrollUserInCourseAsync(object? parameter)
+        private async Task EnrollUserInCourseAsync(object? parameter, int currentUserId)
         {
-            bool coinDeductionSuccessful = await coinsService.TrySpendingCoinsAsync(0, CurrentCourse.Cost);
-
-            if (!coinDeductionSuccessful)
+            try
             {
-                return;
-            }
+                bool coinDeductionSuccessful = await coinsService.TrySpendingCoinsAsync(currentUserId, CurrentCourse.Cost);
 
-            bool enrollmentSuccessful = await courseService.EnrollInCourseAsync(0, CurrentCourse.CourseId);
+                if (!coinDeductionSuccessful)
+                {
+                    return;
+                }
+
+            bool enrollmentSuccessful = await courseService.EnrollInCourseAsync(currentUserId, CurrentCourse.CourseId);
             if (!enrollmentSuccessful)
             {
                 return;
             }
 
-            IsEnrolled = true;
-            ResetCourseProgressTracking();
-            OnPropertyChanged(nameof(IsEnrolled));
-            OnPropertyChanged(nameof(CoinBalance));
+                IsEnrolled = true;
+                ResetCourseProgressTracking();
+                OnPropertyChanged(nameof(IsEnrolled));
+                OnPropertyChanged(nameof(CoinBalance));
 
-            StartCourseProgressTimer();
-            LoadAndOrganizeCourseModules();
+                StartCourseProgressTimer();
+                await LoadAndOrganizeCourseModules(currentUserId);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
         }
 
         /// <summary>
@@ -422,12 +468,12 @@ namespace Duo.ViewModels
         /// <summary>
         /// Pauses the course progress timer and saves the current progress
         /// </summary>
-        public async Task PauseCourseProgressTimer()
+        public async Task PauseCourseProgressTimer(int currentUserId)
         {
             if (IsCourseTimerRunning)
             {
                 courseProgressTimer!.Stop();
-                await SaveCourseProgressTime();
+                await SaveCourseProgressTime(currentUserId);
                 IsCourseTimerRunning = false;
             }
         }
@@ -435,19 +481,26 @@ namespace Duo.ViewModels
         /// <summary>
         /// Saves the current course progress time to the database
         /// </summary>
-        private async Task SaveCourseProgressTime()
+        private async Task SaveCourseProgressTime(int currentUserId)
         {
-            int secondsToSave = (totalSecondsSpentOnCourse - lastSavedTimeInSeconds) /
+            try
+            {
+                int secondsToSave = (totalSecondsSpentOnCourse - lastSavedTimeInSeconds) /
                                 TimeTrackingDatabaseAdjustmentDivisor;
 
-            Console.WriteLine($"Attempting to save: Current={totalSecondsSpentOnCourse}, " +
-                              $"LastSaved={lastSavedTimeInSeconds}, ToSave={secondsToSave}");
+                Console.WriteLine($"Attempting to save: Current={totalSecondsSpentOnCourse}, " +
+                                  $"LastSaved={lastSavedTimeInSeconds}, ToSave={secondsToSave}");
 
-            if (secondsToSave > 0)
+                if (secondsToSave > 0)
+                {
+                    Console.WriteLine($"Saving {secondsToSave} seconds");
+                    await courseService.UpdateTimeSpentAsync(currentUserId, CurrentCourse.CourseId, secondsToSave);
+                    lastSavedTimeInSeconds = totalSecondsSpentOnCourse;
+                }
+            }
+            catch (Exception e)
             {
-                Console.WriteLine($"Saving {secondsToSave} seconds");
-                await courseService.UpdateTimeSpentAsync(0, CurrentCourse.CourseId, secondsToSave);
-                lastSavedTimeInSeconds = totalSecondsSpentOnCourse;
+                Console.WriteLine(e.Message);
             }
         }
 
@@ -470,9 +523,9 @@ namespace Duo.ViewModels
         /// <summary>
         /// Refreshes the course modules display
         /// </summary>
-        public async Task RefreshCourseModulesDisplay()
+        public async Task RefreshCourseModulesDisplay(int currentUserId)
         {
-            await LoadAndOrganizeCourseModules();
+            await LoadAndOrganizeCourseModules(currentUserId);
         }
 
         #endregion
@@ -483,58 +536,86 @@ namespace Duo.ViewModels
         /// Marks a module as completed and checks for any earned rewards
         /// </summary>
         /// <param name="targetModuleId">ID of the module to mark as completed</param>
-        public async Task MarkModuleAsCompletedAndCheckRewards(int targetModuleId)
+        public async Task MarkModuleAsCompletedAndCheckRewards(int targetModuleId, int currentUserId)
         {
-            await courseService.CompleteModuleAsync(0, targetModuleId, CurrentCourse.CourseId);
-            await UpdateCompletionStatus();
-
-            if (IsCourseCompleted)
+            try
             {
-                await CheckForCompletionReward();
-                await CheckForTimedReward();
+                await courseService.CompleteModuleAsync(currentUserId, targetModuleId, CurrentCourse.CourseId);
+                await UpdateCompletionStatus(currentUserId);
+
+                if (IsCourseCompleted)
+                {
+                    await CheckForCompletionReward(currentUserId);
+                    await CheckForTimedReward(currentUserId);
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
             }
         }
 
         /// <summary>
         /// Updates the module completion status properties
         /// </summary>
-        private async Task UpdateCompletionStatus()
+        private async Task UpdateCompletionStatus(int currentUserId)
         {
-            CompletedModules = await courseService.GetCompletedModulesCountAsync(0, CurrentCourse.CourseId);
-            OnPropertyChanged(nameof(CompletedModules));
-            OnPropertyChanged(nameof(IsCourseCompleted));
+            try
+            {
+                CompletedModules = await courseService.GetCompletedModulesCountAsync(currentUserId, CurrentCourse.CourseId);
+                OnPropertyChanged(nameof(CompletedModules));
+                OnPropertyChanged(nameof(IsCourseCompleted));
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
         }
 
         /// <summary>
         /// Checks and claims the course completion reward if eligible
         /// </summary>
-        private async Task CheckForCompletionReward()
+        private async Task CheckForCompletionReward(int currentUserId)
         {
-            bool rewardClaimed = await courseService.ClaimCompletionRewardAsync(0, CurrentCourse.CourseId);
-            if (rewardClaimed)
+            try
             {
-                CompletionRewardClaimed = true;
-                OnPropertyChanged(nameof(CompletionRewardClaimed));
-                OnPropertyChanged(nameof(CoinBalance));
-                ShowCourseCompletionRewardNotification();
+                bool rewardClaimed = await courseService.ClaimCompletionRewardAsync(currentUserId, CurrentCourse.CourseId);
+                if (rewardClaimed)
+                {
+                    CompletionRewardClaimed = true;
+                    OnPropertyChanged(nameof(CompletionRewardClaimed));
+                    OnPropertyChanged(nameof(CoinBalance));
+                    ShowCourseCompletionRewardNotification();
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
             }
         }
 
         /// <summary>
         /// Checks and claims the timed completion reward if eligible
         /// </summary>
-        private async Task CheckForTimedReward()
+        private async Task CheckForTimedReward(int currentUserId)
         {
-            if (TimeRemaining > 0)
+            try
             {
-                bool rewardClaimed = await courseService.ClaimTimedRewardAsync(0, CurrentCourse.CourseId, totalSecondsSpentOnCourse);
-                if (rewardClaimed)
+                if (TimeRemaining > 0)
                 {
-                    TimedRewardClaimed = true;
-                    OnPropertyChanged(nameof(TimedRewardClaimed));
-                    OnPropertyChanged(nameof(CoinBalance));
-                    ShowTimedCompletionRewardNotification();
+                    bool rewardClaimed = await courseService.ClaimTimedRewardAsync(currentUserId, CurrentCourse.CourseId, totalSecondsSpentOnCourse);
+                    if (rewardClaimed)
+                    {
+                        TimedRewardClaimed = true;
+                        OnPropertyChanged(nameof(TimedRewardClaimed));
+                        OnPropertyChanged(nameof(CoinBalance));
+                        ShowTimedCompletionRewardNotification();
+                    }
                 }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
             }
         }
 
@@ -564,11 +645,11 @@ namespace Duo.ViewModels
         /// Shows notification for successful module purchase
         /// </summary>
         /// <param name="module">The module that was purchased</param>
-        private async Task ShowModulePurchaseNotificationAsync(Module module)
+        private async Task ShowModulePurchaseNotificationAsync(Module module, int currentUserId)
         {
             string message = $"Congratulations! You have purchased bonus module {module.Title}, {module.Cost} coins have been deducted from your balance.";
             notificationHelper!.ShowTemporaryNotification(message);
-            await RefreshCourseModulesDisplay();
+            await RefreshCourseModulesDisplay(currentUserId);
         }
         #endregion
 
@@ -578,27 +659,34 @@ namespace Duo.ViewModels
         /// Attempts to purchase a bonus module
         /// </summary>
         /// <param name="module">The module to purchase</param>
-        public async Task AttemptBonusModulePurchaseAsync(Module? module)
+        public async Task AttemptBonusModulePurchaseAsync(Module? module, int currentUserId)
         {
             ArgumentNullException.ThrowIfNull(module);
 
-            if (await courseService.IsModuleCompletedAsync(0, module.ModuleId))
+            try
             {
-                return;
-            }
+                if (await courseService.IsModuleCompletedAsync(currentUserId, module.ModuleId))
+                {
+                    return;
+                }
 
-            bool purchaseSuccessful = await courseService.BuyBonusModuleAsync(0, module.ModuleId, CurrentCourse.CourseId);
+                bool purchaseSuccessful = await courseService.BuyBonusModuleAsync(currentUserId, module.ModuleId, CurrentCourse.CourseId);
 
-            if (purchaseSuccessful)
-            {
-                await UpdatePurchasedModuleStatus(module);
-                await ShowModulePurchaseNotificationAsync(module);
-                OnPropertyChanged(nameof(ModuleRoadmap));
-                OnPropertyChanged(nameof(CoinBalance));
+                if (purchaseSuccessful)
+                {
+                    await UpdatePurchasedModuleStatus(module, currentUserId);
+                    await ShowModulePurchaseNotificationAsync(module, currentUserId);
+                    OnPropertyChanged(nameof(ModuleRoadmap));
+                    OnPropertyChanged(nameof(CoinBalance));
+                }
+                else
+                {
+                    ShowPurchaseFailedNotification();
+                }
             }
-            else
+            catch (Exception e)
             {
-                ShowPurchaseFailedNotification();
+                Console.WriteLine(e.Message);
             }
         }
 
@@ -606,14 +694,21 @@ namespace Duo.ViewModels
         /// Updates the status of a purchased module
         /// </summary>
         /// <param name="module">The module that was purchased</param>
-        private async Task UpdatePurchasedModuleStatus(Module module)
+        private async Task UpdatePurchasedModuleStatus(Module module, int currentUserId)
         {
-            var moduleToUpdate = ModuleRoadmap.FirstOrDefault(m => m.Module!.ModuleId == module.ModuleId);
-            if (moduleToUpdate != null)
+            try
             {
-                moduleToUpdate.IsUnlocked = true;
-                moduleToUpdate.IsCompleted = false;
-                await courseService.OpenModuleAsync(0, module.ModuleId);
+                var moduleToUpdate = ModuleRoadmap.FirstOrDefault(m => m.Module!.ModuleId == module.ModuleId);
+                if (moduleToUpdate != null)
+                {
+                    moduleToUpdate.IsUnlocked = true;
+                    moduleToUpdate.IsCompleted = false;
+                    await courseService.OpenModuleAsync(currentUserId, module.ModuleId);
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
             }
         }
 
