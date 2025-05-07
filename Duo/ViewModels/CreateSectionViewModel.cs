@@ -45,16 +45,15 @@ namespace Duo.ViewModels
             catch (Exception ex)
             {
                 Debug.WriteLine(ex);
+                RaiseErrorMessage("Initialization error", ex.Message);
             }
-            // OpenSelectQuizesCommand = new RelayCommand(OpenSelectQuizes);
-            // Update the RelayCommand initialization to use a lambda expression that matches the expected Func<object?, Task> signature.
+
             OpenSelectQuizesCommand = new RelayCommand(_ => Task.Run(OpenSelectQuizes));
             OpenSelectExamsCommand = new RelayCommand(_ => Task.Run(OpenSelectExams));
-            SaveButtonCommand = new RelayCommand(_ => CreateSection());
-            // OpenSelectExamsCommand = new RelayCommand(OpenSelectExams);
             SaveButtonCommand = new RelayCommand((_) => _ = CreateSection());
 
             RemoveQuizCommand = new RelayCommandWithParameter<Quiz>(RemoveSelectedQuiz);
+
             _ = Task.Run(async () => await GetQuizesAsync());
             _ = Task.Run(async () => await GetExamAsync());
         }
@@ -67,39 +66,62 @@ namespace Duo.ViewModels
                 if (subjectText != value)
                 {
                     subjectText = value;
-                    OnPropertyChanged(nameof(SubjectText)); // Notify UI
+                    OnPropertyChanged(nameof(SubjectText));
                 }
             }
         }
 
         public void RemoveSelectedQuiz(Quiz quizToBeRemoved)
         {
-            Debug.WriteLine("Removing quiz...");
-            SelectedQuizes.Remove(quizToBeRemoved);
+            try
+            {
+                Debug.WriteLine("Removing quiz...");
+                SelectedQuizes.Remove(quizToBeRemoved);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+                RaiseErrorMessage("Failed to remove quiz", ex.Message);
+            }
         }
 
         public void OpenSelectQuizes()
         {
-            Debug.WriteLine("Opening select quizes...");
-            ShowListViewModalQuizes?.Invoke(GetAvailableQuizes());
+            try
+            {
+                Debug.WriteLine("Opening select quizes...");
+                ShowListViewModalQuizes?.Invoke(GetAvailableQuizes());
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+                RaiseErrorMessage("Failed to open quiz selection", ex.Message);
+            }
         }
 
         public void OpenSelectExams()
         {
-            Debug.WriteLine("Opening select exams...");
-            ShowListViewModalExams?.Invoke(GetAvailableExams());
+            try
+            {
+                Debug.WriteLine("Opening select exams...");
+                ShowListViewModalExams?.Invoke(GetAvailableExams());
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+                RaiseErrorMessage("Failed to open exam selection", ex.Message);
+            }
         }
 
         public async Task GetQuizesAsync()
         {
             try
             {
-                Quizes.Clear(); // Clear the ObservableCollection
+                Quizes.Clear();
                 List<Quiz> quizes = await quizService.GetAllQuizzesFromSection(1);
-
                 foreach (var quiz in quizes)
                 {
-                    Debug.WriteLine(quiz); // Add each quiz to the ObservableCollection
+                    Debug.WriteLine(quiz);
                     Quizes.Add(quiz);
                 }
             }
@@ -107,6 +129,7 @@ namespace Duo.ViewModels
             {
                 Debug.WriteLine($"Error during GetQuizesAsync: {ex.Message}");
                 Debug.WriteLine(ex.StackTrace);
+                RaiseErrorMessage("Failed to fetch quizzes", ex.Message);
             }
         }
 
@@ -114,9 +137,8 @@ namespace Duo.ViewModels
         {
             try
             {
-                Quizes.Clear(); // Clear the ObservableCollection
+                Exams.Clear();
                 Exam exam = await quizService.GetExamFromSection(1);
-
                 if (exam != null)
                 {
                     Exams.Add(exam);
@@ -126,45 +148,80 @@ namespace Duo.ViewModels
             {
                 Debug.WriteLine($"Error during GetExamAsync: {ex.Message}");
                 Debug.WriteLine(ex.StackTrace);
+                RaiseErrorMessage("Failed to fetch exam", ex.Message);
             }
         }
 
         public List<Exam> GetAvailableExams()
         {
-            List<Exam> availableExams = new List<Exam>();
-            foreach (var exam in Exams)
+            try
             {
-                if (!SelectedExams.Contains(exam))
-                {
-                    availableExams.Add(exam);
-                }
+                return Exams.Where(exam => !SelectedExams.Contains(exam)).ToList();
             }
-            return availableExams;
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+                RaiseErrorMessage("Failed to get available exams", ex.Message);
+                return new List<Exam>();
+            }
         }
 
         public List<Quiz> GetAvailableQuizes()
         {
-            List<Quiz> availableQuizes = new List<Quiz>();
-            foreach (var quiz in Quizes)
+            try
             {
-                if (!SelectedQuizes.Contains(quiz))
-                {
-                    availableQuizes.Add(quiz);
-                }
+                return Quizes.Where(quiz => !SelectedQuizes.Contains(quiz)).ToList();
             }
-            return availableQuizes;
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+                RaiseErrorMessage("Failed to get available quizzes", ex.Message);
+                return new List<Quiz>();
+            }
         }
 
         public void AddQuiz(Quiz newQuiz)
         {
-            Debug.WriteLine("add quiz..." + newQuiz.Id);
-            SelectedQuizes.Add(newQuiz);
+            try
+            {
+                if (newQuiz == null)
+                {
+                    RaiseErrorMessage("Quiz is null", "Cannot add a null quiz.");
+                    return;
+                }
+                if (!SelectedQuizes.Contains(newQuiz))
+                {
+                    Debug.WriteLine("Adding quiz..." + newQuiz.Id);
+                    SelectedQuizes.Add(newQuiz);
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+                RaiseErrorMessage("Failed to add quiz", ex.Message);
+            }
         }
 
         public void AddExam(Exam newExam)
         {
-            Debug.WriteLine("add exam..." + newExam.Id);
-            SelectedExams.Add(newExam);
+            try
+            {
+                if (newExam == null)
+                {
+                    RaiseErrorMessage("Exam is null", "Cannot add a null exam.");
+                    return;
+                }
+                if (!SelectedExams.Contains(newExam))
+                {
+                    Debug.WriteLine("Adding exam..." + newExam.Id);
+                    SelectedExams.Add(newExam);
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+                RaiseErrorMessage("Failed to add exam", ex.Message);
+            }
         }
 
         public async Task CreateSection()
@@ -186,7 +243,6 @@ namespace Duo.ViewModels
                     RaiseErrorMessage("You must have exactly one exam selected!", string.Empty);
                     return;
                 }
-
                 newSection.Exam = SelectedExams.ToList()[0];
                 newSection.Exam.ExerciseList = await exerciseService.GetAllExercisesFromExam(newSection.Exam.Id);
                 int sectionId = await sectionService.AddSection(newSection);
@@ -195,7 +251,6 @@ namespace Duo.ViewModels
                     quiz.SectionId = sectionId;
                     await quizService.UpdateQuiz(quiz);
                 }
-
                 Debug.WriteLine("Section created: " + newSection);
             }
             catch (Exception ex)
