@@ -144,30 +144,43 @@ namespace Duo.Api.Controllers
         /// <param name="exercise">The exercise to add.</param>
         /// <returns>The created exercise.</returns>
         [HttpPost]
-        public async Task<ActionResult> AddExercise([FromBody] CreateExerciseDto dto)
+        public async Task<ActionResult> AddExercise([FromBody] Exercise exercise)
         {
-            if (dto == null)
+            if (exercise == null)
             {
-                return BadRequest("Invalid payload.");
+                return this.BadRequest("Invalid payload.");
             }
 
             try
             {
-                var exercise = new MultipleChoiceExercise
+                switch (exercise.Type)
                 {
-                    Question = dto.Question,
-                    Difficulty = dto.Difficulty,
-                };
+                    case "Association":
+                        AssociationExercise associationExercise = (AssociationExercise)exercise;
+                        await this.repository.AddExerciseAsync(associationExercise);
+                        break;
+                    case "FillInTheBlank":
+                        FillInTheBlankExercise fillInTheBlankExercise = (FillInTheBlankExercise)exercise;
+                        await this.repository.AddExerciseAsync(fillInTheBlankExercise);
+                        break;
+                    case "Flashcard":
+                        FlashcardExercise flashcardExercise = (FlashcardExercise)exercise;
+                        await this.repository.AddExerciseAsync(flashcardExercise);
+                        break;
+                    case "MultipleChoice":
+                        MultipleChoiceExercise multipleChoiceExercise = (MultipleChoiceExercise)exercise;
+                        await this.repository.AddExerciseAsync(multipleChoiceExercise);
+                        break;
+                }
 
-                await repository.AddExerciseAsync(exercise);
-                return CreatedAtRoute(
+                return this.CreatedAtRoute(
                   routeName: "GetExerciseById",
                   routeValues: new { id = exercise.ExerciseId },
                   value: exercise);
             }
             catch (Exception ex)
             {
-                return StatusCode(500, ex.Message);
+                return this.StatusCode(500, ex.Message);
             }
         }
 
