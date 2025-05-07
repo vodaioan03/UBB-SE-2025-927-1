@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Duo.Models;
 using Duo.Services.Interfaces;
+using System.Diagnostics;
 
 namespace Duo.Services
 {

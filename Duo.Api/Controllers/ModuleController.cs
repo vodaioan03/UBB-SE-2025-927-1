@@ -191,7 +191,7 @@ namespace Duo.Api.Controllers
                     return NotFound(new { result = new List<Module>(), message = "No modules found for the specified course!" });
                 }
 
-                return Ok(new { result = filteredModules, message = "Successfully retrieved list of modules." });
+                return Ok(filteredModules);
             }
             catch (Exception e)
             {

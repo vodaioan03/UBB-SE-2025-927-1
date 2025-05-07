@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Duo.Models;
@@ -81,6 +82,7 @@ namespace Duo.Services
         {
             if (await courseServiceProxy.IsUserEnrolled(userId, courseId))
             {
+                Debug.WriteLine("CoursePage constructor called");
                 return false;
             }
 
