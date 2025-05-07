@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
@@ -13,6 +14,19 @@ namespace Duo.ViewModels
         /// Notifies the UI when a property value changes.
         /// </summary>
         public event PropertyChangedEventHandler? PropertyChanged;
+
+        /// <summary>
+        /// Raised when the View should display an error message.
+        /// </summary>
+        public event EventHandler<(string Title, string Message)>? ShowErrorMessageRequested;
+
+        /// <summary>
+        /// Triggers an error message to be displayed in the UI.
+        /// </summary>
+        public virtual void RaiseErrorMessage(string title, string message)
+        {
+            ShowErrorMessageRequested?.Invoke(this, (title, message));
+        }
 
         /// <summary>
         /// Triggers a notification that a property has changed.
