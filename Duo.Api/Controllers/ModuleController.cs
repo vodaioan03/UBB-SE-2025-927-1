@@ -100,7 +100,7 @@ namespace Duo.Api.Controllers
         /// </summary>
         /// <param name="id">The ID of the module to remove.</param>
         /// <returns>ActionResult with operation result.</returns>
-        [HttpDelete("{id}")]
+        [HttpDelete("delete")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -128,7 +128,7 @@ namespace Duo.Api.Controllers
         /// </summary>
         /// <param name="id">The ID of the module to retrieve.</param>
         /// <returns>ActionResult with the module data or error message.</returns>
-        [HttpGet("{id}")]
+        [HttpGet("get")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -154,7 +154,7 @@ namespace Duo.Api.Controllers
         /// Gets a list of all modules in the system.
         /// </summary>
         /// <returns>ActionResult with list of modules or error message.</returns>
-        [HttpGet("list")]
+        [HttpGet("get-all")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> ListModules()
@@ -175,7 +175,7 @@ namespace Duo.Api.Controllers
         /// </summary>
         /// <param name="id">The ID of the course.</param>
         /// <returns>ActionResult with list of modules or error message.</returns>
-        [HttpGet("list/course/{id}")]
+        [HttpGet("get-modules-by-course-id")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -205,7 +205,7 @@ namespace Duo.Api.Controllers
         /// <param name="id">The ID of the module to update.</param>
         /// <param name="request">The updated module data.</param>
         /// <returns>ActionResult with operation result.</returns>
-        [HttpPatch("{id}")]
+        [HttpPatch("modify")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
