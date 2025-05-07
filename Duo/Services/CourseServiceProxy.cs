@@ -116,12 +116,12 @@ namespace Duo.Services
 
         public async Task<int> GetCompletedModulesCount(int userId, int courseId)
         {
-            return await httpClient.GetFromJsonAsync<int>($"{url}/api/course/completed-modules?userId={userId}&courseId={courseId}");
+            return await httpClient.GetFromJsonAsync<int>($"{url}/api/course/completed-modules-count?userId={userId}&courseId={courseId}");
         }
 
         public async Task<int> GetRequiredModulesCount(int courseId)
         {
-            return await httpClient.GetFromJsonAsync<int>($"{url}/api/course/requiredModules?courseId={courseId}");
+            return await httpClient.GetFromJsonAsync<int>($"{url}/api/course/required-modules-count?courseId={courseId}");
         }
 
         public async Task<bool> ClaimCompletionReward(int userId, int courseId)

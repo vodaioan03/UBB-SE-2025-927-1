@@ -225,8 +225,15 @@ namespace Duo.Api.Controllers
             return Ok(course.TimeToComplete);
         }
 
-        [HttpGet("completed-modules")]
-        public async Task<IActionResult> GetCompletedModules([FromQuery] int userId, [FromQuery] int courseId)
+        [HttpGet("completed-modules-count")]
+        public async Task<IActionResult> GetCompletedModulesCount([FromQuery] int userId, [FromQuery] int courseId)
+        {
+            var completedModules = await repository.GetCompletedModulesCountAsync(userId, courseId);
+            return Ok(completedModules);
+        }
+
+        [HttpGet("required-modules-count")]
+        public async Task<IActionResult> GetRequiredModulesCount([FromQuery] int userId, [FromQuery] int courseId)
         {
             var completedModules = await repository.GetCompletedModulesCountAsync(userId, courseId);
             return Ok(completedModules);
