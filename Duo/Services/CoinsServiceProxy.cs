@@ -61,6 +61,7 @@ namespace Duo.Services
         /// <returns><c>true</c> if the operation is successful; otherwise, <c>false</c>.</returns>
         public async Task<bool> ApplyDailyLoginBonusAsync(int userId)
         {
+            Console.WriteLine("daily bonus endpoint hit");
             var response = await httpClient.PostAsJsonAsync($"{url}/api/coins/dailybonus", new { UserId = userId });
             return response.IsSuccessStatusCode;
         }
