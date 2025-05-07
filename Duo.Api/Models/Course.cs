@@ -56,6 +56,8 @@ namespace Duo.Api.Models
 
         public List<Enrollment>? Enrollments { get; set; }
 
+        public ICollection<CourseTag> CourseTags { get; set; } = new List<CourseTag>();
+
         #endregion
 
         #region Constructors
