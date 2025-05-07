@@ -236,12 +236,26 @@ namespace Duo.Api.Controllers
         }
 
         [HttpGet("isCompleted")]
-        public async Task<IActionResult> IsCompleted(int moduleId, int userId)
+        public async Task<IActionResult> IsCompleted([FromQuery] int moduleId, [FromQuery] int userId)
         {
             try
             {
                 var isCompleted = await repository.IsModuleCompletedAsync(moduleId, userId);
                 return Ok(isCompleted);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(new { message = e.Message });
+            }
+        }
+
+        [HttpGet("isOpen")]
+        public async Task<IActionResult> IsOpen([FromQuery]int moduleId, [FromQuery] int userId)
+        {
+            try
+            {
+                var isOpen = await repository.IsModuleOpenAsync(moduleId, userId);
+                return Ok(isOpen);
             }
             catch (Exception e)
             {
