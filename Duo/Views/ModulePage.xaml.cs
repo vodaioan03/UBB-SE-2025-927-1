@@ -12,6 +12,9 @@ namespace Duo.Views
     public sealed partial class ModulePage : Page
     {
         private IModuleViewModel viewModel = null!;
+
+        private int CurrentUserId { get; init; } = 1;
+
         public ModulePage()
         {
             this.InitializeComponent();
@@ -25,6 +28,7 @@ namespace Duo.Views
                 viewModel = new ModuleViewModel(
                             module,
                             courseVM,
+                            CurrentUserId,
                             new CourseService(new CourseServiceProxy(new System.Net.Http.HttpClient())),          // as IModuleCompletionService
                             new CoinsService(new CoinsServiceProxy(new System.Net.Http.HttpClient())));         // as ICoinsService
                 this.DataContext = viewModel;
