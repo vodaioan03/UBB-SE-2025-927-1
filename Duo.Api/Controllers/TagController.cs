@@ -73,7 +73,7 @@ namespace Duo.Api.Controllers
         /// Lists all tags in the database.
         /// </summary>
         /// <returns>A list of all tags.</returns>
-        [HttpGet("get-all")]
+        [HttpGet("list")]
         public async Task<IActionResult> ListTags()
         {
             try
@@ -92,7 +92,7 @@ namespace Duo.Api.Controllers
         /// </summary>
         /// <param name="updatedTag">The updated tag data, including TagId.</param>
         /// <returns>The updated tag if found; otherwise, NotFound.</returns>
-        [HttpPut("modify")]
+        [HttpPut("update")]
         public async Task<IActionResult> UpdateTag([FromForm] Tag updatedTag)
         {
             var tag = await repository.GetTagByIdAsync(updatedTag.TagId);

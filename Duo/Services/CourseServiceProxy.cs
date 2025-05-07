@@ -21,7 +21,7 @@ namespace Duo.Services
 
         public async Task<List<Course>> GetAllCourses()
         {
-            return await httpClient.GetFromJsonAsync<List<Course>>($"{url}/course/get-all");
+            return await httpClient.GetFromJsonAsync<List<Course>>($"{url}/course/list");
         }
 
         public async Task<Course> GetCourse(int courseId)
@@ -31,7 +31,7 @@ namespace Duo.Services
 
         public async Task<List<Tag>> GetAllTags()
         {
-            return await httpClient.GetFromJsonAsync<List<Tag>>($"{url}/tag/get-all");
+            return await httpClient.GetFromJsonAsync<List<Tag>>($"{url}/tag/list");
         }
 
         public async Task<List<Tag>> GetTagsForCourse(int courseId)
@@ -46,7 +46,7 @@ namespace Duo.Services
 
         public async Task<List<Module>> GetModulesByCourseId(int courseId)
         {
-            return await httpClient.GetFromJsonAsync<List<Module>>($"{url}/module/get-modules-by-course-id?id={courseId}");
+            return await httpClient.GetFromJsonAsync<List<Module>>($"{url}/module/list?courseId={courseId}");
         }
 
         public async Task<Module> GetModule(int moduleId)
@@ -61,12 +61,12 @@ namespace Duo.Services
 
         public async Task EnrollUser(int userId, int courseId)
         {
-            await httpClient.PostAsJsonAsync($"{url}/course/add-enrollment", new { UserId = userId, CourseId = courseId });
+            await httpClient.PostAsJsonAsync($"{url}/course/enroll", new { UserId = userId, CourseId = courseId });
         }
 
         public async Task<bool> IsUserEnrolled(int userId, int courseId)
         {
-            return await httpClient.GetFromJsonAsync<bool>($"{url}/course/get-enrollment-status?userId={userId}&courseId={courseId}");
+            return await httpClient.GetFromJsonAsync<bool>($"{url}/course/isEnrolled?userId={userId}&courseId={courseId}");
         }
 
         public async Task CompleteModule(int userId, int moduleId)
@@ -76,22 +76,22 @@ namespace Duo.Services
 
         public async Task<bool> IsCourseCompleted(int userId, int courseId)
         {
-            return await httpClient.GetFromJsonAsync<bool>($"{url}/course/get-completed-status?userId={userId}&courseId={courseId}");
+            return await httpClient.GetFromJsonAsync<bool>($"{url}/course/isCompleted?userId={userId}&courseId={courseId}");
         }
 
         public async Task MarkCourseAsCompleted(int userId, int courseId)
         {
-            await httpClient.PostAsJsonAsync($"{url}/course/add-completion-reward", new { UserId = userId, CourseId = courseId });
+            await httpClient.PostAsJsonAsync($"{url}/course/complete", new { UserId = userId, CourseId = courseId });
         }
 
         public async Task UpdateTimeSpent(int userId, int courseId, int seconds)
         {
-            await httpClient.PostAsJsonAsync($"{url}/course/modify-time", new { UserId = userId, CourseId = courseId, Seconds = seconds });
+            await httpClient.PostAsJsonAsync($"{url}/course/updateTime", new { UserId = userId, CourseId = courseId, Seconds = seconds });
         }
 
         public async Task<int> GetTimeSpent(int userId, int courseId)
         {
-            return await httpClient.GetFromJsonAsync<int>($"{url}/course/get-time-spent?userId={userId}&courseId={courseId}");
+            return await httpClient.GetFromJsonAsync<int>($"{url}/course/timeSpent?userId={userId}&courseId={courseId}");
         }
 
         public async Task ClickModuleImage(int userId, int moduleId)
@@ -126,19 +126,19 @@ namespace Duo.Services
 
         public async Task<bool> ClaimCompletionReward(int userId, int courseId)
         {
-            var response = await httpClient.PostAsJsonAsync($"{url}/course/add-completion-reward", new { UserId = userId, CourseId = courseId });
+            var response = await httpClient.PostAsJsonAsync($"{url}/course/claimReward", new { UserId = userId, CourseId = courseId });
             return response.IsSuccessStatusCode;
         }
 
         public async Task<bool> ClaimTimedReward(int userId, int courseId, int timeSpent)
         {
-            var response = await httpClient.PostAsJsonAsync($"{url}/course/add-time-reward", new { UserId = userId, CourseId = courseId, TimeSpent = timeSpent });
+            var response = await httpClient.PostAsJsonAsync($"{url}/course/claimTimedReward", new { UserId = userId, CourseId = courseId, TimeSpent = timeSpent });
             return response.IsSuccessStatusCode;
         }
 
         public async Task<int> GetCourseTimeLimit(int courseId)
         {
-            return await httpClient.GetFromJsonAsync<int>($"{url}/course/get-time-limit?courseId={courseId}");
+            return await httpClient.GetFromJsonAsync<int>($"{url}/course/timeLimit?courseId={courseId}");
         }
 
         public async Task<bool> BuyBonusModule(int userId, int moduleId, int courseId)

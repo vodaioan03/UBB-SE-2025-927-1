@@ -19,14 +19,14 @@ namespace Duo.Api.Controllers
         }
 
         // GET: api/Roadmaps
-        [HttpGet("get-all")]
+        [HttpGet]
         public async Task<ActionResult<IEnumerable<Roadmap>>> GetRoadmap()
         {
             return await context.Roadmaps.ToListAsync();
         }
 
         // GET: api/Roadmaps/5
-        [HttpGet("get")]
+        [HttpGet("{id}")]
         public async Task<ActionResult<Roadmap>> GetRoadmap(int id)
         {
             var roadmap = await context.Roadmaps.FindAsync(id);
@@ -40,7 +40,7 @@ namespace Duo.Api.Controllers
         }
 
         // GET: api/Roadmaps?name=example
-        [HttpGet("get-searched")]
+        [HttpGet("search")]
         public async Task<ActionResult<IEnumerable<Roadmap>>> GetRoadmapsByName(string name)
         {
             var roadmaps = await context.Roadmaps
@@ -55,7 +55,7 @@ namespace Duo.Api.Controllers
 
         // PUT: api/Roadmaps/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("modify")]
+        [HttpPut("{id}")]
         public async Task<IActionResult> PutRoadmap(int id, Roadmap roadmap)
         {
             if (id != roadmap.Id)
@@ -86,7 +86,7 @@ namespace Duo.Api.Controllers
 
         // POST: api/Roadmaps
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost("add")]
+        [HttpPost]
         public async Task<ActionResult<Roadmap>> PostRoadmap(Roadmap roadmap)
         {
             context.Roadmaps.Add(roadmap);
@@ -96,7 +96,7 @@ namespace Duo.Api.Controllers
         }
 
         // DELETE: api/Roadmaps/5
-        [HttpDelete("delete")]
+        [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteRoadmap(int id)
         {
             var roadmap = await context.Roadmaps.FindAsync(id);

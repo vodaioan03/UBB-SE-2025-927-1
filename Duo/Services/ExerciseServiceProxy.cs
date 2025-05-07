@@ -28,7 +28,7 @@ namespace Duo.Services
             }
             try
             {
-                var response = await httpClient.PostAsJsonAsync($"{url}/exercise/add", exercise);
+                var response = await httpClient.PostAsJsonAsync($"{url}api/Exercise", exercise);
                 response.EnsureSuccessStatusCode();
             }
             catch (HttpRequestException ex)
@@ -45,7 +45,7 @@ namespace Duo.Services
         {
             try
             {
-                var response = await httpClient.DeleteAsync($"{url}/exercise/delete?id={exerciseId}");
+                var response = await httpClient.DeleteAsync($"{url}api/Exercise/{exerciseId}");
                 response.EnsureSuccessStatusCode();
             }
             catch (HttpRequestException ex)
@@ -62,7 +62,7 @@ namespace Duo.Services
         {
             try
             {
-                var response = await httpClient.GetAsync($"{url}/exercise/get-all");
+                var response = await httpClient.GetAsync($"{url}api/Exercise");
                 response.EnsureSuccessStatusCode();
                 var exercises = await response.Content.ReadFromJsonAsync<List<Exercise>>();
                 return exercises ?? new List<Exercise>();
@@ -83,7 +83,7 @@ namespace Duo.Services
         {
             try
             {
-                var response = await httpClient.GetAsync($"{url}/exercise/get-exercises-by-exam-id?examId={examId}");
+                var response = await httpClient.GetAsync($"{url}api/Exercise/exam/{examId}");
                 response.EnsureSuccessStatusCode();
                 var exercises = await response.Content.ReadFromJsonAsync<List<Exercise>>();
                 return exercises ?? new List<Exercise>();
@@ -104,7 +104,7 @@ namespace Duo.Services
         {
             try
             {
-                var response = await httpClient.GetAsync($"{url}/exercise/get-exercises-by-quiz-id?quizId={quizId}");
+                var response = await httpClient.GetAsync($"{url}api/Exercise/quiz/{quizId}");
                 response.EnsureSuccessStatusCode();
                 var exercises = await response.Content.ReadFromJsonAsync<List<Exercise>>();
                 return exercises ?? new List<Exercise>();
@@ -125,7 +125,7 @@ namespace Duo.Services
         {
             try
             {
-                var response = await httpClient.GetAsync($"{url}/exercise/get?exerciseId={exerciseId}");
+                var response = await httpClient.GetAsync($"{url}api/Exercise/{exerciseId}");
                 response.EnsureSuccessStatusCode();
                 var exercise = await response.Content.ReadFromJsonAsync<Exercise>();
                 return exercise ?? throw new InvalidOperationException("Exercise not found.");

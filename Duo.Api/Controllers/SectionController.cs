@@ -92,7 +92,7 @@ namespace Duo.Api.Controllers
         /// </summary>
         /// <param name="id">The ID of the section to remove.</param>
         /// <returns>ActionResult with operation result.</returns>
-        [HttpDelete("delete")]
+        [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -120,7 +120,7 @@ namespace Duo.Api.Controllers
         /// </summary>
         /// <param name="id">The ID of the section to retrieve.</param>
         /// <returns>ActionResult with the section data or error message.</returns>
-        [HttpGet("get")]
+        [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -146,7 +146,7 @@ namespace Duo.Api.Controllers
         /// Gets a list of all sections in the system.
         /// </summary>
         /// <returns>ActionResult with list of sections or error message.</returns>
-        [HttpGet("get-all")]
+        [HttpGet("list")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> ListSections()
@@ -167,7 +167,7 @@ namespace Duo.Api.Controllers
         /// </summary>
         /// <param name="roadmapId">The ID of the roadmap.</param>
         /// <returns>ActionResult with list of sections or error message.</returns>
-        [HttpGet("get-sections-by-roadmap-id")]
+        [HttpGet("list/roadmap/{roadmapId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -197,7 +197,7 @@ namespace Duo.Api.Controllers
         /// <param name="id">The ID of the section to update.</param>
         /// <param name="request">The updated section data.</param>
         /// <returns>ActionResult with operation result.</returns>
-        [HttpPatch("modify")]
+        [HttpPatch("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -231,7 +231,7 @@ namespace Duo.Api.Controllers
         /// </summary>
         /// <param name="roadmapId">The ID of the roadmap.</param>
         /// <returns>The count of sections.</returns>
-        [HttpGet("get-section-count-from-roadmap")]
+        [HttpGet("count-on-roadmap")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> GetSectionCountOnRoadmap([FromQuery] int roadmapId)
@@ -253,7 +253,7 @@ namespace Duo.Api.Controllers
         /// </summary>
         /// <param name="roadmapId">The ID of the roadmap.</param>
         /// <returns>The last order number.</returns>
-        [HttpGet("get-last-order-number-from-roadmap")]
+        [HttpGet("last-from-roadmap")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> GetLastOrderNumberFromRoadmap([FromQuery] int roadmapId)
