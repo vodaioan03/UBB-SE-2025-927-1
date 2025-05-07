@@ -22,9 +22,6 @@ namespace Duo.Views
 
         public CoursePage()
         {
-            viewModel = new CourseViewModel();
-            this.DataContext = viewModel;
-            viewModel.GetCoinBalanceAsync(CurrentUserId);
             this.InitializeComponent();
         }
 

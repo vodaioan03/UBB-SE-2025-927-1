@@ -138,7 +138,7 @@ namespace Duo.Services
 
         public async Task<int> GetCourseTimeLimit(int courseId)
         {
-            return await httpClient.GetFromJsonAsync<int>($"{url}/api/course/timeLimit?courseId={courseId}");
+            return await httpClient.GetFromJsonAsync<int>($"{url}/api/course/get-time-limit?courseId={courseId}");
         }
 
         public async Task<bool> BuyBonusModule(int userId, int moduleId, int courseId)

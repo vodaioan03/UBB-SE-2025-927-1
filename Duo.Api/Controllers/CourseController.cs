@@ -215,7 +215,7 @@ namespace Duo.Api.Controllers
         /// <param name="courseId">The course ID.</param>
         /// <returns>The time limit in seconds.</returns>
         [HttpGet("get-time-limit")]
-        public async Task<IActionResult> GetTimeLimit([FromForm] int courseId)
+        public async Task<IActionResult> GetTimeLimit([FromQuery] int courseId)
         {
             var course = await repository.GetCourseByIdAsync(courseId);
             if (course == null)
