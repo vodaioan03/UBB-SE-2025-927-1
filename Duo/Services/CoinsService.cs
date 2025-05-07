@@ -26,15 +26,7 @@ namespace Duo.Services
         /// <returns>The coin balance of the user, or 0 if an error occurs.</returns>
         public async Task<int> GetCoinBalanceAsync(int userId)
         {
-            try
-            {
-                return await serviceProxy.GetUserCoinBalanceAsync(userId);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error in GetCoinBalanceAsync: {ex.Message}");
-                return 0;
-            }
+            return await serviceProxy.GetUserCoinBalanceAsync(userId);
         }
 
         /// <summary>
@@ -45,15 +37,7 @@ namespace Duo.Services
         /// <returns>True if the operation was successful, false otherwise.</returns>
         public async Task<bool> TrySpendingCoinsAsync(int userId, int cost)
         {
-            try
-            {
-                return await serviceProxy.TrySpendingCoinsAsync(userId, cost);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error in TrySpendingCoinsAsync: {ex.Message}");
-                return false;
-            }
+            return await serviceProxy.TrySpendingCoinsAsync(userId, cost);
         }
 
         /// <summary>
@@ -63,14 +47,7 @@ namespace Duo.Services
         /// <param name="amount">The amount of coins to add.</param>
         public async Task AddCoinsAsync(int userId, int amount)
         {
-            try
-            {
-                await serviceProxy.AddCoinsAsync(userId, amount);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error in AddCoinsAsync: {ex.Message}");
-            }
+            await serviceProxy.AddCoinsAsync(userId, amount);
         }
 
         /// <summary>
@@ -80,15 +57,9 @@ namespace Duo.Services
         /// <returns>True if the bonus was applied, false if the user has already logged in today.</returns>
         public async Task<bool> ApplyDailyLoginBonusAsync(int userId = 0)
         {
-            try
-            {
-                return await serviceProxy.ApplyDailyLoginBonusAsync(userId);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error in ApplyDailyLoginBonusAsync: {ex.Message}");
-                return false;
-            }
+
+            return await serviceProxy.ApplyDailyLoginBonusAsync(userId);
+
         }
     }
 }

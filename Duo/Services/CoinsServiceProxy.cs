@@ -27,21 +27,8 @@ namespace Duo.Services
         /// <returns>The user's coin balance, or 0 if an error occurs.</returns>
         public async Task<int> GetUserCoinBalanceAsync(int userId)
         {
-            try
-            {
-                var response = await httpClient.GetFromJsonAsync<int>($"{url}/coins/balance/{userId}");
-                return response;
-            }
-            catch (HttpRequestException ex)
-            {
-                Console.Error.WriteLine($"Error fetching coin balance: {ex.Message}");
-                return 0;
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
-                return 0;
-            }
+            var response = await httpClient.GetFromJsonAsync<int>($"{url}/coins/balance/{userId}");
+            return response;
         }
 
         /// <summary>
@@ -52,21 +39,8 @@ namespace Duo.Services
         /// <returns><c>true</c> if the operation is successful; otherwise, <c>false</c>.</returns>
         public async Task<bool> TrySpendingCoinsAsync(int userId, int cost)
         {
-            try
-            {
-                var response = await httpClient.PostAsJsonAsync($"{url}/coins/spend", new { UserId = userId, Cost = cost });
-                return response.IsSuccessStatusCode;
-            }
-            catch (HttpRequestException ex)
-            {
-                Console.Error.WriteLine($"Error spending coins: {ex.Message}");
-                return false;
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
-                return false;
-            }
+            var response = await httpClient.PostAsJsonAsync($"{url}/coins/spend", new { UserId = userId, Cost = cost });
+            return response.IsSuccessStatusCode;
         }
 
         /// <summary>
@@ -77,18 +51,7 @@ namespace Duo.Services
         /// <returns>A task that represents the asynchronous operation.</returns>
         public async Task AddCoinsAsync(int userId, int amount)
         {
-            try
-            {
-                await httpClient.PostAsJsonAsync($"{url}/coins/add", new { UserId = userId, Amount = amount });
-            }
-            catch (HttpRequestException ex)
-            {
-                Console.Error.WriteLine($"Error adding coins: {ex.Message}");
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
-            }
+            await httpClient.PostAsJsonAsync($"{url}/coins/add", new { UserId = userId, Amount = amount });
         }
 
         /// <summary>
@@ -98,21 +61,8 @@ namespace Duo.Services
         /// <returns><c>true</c> if the operation is successful; otherwise, <c>false</c>.</returns>
         public async Task<bool> ApplyDailyLoginBonusAsync(int userId)
         {
-            try
-            {
-                var response = await httpClient.PostAsJsonAsync($"{url}/coins/dailybonus", new { UserId = userId });
-                return response.IsSuccessStatusCode;
-            }
-            catch (HttpRequestException ex)
-            {
-                Console.Error.WriteLine($"Error applying daily login bonus: {ex.Message}");
-                return false;
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
-                return false;
-            }
+            var response = await httpClient.PostAsJsonAsync($"{url}/coins/dailybonus", new { UserId = userId });
+            return response.IsSuccessStatusCode;
         }
     }
 }
