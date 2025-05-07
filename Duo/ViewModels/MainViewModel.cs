@@ -18,7 +18,7 @@ namespace Duo.ViewModels
     /// </summary>
     public partial class MainViewModel : BaseViewModel, IMainViewModel
     {
-        private int CurrentUserId { get; init; }
+        private int CurrentUserId { get; init; } = 1;
 
         private readonly ICourseService courseService;
         private readonly ICoinsService coinsService;
@@ -189,6 +189,8 @@ namespace Duo.ViewModels
                 }
 
                 ResetAllFiltersCommand = new RelayCommand(ResetAllFilters);
+
+                await RefreshUserCoinBalanceAsync();
             }
             catch (Exception e)
             {

@@ -18,7 +18,7 @@ namespace Duo.Services
 #pragma warning restore SA1009 // Closing parenthesis should be spaced correctly
     {
         private readonly HttpClient httpClient = httpClient;
-        private readonly string url = "https://localhost:7174/";
+        private readonly string url = "https://localhost:7174";
 
         /// <summary>
         /// Retrieves the coin balance for a specific user.
