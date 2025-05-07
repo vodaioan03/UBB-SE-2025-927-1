@@ -54,7 +54,7 @@ namespace Duo.Api.Controllers
         /// Lists all courses in the database.
         /// </summary>
         /// <returns>A list of all courses.</returns>
-        [HttpGet("list")]
+        [HttpGet("get-all")]
         public async Task<IActionResult> ListCourses()
         {
             var courses = await repository.GetCoursesFromDbAsync();
@@ -66,7 +66,7 @@ namespace Duo.Api.Controllers
         /// </summary>
         /// <param name="updatedCourse">The updated course data, including CourseId.</param>
         /// <returns>The updated course if found; otherwise, NotFound.</returns>
-        [HttpPut("update")]
+        [HttpPut("modify")]
         public async Task<IActionResult> UpdateCourse([FromForm] Course updatedCourse)
         {
             var course = await repository.GetCourseByIdAsync(updatedCourse.CourseId);
@@ -101,7 +101,7 @@ namespace Duo.Api.Controllers
         /// <param name="userId">The ID of the user.</param>
         /// <param name="courseId">The ID of the course.</param>
         /// <returns>Ok if enrollment is successful.</returns>
-        [HttpPost("enroll")]
+        [HttpPost("add-enrollment")]
         public async Task<IActionResult> Enroll([FromForm] int userId, [FromForm] int courseId)
         {
             await repository.EnrollUserInCourseAsync(userId, courseId);
@@ -114,7 +114,7 @@ namespace Duo.Api.Controllers
         /// <param name="userId">The ID of the user.</param>
         /// <param name="courseId">The ID of the course.</param>
         /// <returns>True if enrolled; otherwise, false.</returns>
-        [HttpGet("is-enrolled")]
+        [HttpGet("get-enrollment-status")]
         public async Task<IActionResult> IsEnrolled([FromForm] int userId, [FromForm] int courseId)
         {
             var isEnrolled = await repository.IsUserEnrolledInCourseAsync(userId, courseId);
@@ -127,7 +127,7 @@ namespace Duo.Api.Controllers
         /// <param name="userId">The ID of the user.</param>
         /// <param name="courseId">The ID of the course.</param>
         /// <returns>True if completed; otherwise, false.</returns>
-        [HttpGet("is-completed")]
+        [HttpGet("get-completed-status")]
         public async Task<IActionResult> IsCompleted([FromForm] int userId, [FromForm] int courseId)
         {
             var isCompleted = await repository.IsCourseCompletedAsync(userId, courseId);
@@ -163,7 +163,7 @@ namespace Duo.Api.Controllers
         /// <param name="courseId">The course ID.</param>
         /// <param name="timeInSeconds">The time in seconds to add.</param>
         /// <returns>Ok if updated.</returns>
-        [HttpPut("update-time")]
+        [HttpPut("modify-time")]
         public async Task<IActionResult> UpdateTime([FromForm] int userId, [FromForm] int courseId, [FromForm] int timeInSeconds)
         {
             await repository.UpdateTimeSpentAsync(userId, courseId, timeInSeconds);
@@ -176,7 +176,7 @@ namespace Duo.Api.Controllers
         /// <param name="userId">The user ID.</param>
         /// <param name="courseId">The course ID.</param>
         /// <returns>Ok if reward claimed.</returns>
-        [HttpPost("claim-completion")]
+        [HttpPost("add-completion-reward")]
         public async Task<IActionResult> ClaimCompletionReward([FromForm] int userId, [FromForm] int courseId)
         {
             await repository.ClaimCompletionRewardAsync(userId, courseId);
@@ -189,7 +189,7 @@ namespace Duo.Api.Controllers
         /// <param name="userId">The user ID.</param>
         /// <param name="courseId">The course ID.</param>
         /// <returns>Ok if reward claimed.</returns>
-        [HttpPost("claim-time")]
+        [HttpPost("add-time-reward")]
         public async Task<IActionResult> ClaimTimeReward([FromForm] int userId, [FromForm] int courseId)
         {
             await repository.ClaimTimeRewardAsync(userId, courseId);
@@ -202,7 +202,7 @@ namespace Duo.Api.Controllers
         /// <param name="userId">The user ID.</param>
         /// <param name="courseId">The course ID.</param>
         /// <returns>The time spent in seconds.</returns>
-        [HttpGet("get-time")]
+        [HttpGet("get-time-spent")]
         public async Task<IActionResult> GetTimeSpent([FromForm] int userId, [FromForm] int courseId)
         {
             var timeSpent = await repository.GetTimeSpentAsync(userId, courseId);
