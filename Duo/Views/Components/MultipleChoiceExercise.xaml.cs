@@ -1,50 +1,77 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Duo.Models.Exercises;
+using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Data;
-using Microsoft.UI.Xaml.Documents;
-using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Navigation;
-using Microsoft.UI.Xaml.Shapes;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
 using Windows.UI;
 using Windows.UI.ViewManagement;
+using Duo.ViewModels.Base;
+using Duo.Models.Exercises;
 
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
 namespace Duo.Views.Components
 {
     public sealed partial class MultipleChoiceExercise : UserControl
     {
         public event EventHandler<MultipleChoiceExerciseEventArgs> OnSendClicked;
-
         public event RoutedEventHandler Click;
         private Button selectedLeftButton;
         private Button selectedRightButton;
 
         public static readonly DependencyProperty QuestionProperty =
-           DependencyProperty.Register(nameof(Question), typeof(string), typeof(AssociationExercise), new PropertyMetadata(string.Empty));
+            DependencyProperty.Register(nameof(Question), typeof(string), typeof(MultipleChoiceExercise), new PropertyMetadata(string.Empty));
 
         public static readonly DependencyProperty AnswersProperty =
-            DependencyProperty.Register(nameof(Answers), typeof(ObservableCollection<string>), typeof(AssociationExercise), new PropertyMetadata(new ObservableCollection<string>()));
+            DependencyProperty.Register(nameof(Answers), typeof(ObservableCollection<MultipleChoiceAnswerModel>), typeof(MultipleChoiceExercise), new PropertyMetadata(new ObservableCollection<MultipleChoiceAnswerModel>()));
 
         private static readonly SolidColorBrush TransparentBrush = new SolidColorBrush(Microsoft.UI.Colors.Transparent);
-
         private List<Button> selectedButtons = new List<Button>();
 
         public MultipleChoiceExercise()
         {
-            this.InitializeComponent();
+            try
+            {
+                this.InitializeComponent();
+                if (this.DataContext is ViewModelBase viewModel)
+                {
+                    viewModel.ShowErrorMessageRequested += ViewModel_ShowErrorMessageRequested;
+                }
+                else
+                {
+                    _ = ShowErrorMessage("Initialization Error", "DataContext is not set to a valid ViewModel.");
+                }
+            }
+            catch (Exception ex)
+            {
+                _ = ShowErrorMessage("Initialization Error", $"Failed to initialize MultipleChoiceExercise.\nDetails: {ex.Message}");
+            }
+        }
+
+        private async void ViewModel_ShowErrorMessageRequested(object sender, (string Title, string Message) e)
+        {
+            await ShowErrorMessage(e.Title, e.Message);
+        }
+
+        private async Task ShowErrorMessage(string title, string message)
+        {
+            try
+            {
+                var dialog = new ContentDialog
+                {
+                    Title = title,
+                    Content = message,
+                    CloseButtonText = "OK",
+                    XamlRoot = this.XamlRoot
+                };
+
+                await dialog.ShowAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error dialog failed to display. Details: {ex.Message}");
+            }
         }
 
         public string Question
@@ -58,47 +85,91 @@ namespace Duo.Views.Components
             get => (ObservableCollection<MultipleChoiceAnswerModel>)GetValue(AnswersProperty);
             set => SetValue(AnswersProperty, value);
         }
+
         public Color GetSystemAccentColor()
         {
-            var uiSettings = new UISettings();
-            return uiSettings.GetColorValue(UIColorType.Accent);
+            try
+            {
+                var uiSettings = new UISettings();
+                return uiSettings.GetColorValue(UIColorType.Accent);
+            }
+            catch (Exception ex)
+            {
+                _ = ShowErrorMessage("Color Error", $"Failed to get system accent color.\nDetails: {ex.Message}");
+                return Microsoft.UI.Colors.Gray; // Fallback color
+            }
         }
+
         public Color GetSystemAccentTextColor()
         {
-            var uiSettings = new UISettings();
-            return uiSettings.GetColorValue(UIColorType.Complement);
+            try
+            {
+                var uiSettings = new UISettings();
+                return uiSettings.GetColorValue(UIColorType.Complement);
+            }
+            catch (Exception ex)
+            {
+                _ = ShowErrorMessage("Color Error", $"Failed to get system accent text color.\nDetails: {ex.Message}");
+                return Microsoft.UI.Colors.Black; // Fallback color
+            }
         }
 
         private void SetDefaultButtonStyles(Button clickedButton)
         {
-            clickedButton.Background = TransparentBrush;
+            try
+            {
+                clickedButton.Background = TransparentBrush;
+            }
+            catch (Exception ex)
+            {
+                _ = ShowErrorMessage("Button Style Error", $"Failed to set default button styles.\nDetails: {ex.Message}");
+            }
         }
 
         private void Option_Click(object sender, RoutedEventArgs e)
         {
-            var clickedButton = sender as Button;
-            if (selectedButtons.Contains(clickedButton))
+            try
             {
-                SetDefaultButtonStyles(clickedButton);
-                selectedButtons.Remove(clickedButton);
-            }
-            else
-            {
-                foreach (var selectedButton in selectedButtons)
+                var clickedButton = sender as Button;
+                if (clickedButton == null)
                 {
-                    SetDefaultButtonStyles(selectedButton);
+                    _ = ShowErrorMessage("Click Error", "Invalid button clicked.");
+                    return;
                 }
-                selectedButtons.Clear();
-                clickedButton.Background = new SolidColorBrush(GetSystemAccentColor());
-                selectedButtons.Add(clickedButton);
+
+                if (selectedButtons.Contains(clickedButton))
+                {
+                    SetDefaultButtonStyles(clickedButton);
+                    selectedButtons.Remove(clickedButton);
+                }
+                else
+                {
+                    foreach (var selectedButton in selectedButtons)
+                    {
+                        SetDefaultButtonStyles(selectedButton);
+                    }
+                    selectedButtons.Clear();
+                    clickedButton.Background = new SolidColorBrush(GetSystemAccentColor());
+                    selectedButtons.Add(clickedButton);
+                }
+            }
+            catch (Exception ex)
+            {
+                _ = ShowErrorMessage("Option Click Error", $"Failed to handle option click.\nDetails: {ex.Message}");
             }
         }
 
         private void Send_Click(object sender, RoutedEventArgs e)
         {
-            List<string> userChoices = selectedButtons.Select(b => b.Content.ToString()).ToList();
-
-            OnSendClicked?.Invoke(this, new MultipleChoiceExerciseEventArgs(userChoices));
+            try
+            {
+                List<string> userChoices = selectedButtons.Select(b => b.Content.ToString()).ToList();
+                OnSendClicked?.Invoke(this, new MultipleChoiceExerciseEventArgs(userChoices));
+            }
+            catch (Exception ex)
+            {
+                _ = ShowErrorMessage("Send Click Error", $"Failed to process send action.\nDetails: {ex.Message}");
+            }
         }
 
         public class MultipleChoiceExerciseEventArgs : EventArgs

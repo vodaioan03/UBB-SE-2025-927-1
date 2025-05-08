@@ -14,47 +14,63 @@ namespace Duo.ViewModels.ExerciseViewModels
         private MultipleChoiceExercise? exercise;
         private ObservableCollection<string>? userChoices;
         private readonly IExerciseService exerciseService;
+
         public ObservableCollection<string>? UserChoices
         {
-            get
-            {
-                return userChoices;
-            }
-            set
-            {
-                SetProperty(ref userChoices, value);
-            }
+            get => userChoices;
+            set => SetProperty(ref userChoices, value);
         }
 
         public MultipleChoiceExerciseViewModel(IExerciseService service)
         {
-            exerciseService = service;
+            try
+            {
+                exerciseService = service ?? throw new ArgumentNullException(nameof(service));
+            }
+            catch (Exception ex)
+            {
+                RaiseErrorMessage("Initialization Error", $"Failed to initialize MultipleChoiceExerciseViewModel.\nDetails: {ex.Message}");
+            }
         }
 
         public async Task GetExercise(int id)
         {
-            Exercise exercise = await exerciseService.GetExerciseById(id);
-            if (exercise is MultipleChoiceExercise multipleChoiceExercise)
+            try
             {
-                this.exercise = multipleChoiceExercise;
+                Exercise exercise = await exerciseService.GetExerciseById(id);
+                if (exercise is MultipleChoiceExercise multipleChoiceExercise)
+                {
+                    this.exercise = multipleChoiceExercise;
+                    userChoices = new ObservableCollection<string>();
+                }
+                else
+                {
+                    RaiseErrorMessage("Exercise Error", $"Invalid exercise type for ID {id}. Expected MultipleChoiceExercise.");
+                }
             }
-            else
+            catch (Exception ex)
             {
-                throw new Exception("Invalid exercise type given to viewModel");
+                RaiseErrorMessage("Exercise Load Error", $"Failed to load exercise with ID {id}.\nDetails: {ex.Message}");
             }
-
-            userChoices =
-                [];
         }
 
         public bool VerifyIfAnswerIsCorrect()
         {
-            if (exercise == null || userChoices == null)
+            try
             {
-                throw new InvalidOperationException("Exercise or UserAnswers is not initialized.");
-            }
+                if (exercise == null || userChoices == null)
+                {
+                    RaiseErrorMessage("Validation Error", "Exercise or UserChoices is not initialized.");
+                    return false;
+                }
 
-            return exercise.ValidateAnswer([.. userChoices]);
+                return exercise.ValidateAnswer(userChoices.ToList());
+            }
+            catch (Exception ex)
+            {
+                RaiseErrorMessage("Validation Error", $"Failed to verify answer.\nDetails: {ex.Message}");
+                return false;
+            }
         }
     }
 }
