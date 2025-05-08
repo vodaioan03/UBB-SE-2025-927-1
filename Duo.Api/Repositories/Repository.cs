@@ -149,6 +149,14 @@ namespace Duo.Api.Repositories
             }
         }
 
+        public async Task<List<Tag>> GetTagsForCourseAsync(int courseId)
+        {
+            return await context.CourseTags
+                .Where(ct => ct.CourseId == courseId)
+                .Select(ct => ct.Tag)
+                .ToListAsync();
+        }
+
         #endregion
 
         #region Modules
@@ -218,7 +226,14 @@ namespace Duo.Api.Repositories
         /// <exception cref="Exception">Thrown if the module is not found.</exception>
         public async Task OpenModuleAsync(int userId, int moduleId)
         {
-            var module = await context.Modules.FindAsync(moduleId) ?? throw new Exception("Module not found");
+            var module = await context.Modules.FindAsync(moduleId);
+            if (module == null)
+            {
+                var message = $"[OpenModuleAsync] Module with ID {moduleId} not found for user {userId}.";
+                Console.Error.WriteLine(message);
+                throw new KeyNotFoundException(message);
+            }
+
             context.Modules.Update(module);
             await context.SaveChangesAsync();
         }
@@ -736,6 +751,28 @@ namespace Duo.Api.Repositories
         }
 
         /// <summary>
+        /// Asynchronously retrieves the number of modules completed by a user in a specific course.
+        /// </summary>
+        /// <param name="userId">The ID of the user.</param>
+        /// <param name="courseId">The ID of the course.</param>
+        /// <returns>The number of completed modules.</returns>
+        public async Task<int> GetCompletedModulesCountAsync(int userId, int courseId)
+        {
+            return await context.UserProgresses
+                .Where(up => up.UserId == userId &&
+                             up.Status == "completed" &&
+                             context.Modules.Any(m => m.ModuleId == up.ModuleId && m.CourseId == courseId && !m.IsBonus))
+                .CountAsync();
+        }
+
+        public async Task<int> GetRequiredModulesCountAsync(int courseId)
+        {
+            return await context.Modules
+                .Where(m => m.CourseId == courseId && !m.IsBonus)
+                .CountAsync();
+        }
+
+        /// <summary>
         /// Asynchronously updates the time spent by a user in a specific course.
         /// </summary>
         /// <param name="userId">The ID of the user.</param>
@@ -857,6 +894,24 @@ namespace Duo.Api.Repositories
             }
 
             return await courses.ToListAsync();
+        }
+
+        public async Task AddTagToCourseAsync(int courseId, int tagId)
+        {
+            var exists = await context.CourseTags.AnyAsync(ct => ct.CourseId == courseId && ct.TagId == tagId);
+            if (!exists)
+            {
+                context.CourseTags.Add(new CourseTag { CourseId = courseId, TagId = tagId });
+                await context.SaveChangesAsync();
+            }
+        }
+
+        public async Task<List<Module>> GetModulesByCourseIdAsync(int courseId)
+        {
+            return await context.Modules
+                .Where(m => m.CourseId == courseId)
+                .OrderBy(m => m.Position)
+                .ToListAsync();
         }
 
         #endregion
@@ -1088,7 +1143,9 @@ namespace Duo.Api.Repositories
                 var user = await context.Users.FindAsync(userId);
                 if (user == null)
                 {
-                    throw new Exception($"User with ID {userId} not found");
+                    var message = $"[ERROR] User with ID {userId} was not found at {DateTime.Now}.";
+                    Console.Error.WriteLine(message);
+                    throw new KeyNotFoundException(message);
                 }
                 return user.LastLoginTime;
             }

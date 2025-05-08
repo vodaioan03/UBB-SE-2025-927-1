@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:vm="using:Duo.ViewModels"
     Background="#121212">
+    
     <Grid>
         <Border x:Name="NotificationBanner"
                 Background="#4CAF50"

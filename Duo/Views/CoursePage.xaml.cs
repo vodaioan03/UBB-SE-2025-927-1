@@ -30,10 +30,30 @@ namespace Duo.Views
             {
                 viewModel = vm;
                 this.DataContext = viewModel;
-                ModulesListView.ItemClick += ModulesListView_ItemClick;
-                vm.StartCourseProgressTimer();
 
-                vm.ShowErrorMessageRequested += ViewModel_ShowErrorMessageRequested;
+                ModulesListView.ItemClick += ModulesListView_ItemClick;
+
+                DispatcherQueue.TryEnqueue(async () =>
+                {
+                    try
+                    {
+                        Console.WriteLine("Starting InitializeAsync");
+                        await viewModel.InitializeAsync(CurrentUserId);
+                        Console.WriteLine("Finished InitializeAsync");
+                        viewModel.StartCourseProgressTimer();
+                    }
+                    catch (Exception ex)
+                    {
+                        var dialog = new ContentDialog
+                        {
+                            Title = "Initialization Error",
+                            Content = $"Failed to initialize course: {ex.Message}",
+                            CloseButtonText = "OK",
+                            XamlRoot = this.XamlRoot
+                        };
+                        await dialog.ShowAsync();
+                    }
+                });
             }
         }
 
@@ -79,10 +99,28 @@ namespace Duo.Views
                     this.Frame.Navigate(typeof(ModulePage), (moduleDisplay.Module, viewModel));
                     return;
                 }
+                
+                try{
 
                 if (moduleDisplay.Module!.IsBonus)
                 {
-                    await viewModel.AttemptBonusModulePurchaseAsync(moduleDisplay.Module, CurrentUserId);
+                    if (moduleDisplay.Module!.IsBonus)
+                    {
+                        await viewModel.AttemptBonusModulePurchaseAsync(moduleDisplay.Module, CurrentUserId);
+                    }
+                }
+                }
+                catch (Exception ex)
+                {
+                    var dialog = new ContentDialog
+                    {
+                        Title = "Error",
+                        Content = $"An error occurred while attempting to unlock the module: {ex.Message}",
+                        CloseButtonText = "OK",
+                        XamlRoot = this.XamlRoot
+                    };
+
+                    await dialog.ShowAsync();
                 }
 
                 viewModel.RaiseErrorMessage("Module Locked", "You need to complete the previous modules to unlock this one.");

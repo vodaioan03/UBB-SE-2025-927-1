@@ -83,6 +83,14 @@ namespace Duo.Api.Repositories
         /// <returns>A task representing the asynchronous operation. The task completes once the tag is removed.</returns>
         public Task DeleteTagAsync(int id);
 
+        Task<List<Tag>> GetTagsForCourseAsync(int courseId);
+
+        Task AddTagToCourseAsync(int courseId, int tagId);
+
+        Task<int> GetCompletedModulesCountAsync(int userId, int courseId);
+
+        Task<int> GetRequiredModulesCountAsync(int courseId);
+
         #endregion
 
         #region Modules
@@ -424,6 +432,8 @@ namespace Duo.Api.Repositories
         /// <param name="userId">The unique identifier of the user for whom the courses are being filtered.</param>
         /// <returns>A list of courses that match the filter criteria.</returns>
         public Task<List<Course>> GetFilteredCoursesAsync(string searchText, bool filterPremium, bool filterFree, bool filterEnrolled, bool filterNotEnrolled, int userId);
+
+        Task<List<Module>> GetModulesByCourseIdAsync(int courseId);
 
         #endregion
 

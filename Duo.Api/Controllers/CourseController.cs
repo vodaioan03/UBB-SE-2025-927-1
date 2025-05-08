@@ -225,6 +225,41 @@ namespace Duo.Api.Controllers
             return Ok(course.TimeToComplete);
         }
 
+        [HttpGet("{courseId}/tags")]
+        public async Task<IActionResult> GetTagsForCourse([FromRoute] int courseId)
+        {
+            var tags = await repository.GetTagsForCourseAsync(courseId);
+            return Ok(tags);
+        }
+
+        [HttpPost("add-tag")]
+        public async Task<IActionResult> AddTagToCourse([FromForm] int courseId, [FromForm] int tagId)
+        {
+            await repository.AddTagToCourseAsync(courseId, tagId);
+            return Ok();
+        }
+
+        [HttpGet("completedModules")]
+        public async Task<ActionResult<int>> GetCompletedModulesCount([FromQuery] int userId, [FromQuery] int courseId)
+        {
+            var count = await repository.GetCompletedModulesCountAsync(userId, courseId);
+            return Ok(count);
+        }
+
+        [HttpGet("requiredModules")]
+        public async Task<ActionResult<int>> GetRequiredModulesCount([FromQuery] int courseId)
+        {
+            int count = await repository.GetRequiredModulesCountAsync(courseId);
+            return Ok(count);
+        }
+
+        [HttpGet("timeLimit")]
+        public async Task<ActionResult<int>> GetCourseTimeLimit([FromQuery] int courseId)
+        {
+            int timeLimit = await repository.GetCourseTimeLimitAsync(courseId);
+            return Ok(timeLimit);
+        }
+
         #endregion
     }
 }

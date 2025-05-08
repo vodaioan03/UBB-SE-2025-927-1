@@ -175,23 +175,23 @@ namespace Duo.Api.Controllers
         /// </summary>
         /// <param name="id">The ID of the course.</param>
         /// <returns>ActionResult with list of modules or error message.</returns>
-        [HttpGet("list/course/{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> ListModulesByCourseId(int id)
+        [HttpGet("list/by-course/{courseId}")]
+        public async Task<IActionResult> ListModulesByCourseId([FromRoute] int courseId)
         {
             try
             {
                 var modules = await repository.GetModulesFromDbAsync();
-                var filteredModules = modules.Where(module => module.CourseId == id).ToList();
+                var filteredModules = modules.Where(m => m.CourseId == courseId).ToList();
 
-                if (filteredModules.Count == 0)
+                if (!filteredModules.Any())
                 {
                     return NotFound(new { result = new List<Module>(), message = "No modules found for the specified course!" });
                 }
 
-                return Ok(new { result = filteredModules, message = "Successfully retrieved list of modules." });
+                return Ok(filteredModules);
             }
             catch (Exception e)
             {
@@ -235,6 +235,27 @@ namespace Duo.Api.Controllers
             }
         }
 
+        /// <summary>
+        /// Checks if a module is completed by a user.
+        /// </summary>
+        /// <param name="userId">The ID of the user.</param>
+        /// <param name="moduleId">The ID of the module.</param>
+        /// <returns>True if completed, false otherwise.</returns>
+        [HttpGet("is-completed")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> IsModuleCompleted([FromQuery] int userId, [FromQuery] int moduleId)
+        {
+            try
+            {
+                bool isCompleted = await repository.IsModuleCompletedAsync(userId, moduleId);
+                return Ok(isCompleted);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(new { message = e.Message });
+            }
+        }
         #endregion
     }
 }

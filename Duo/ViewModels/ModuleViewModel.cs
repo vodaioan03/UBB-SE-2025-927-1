@@ -1,8 +1,12 @@
+using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Duo.Commands;
 using Duo.Models;
 using Duo.Services;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.UI.Xaml.Controls;
 using Windows.System;
 using Windows.UI.Core;
 
@@ -28,6 +32,9 @@ namespace Duo.ViewModels
 
             courseService = courseServiceOverride ?? new CourseService(new CourseServiceProxy(new System.Net.Http.HttpClient()));
             coinsService = coinsServiceOverride ?? new CoinsService(new CoinsServiceProxy(new System.Net.Http.HttpClient()));
+            var userService = App.ServiceProvider.GetRequiredService<IUserService>();
+
+            _ = EnsureUserExistsAsync(userService);
 
             CurrentModule = module;
             // Fix for CS0029: Await the asynchronous method to get the result
@@ -60,7 +67,7 @@ namespace Duo.ViewModels
 
         public async Task HandleModuleImageClick(object? obj)
         {
-            var confirmStatus = courseService.ClickModuleImageAsync(0, CurrentModule.ModuleId).GetAwaiter().GetResult();
+            var confirmStatus = courseService.ClickModuleImageAsync(UserId, CurrentModule.ModuleId).GetAwaiter().GetResult();
             if (confirmStatus)
             {
                 OnPropertyChanged(nameof(CoinBalance));
@@ -101,10 +108,32 @@ namespace Duo.ViewModels
 
         public async Task ExecuteModuleImageClick(object? obj)
         {
-            if (courseService.ClickModuleImageAsync(0, CurrentModule.ModuleId).GetAwaiter().GetResult())
+            if (courseService.ClickModuleImageAsync(UserId, CurrentModule.ModuleId).GetAwaiter().GetResult())
             {
                 OnPropertyChanged(nameof(CoinBalance));
                 courseViewModel.RefreshCourseModulesDisplay(UserId);
+            }
+        }
+
+        private async Task EnsureUserExistsAsync(IUserService userService)
+        {
+            try
+            {
+                var user = await userService.GetByIdAsync(UserId);
+                if (user == null)
+                {
+                    Console.WriteLine($"User with ID {UserId} not found. Creating...");
+                    await userService.CreateUserAsync(new Models.User(UserId, $"DefaultUser{UserId}"));
+                }
+            }
+            catch (KeyNotFoundException)
+            {
+                Console.WriteLine($"User with ID {UserId} not found (exception). Creating...");
+                await userService.CreateUserAsync(new Models.User(UserId, $"DefaultUser{UserId}"));
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Unexpected error in EnsureUserExistsAsync: {ex.Message}");
             }
         }
     }

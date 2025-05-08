@@ -1,4 +1,6 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using Duo.Views;
 
 namespace Duo.Models
 {
@@ -47,5 +49,7 @@ namespace Duo.Models
         /// Gets or sets the difficulty level of the course (e.g., Beginner, Intermediate, Advanced).
         /// </summary>
         public required string Difficulty { get; set; }
+
+        public List<Tag> Tags { get; set; } = new ();
     }
 }

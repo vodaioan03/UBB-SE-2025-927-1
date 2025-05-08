@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -199,6 +200,8 @@ namespace Duo.ViewModels
 
             /// <summary>Gets or sets whether the module is completed</summary>
             public bool IsCompleted { get; set; }
+
+            public bool IsLockedBonus => Module?.IsBonus == true && !IsUnlocked;
         }
         #endregion
 
@@ -291,16 +294,22 @@ namespace Duo.ViewModels
             try
             {
                 IsEnrolled = await courseService.IsUserEnrolledAsync(currentUserId, CurrentCourse.CourseId);
+                CoinBalance = await coinsService.GetCoinBalanceAsync(currentUserId);
 
                 EnrollCommand = new RelayCommand(
-                    async (parameter) => await EnrollUserInCourseAsync(parameter, currentUserId),
-                    async (parameter) => await CanUserEnrollInCourseAsync(parameter, currentUserId));
+                    async (_) => await EnrollUserInCourseAsync(_, currentUserId),
+                    (_) => !IsEnrolled && CoinBalance >= CurrentCourse.Cost);
+
+                OnPropertyChanged(nameof(EnrollCommand));
+                OnPropertyChanged(nameof(IsEnrolled));
+                OnPropertyChanged(nameof(CoinBalance));
             }
             catch (Exception ex)
             {
                 RaiseErrorMessage("Initialization Error", $"Failed to check enrollment.\nDetails: {ex.Message}");
             }
         }
+
 
         /// <summary>
         /// Loads the initial course-related data such as time spent, modules completed,
@@ -378,17 +387,32 @@ namespace Duo.ViewModels
         {
             try
             {
-                var modules = (await courseService.GetModulesAsync(CurrentCourse.CourseId))
-                           .OrderBy(module => module.Position)
-                           .ToList();
+                var modules = await courseService.GetModulesAsync(CurrentCourse.CourseId);
+                if (modules == null || modules.Count == 0)
+                {
+                    Console.WriteLine("No modules found, skipping module display.");
+                    return;
+                }
 
                 ModuleRoadmap.Clear();
 
                 for (int index = 0; index < modules.Count; index++)
                 {
                     var module = modules[index];
-                    bool isCompleted = await courseService.IsModuleCompletedAsync(currentUserId, module.ModuleId);
-                    bool isUnlocked = await GetModuleUnlockStatus(module, index, currentUserId);
+
+                    bool isCompleted = false;
+                    bool isUnlocked = false;
+
+                    try
+                    {
+                        isCompleted = await courseService.IsModuleCompletedAsync(currentUserId, module.ModuleId);
+                        isUnlocked = await GetModuleUnlockStatus(module, index, currentUserId);
+                    }
+                    catch (KeyNotFoundException kex)
+                    {
+                        Console.WriteLine($"Module {module.ModuleId} failed: {kex.Message}");
+                        continue;
+                    }
 
                     ModuleRoadmap.Add(new ModuleProgressStatus
                     {
@@ -402,6 +426,7 @@ namespace Duo.ViewModels
             }
             catch (Exception e)
             {
+                Console.WriteLine($"LoadAndOrganizeCourseModules crashed: {e.Message}");
                 RaiseErrorMessage("Loading Modules Failed", $"Could not load modules.\nDetails: {e.Message}");
             }
         }
@@ -796,7 +821,15 @@ namespace Duo.ViewModels
                 {
                     moduleToUpdate.IsUnlocked = true;
                     moduleToUpdate.IsCompleted = false;
-                    await courseService.OpenModuleAsync(currentUserId, module.ModuleId);
+                    try
+                    {
+                        await courseService.OpenModuleAsync(currentUserId, module.ModuleId);
+                    }
+                    catch (KeyNotFoundException ex)
+                    {
+                        Console.WriteLine($"OpenModuleAsync failed: {ex.Message}");
+                        notificationHelper?.ShowTemporaryNotification("Something went wrong. Please try again.");
+                    }
                 }
             }
             catch (Exception e)
