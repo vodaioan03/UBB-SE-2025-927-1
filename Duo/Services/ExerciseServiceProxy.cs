@@ -8,6 +8,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Duo.Models.Exercises;
+using Duo.Models.Exercises.DTO;
 
 namespace Duo.Services
 {
@@ -32,6 +33,7 @@ namespace Duo.Services
                 var options = new JsonSerializerOptions
                 {
                     WriteIndented = true,
+                    PropertyNameCaseInsensitive = true,
                 };
 
                 var jsonExercise = exercise.Type switch
@@ -44,6 +46,20 @@ namespace Duo.Services
                 };
                 var response = await httpClient.PostAsync($"{url}api/Exercise", new StringContent(jsonExercise, Encoding.UTF8, "application/json"));
                 response.EnsureSuccessStatusCode();
+
+                // Deserialize the response to get the Id
+                string responseBody = await response.Content.ReadAsStringAsync();
+
+                var idObj = JsonSerializer.Deserialize<IdResponse>(responseBody, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true,
+                    WriteIndented = true,
+                });
+
+                if (idObj != null)
+                {
+                    exercise.ExerciseId = idObj.ExerciseId;
+                }
 
                 /*switch (exercise.Type)
                 {

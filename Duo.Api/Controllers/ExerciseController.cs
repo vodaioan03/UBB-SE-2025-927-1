@@ -200,7 +200,7 @@ namespace Duo.Api.Controllers
                 return this.CreatedAtRoute(
                   routeName: "GetExerciseById",
                   routeValues: new { id = exercise.ExerciseId },
-                  value: exercise);
+                  value: exercise.ExerciseId);
             }
             catch (Exception ex)
             {

@@ -27,10 +27,15 @@ namespace Duo.Views.Pages
         public ManageExamsPage()
         {
             this.InitializeComponent();
-            ViewModel.ShowListViewModal += ViewModel_openSelectExercises;
+            this.Loaded += this.Setup;
+        }
 
+        private void Setup(object sender, RoutedEventArgs e)
+        {
+            ViewModel.ShowListViewModal += ViewModel_openSelectExercises;
             ViewModel.ShowErrorMessageRequested += ViewModel_ShowErrorMessageRequested;
         }
+
         private async void ViewModel_ShowErrorMessageRequested(object sender, (string Title, string Message) e)
         {
             await ShowErrorMessage(e.Title, e.Message);
