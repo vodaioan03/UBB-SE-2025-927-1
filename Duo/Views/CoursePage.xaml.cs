@@ -1,10 +1,10 @@
 using System.Diagnostics.CodeAnalysis;
+using System;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Duo.Models;
 using Duo.ViewModels;
 using Microsoft.UI.Xaml.Navigation;
-using System;
 
 #pragma warning disable CS8602
 #pragma warning disable IDE0059
@@ -23,14 +23,36 @@ namespace Duo.Views
             this.InitializeComponent();
         }
 
-        protected override void OnNavigatedTo(Microsoft.UI.Xaml.Navigation.NavigationEventArgs e)
+        protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             if (e.Parameter is CourseViewModel vm)
             {
                 viewModel = vm;
                 this.DataContext = viewModel;
+
                 ModulesListView.ItemClick += ModulesListView_ItemClick;
-                vm.StartCourseProgressTimer();
+
+                DispatcherQueue.TryEnqueue(async () =>
+                {
+                    try
+                    {
+                        Console.WriteLine("Starting InitializeAsync");
+                        await viewModel.InitializeAsync(CurrentUserId);
+                        Console.WriteLine("Finished InitializeAsync");
+                        viewModel.StartCourseProgressTimer();
+                    }
+                    catch (Exception ex)
+                    {
+                        var dialog = new ContentDialog
+                        {
+                            Title = "Initialization Error",
+                            Content = $"Failed to initialize course: {ex.Message}",
+                            CloseButtonText = "OK",
+                            XamlRoot = this.XamlRoot
+                        };
+                        await dialog.ShowAsync();
+                    }
+                });
             }
         }
 

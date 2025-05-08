@@ -78,7 +78,6 @@ namespace Duo.Views
             if (e.ClickedItem is Course selectedCourse)
             {
                 var courseVM = new CourseViewModel(selectedCourse, CurrentUserId);
-                await courseVM.InitializeAsync(CurrentUserId);
                 this.Frame.Navigate(typeof(CoursePage), courseVM);
             }
         }

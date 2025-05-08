@@ -245,7 +245,9 @@ namespace Duo.ViewModels
         public async Task InitializeAsync(int currentUserId)
         {
             await InitializeProperties(currentUserId);
+            Console.WriteLine("Before LoadInitialData");
             await LoadInitialData(currentUserId);
+            Console.WriteLine("After LoadInitialData");
         }
 
         /// <summary>
@@ -347,20 +349,31 @@ namespace Duo.ViewModels
             try
             {
                 var modules = await courseService.GetModulesAsync(CurrentCourse.CourseId);
-                if (modules.Count == 0)
+                if (modules == null || modules.Count == 0)
                 {
                     Console.WriteLine("No modules found, skipping module display.");
                     return;
                 }
 
-
                 ModuleRoadmap.Clear();
 
-            for (int index = 0; index < modules.Count; index++)
-            {
-                var module = modules[index];
-                bool isCompleted = await courseService.IsModuleCompletedAsync(currentUserId, module.ModuleId);
-                bool isUnlocked = await GetModuleUnlockStatus(module, index, currentUserId);
+                for (int index = 0; index < modules.Count; index++)
+                {
+                    var module = modules[index];
+
+                    bool isCompleted = false;
+                    bool isUnlocked = false;
+
+                    try
+                    {
+                        isCompleted = await courseService.IsModuleCompletedAsync(currentUserId, module.ModuleId);
+                        isUnlocked = await GetModuleUnlockStatus(module, index, currentUserId);
+                    }
+                    catch (KeyNotFoundException kex)
+                    {
+                        Console.WriteLine($"Module {module.ModuleId} failed: {kex.Message}");
+                        continue;
+                    }
 
                     ModuleRoadmap.Add(new ModuleProgressStatus
                     {
@@ -369,13 +382,12 @@ namespace Duo.ViewModels
                         IsCompleted = isCompleted
                     });
                 }
+
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.Message);
+                Console.WriteLine($"LoadAndOrganizeCourseModules crashed: {e.Message}");
             }
-
-            OnPropertyChanged(nameof(ModuleRoadmap));
         }
 
         /// <summary>
