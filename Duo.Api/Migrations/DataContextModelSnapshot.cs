@@ -84,6 +84,30 @@ namespace Duo.Api.Migrations
                     b.ToTable("CourseCompletions");
                 });
 
+            modelBuilder.Entity("Duo.Api.Models.Enrollment", b =>
+                {
+                    b.Property<int?>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("CourseId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("EnrolledAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsCompleted")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("TimeSpent")
+                        .HasColumnType("int");
+
+                    b.HasKey("UserId", "CourseId");
+
+                    b.HasIndex("CourseId");
+
+                    b.ToTable("Enrollments");
+                });
+
             modelBuilder.Entity("Duo.Api.Models.Exercises.Exercise", b =>
                 {
                     b.Property<int>("ExerciseId")
@@ -485,6 +509,25 @@ namespace Duo.Api.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Duo.Api.Models.Enrollment", b =>
+                {
+                    b.HasOne("Duo.Api.Models.Course", "Course")
+                        .WithMany("Enrollments")
+                        .HasForeignKey("CourseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Duo.Api.Models.User", "User")
+                        .WithMany("Enrollments")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Course");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Duo.Api.Models.Exercises.MultipleChoiceAnswerModel", b =>
                 {
                     b.HasOne("Duo.Api.Models.Exercises.MultipleChoiceExercise", "Exercise")
@@ -583,6 +626,11 @@ namespace Duo.Api.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Duo.Api.Models.Course", b =>
+                {
+                    b.Navigation("Enrollments");
+                });
+
             modelBuilder.Entity("Duo.Api.Models.Quizzes.QuizSubmissionEntity", b =>
                 {
                     b.Navigation("Answers");
@@ -598,6 +646,11 @@ namespace Duo.Api.Migrations
                     b.Navigation("Exam");
 
                     b.Navigation("Quizzes");
+                });
+
+            modelBuilder.Entity("Duo.Api.Models.User", b =>
+                {
+                    b.Navigation("Enrollments");
                 });
 
             modelBuilder.Entity("Duo.Api.Models.Exercises.MultipleChoiceExercise", b =>

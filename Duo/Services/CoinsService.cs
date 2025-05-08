@@ -57,9 +57,7 @@ namespace Duo.Services
         /// <returns>True if the bonus was applied, false if the user has already logged in today.</returns>
         public async Task<bool> ApplyDailyLoginBonusAsync(int userId = 0)
         {
-
             return await serviceProxy.ApplyDailyLoginBonusAsync(userId);
-
         }
     }
 }

@@ -115,7 +115,7 @@ namespace Duo.Api.Controllers
         /// <param name="courseId">The ID of the course.</param>
         /// <returns>True if enrolled; otherwise, false.</returns>
         [HttpGet("is-enrolled")]
-        public async Task<IActionResult> IsEnrolled([FromForm] int userId, [FromForm] int courseId)
+        public async Task<IActionResult> IsEnrolled([FromQuery] int userId, [FromQuery] int courseId)
         {
             var isEnrolled = await repository.IsUserEnrolledInCourseAsync(userId, courseId);
             return Ok(isEnrolled);
@@ -203,7 +203,7 @@ namespace Duo.Api.Controllers
         /// <param name="courseId">The course ID.</param>
         /// <returns>The time spent in seconds.</returns>
         [HttpGet("get-time")]
-        public async Task<IActionResult> GetTimeSpent([FromForm] int userId, [FromForm] int courseId)
+        public async Task<IActionResult> GetTimeSpent([FromQuery] int userId, [FromQuery] int courseId)
         {
             var timeSpent = await repository.GetTimeSpentAsync(userId, courseId);
             return Ok(timeSpent);
@@ -223,6 +223,41 @@ namespace Duo.Api.Controllers
                 return NotFound();
             }
             return Ok(course.TimeToComplete);
+        }
+
+        [HttpGet("{courseId}/tags")]
+        public async Task<IActionResult> GetTagsForCourse([FromRoute] int courseId)
+        {
+            var tags = await repository.GetTagsForCourseAsync(courseId);
+            return Ok(tags);
+        }
+
+        [HttpPost("add-tag")]
+        public async Task<IActionResult> AddTagToCourse([FromForm] int courseId, [FromForm] int tagId)
+        {
+            await repository.AddTagToCourseAsync(courseId, tagId);
+            return Ok();
+        }
+
+        [HttpGet("completedModules")]
+        public async Task<ActionResult<int>> GetCompletedModulesCount([FromQuery] int userId, [FromQuery] int courseId)
+        {
+            var count = await repository.GetCompletedModulesCountAsync(userId, courseId);
+            return Ok(count);
+        }
+
+        [HttpGet("requiredModules")]
+        public async Task<ActionResult<int>> GetRequiredModulesCount([FromQuery] int courseId)
+        {
+            int count = await repository.GetRequiredModulesCountAsync(courseId);
+            return Ok(count);
+        }
+
+        [HttpGet("timeLimit")]
+        public async Task<ActionResult<int>> GetCourseTimeLimit([FromQuery] int courseId)
+        {
+            int timeLimit = await repository.GetCourseTimeLimitAsync(courseId);
+            return Ok(timeLimit);
         }
 
         #endregion

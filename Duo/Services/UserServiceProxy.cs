@@ -20,113 +20,68 @@ namespace Duo.Services
 
         public async Task<User> GetByIdAsync(int userId)
         {
-            try
+            if (userId <= 0)
             {
-                if (userId <= 0)
-                {
-                    throw new ArgumentException("User ID must be greater than 0.", nameof(userId));
-                }
-                return await httpClient.GetFromJsonAsync<User>($"{BaseUrl}/{userId}");
+                throw new ArgumentException("User ID must be greater than 0.", nameof(userId));
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error in GetByIdAsync: {ex.Message}");
-                return null;
-            }
+            return await httpClient.GetFromJsonAsync<User>($"{BaseUrl}/{userId}");
         }
 
         public async Task<User> GetByUsernameAsync(string username)
         {
-            try
+            if (string.IsNullOrWhiteSpace(username))
             {
-                if (string.IsNullOrWhiteSpace(username))
-                {
-                    throw new ArgumentException("Username cannot be null or empty.", nameof(username));
-                }
-                var users = await httpClient.GetFromJsonAsync<List<User>>(BaseUrl);
-                return users.Find(u => u.Username.Equals(username, StringComparison.OrdinalIgnoreCase));
+                throw new ArgumentException("Username cannot be null or empty.", nameof(username));
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error in GetByUsernameAsync: {ex.Message}");
-                return null;
-            }
+            var users = await httpClient.GetFromJsonAsync<List<User>>(BaseUrl);
+            return users.Find(u => u.Username.Equals(username, StringComparison.OrdinalIgnoreCase));
         }
 
         public async Task<int> CreateUserAsync(User user)
         {
-            try
+            if (user == null)
             {
-                if (user == null)
-                {
-                    throw new ArgumentNullException(nameof(user));
-                }
-                var response = await httpClient.PostAsJsonAsync($"{BaseUrl}/register", user);
-                response.EnsureSuccessStatusCode();
+                throw new ArgumentNullException(nameof(user));
+            }
+            var response = await httpClient.PostAsJsonAsync($"{BaseUrl}/register", user);
+            response.EnsureSuccessStatusCode();
 
-                var createdUser = await response.Content.ReadFromJsonAsync<User>();
-                return createdUser.UserId;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error in CreateUserAsync: {ex.Message}");
-                return -1;
-            }
+            var createdUser = await response.Content.ReadFromJsonAsync<User>();
+            return createdUser.UserId;
         }
 
         public async Task UpdateUserSectionProgressAsync(int userId, int newNrOfSectionsCompleted, int newNrOfQuizzesInSectionCompleted)
         {
-            try
+            if (userId <= 0)
             {
-                if (userId <= 0)
-                {
-                    throw new ArgumentException("User ID must be greater than 0.", nameof(userId));
-                }
-                var user = await GetByIdAsync(userId);
-                user.NumberOfCompletedSections = newNrOfSectionsCompleted;
-                user.NumberOfCompletedQuizzesInSection = newNrOfQuizzesInSectionCompleted;
+                throw new ArgumentException("User ID must be greater than 0.", nameof(userId));
+            }
+            var user = await GetByIdAsync(userId);
+            user.NumberOfCompletedSections = newNrOfSectionsCompleted;
+            user.NumberOfCompletedQuizzesInSection = newNrOfQuizzesInSectionCompleted;
 
-                await httpClient.PutAsJsonAsync($"{BaseUrl}/update", user);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error in UpdateUserSectionProgressAsync: {ex.Message}");
-            }
+            await httpClient.PutAsJsonAsync($"{BaseUrl}/update", user);
         }
 
         public async Task IncrementUserProgressAsync(int userId)
         {
-            try
+            if (userId <= 0)
             {
-                if (userId <= 0)
-                {
-                    throw new ArgumentException("User ID must be greater than 0.", nameof(userId));
-                }
-                var user = await GetByIdAsync(userId);
-                user.NumberOfCompletedQuizzesInSection++;
+                throw new ArgumentException("User ID must be greater than 0.", nameof(userId));
+            }
+            var user = await GetByIdAsync(userId);
+            user.NumberOfCompletedQuizzesInSection++;
 
-                await httpClient.PutAsJsonAsync($"{BaseUrl}/update", user);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error in IncrementUserProgressAsync: {ex.Message}");
-            }
+            await httpClient.PutAsJsonAsync($"{BaseUrl}/update", user);
         }
 
         public async Task UpdateUserAsync(User user)
         {
-            try
+            if (user == null)
             {
-                if (user == null)
-                {
-                    throw new ArgumentNullException(nameof(user));
-                }
-                await httpClient.PutAsJsonAsync($"{BaseUrl}", user);
+                throw new ArgumentNullException(nameof(user));
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error in UpdateUserAsync: {ex.Message}");
-            }
+            await httpClient.PutAsJsonAsync($"{BaseUrl}", user);
         }
     }
 }

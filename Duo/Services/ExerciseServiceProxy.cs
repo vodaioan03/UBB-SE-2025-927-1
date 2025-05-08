@@ -133,19 +133,8 @@ namespace Duo.Services
 
         public async Task DeleteExercise(int exerciseId)
         {
-            try
-            {
-                var response = await httpClient.DeleteAsync($"{url}api/Exercise/{exerciseId}");
-                response.EnsureSuccessStatusCode();
-            }
-            catch (HttpRequestException ex)
-            {
-                Console.WriteLine($"HTTP Error deleting exercise: {ex.Message}");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Unexpected error: {ex.Message}");
-            }
+            var response = await httpClient.DeleteAsync($"{url}api/Exercise/{exerciseId}");
+            response.EnsureSuccessStatusCode();
         }
 
         public async Task<List<Exercise>> GetAllExercises()
@@ -244,65 +233,26 @@ namespace Duo.Services
 
         public async Task<List<Exercise>> GetAllExercisesFromExam(int examId)
         {
-            try
-            {
-                var response = await httpClient.GetAsync($"{url}api/Exercise/exam/{examId}");
-                response.EnsureSuccessStatusCode();
-                var exercises = await response.Content.ReadFromJsonAsync<List<Exercise>>();
-                return exercises ?? new List<Exercise>();
-            }
-            catch (HttpRequestException ex)
-            {
-                Console.WriteLine($"HTTP Error fetching exercises from exam: {ex.Message}");
-                return new List<Exercise>();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Unexpected error: {ex.Message}");
-                return new List<Exercise>();
-            }
+            var response = await httpClient.GetAsync($"{url}api/Exercise/exam/{examId}");
+            response.EnsureSuccessStatusCode();
+            var exercises = await response.Content.ReadFromJsonAsync<List<Exercise>>();
+            return exercises ?? new List<Exercise>();
         }
 
         public async Task<List<Exercise>> GetAllExercisesFromQuiz(int quizId)
         {
-            try
-            {
-                var response = await httpClient.GetAsync($"{url}api/Exercise/quiz/{quizId}");
-                response.EnsureSuccessStatusCode();
-                var exercises = await response.Content.ReadFromJsonAsync<List<Exercise>>();
-                return exercises ?? new List<Exercise>();
-            }
-            catch (HttpRequestException ex)
-            {
-                Console.WriteLine($"HTTP Error fetching exercises from quiz: {ex.Message}");
-                return new List<Exercise>();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Unexpected error: {ex.Message}");
-                return new List<Exercise>();
-            }
+            var response = await httpClient.GetAsync($"{url}api/Exercise/quiz/{quizId}");
+            response.EnsureSuccessStatusCode();
+            var exercises = await response.Content.ReadFromJsonAsync<List<Exercise>>();
+            return exercises ?? new List<Exercise>();
         }
 
         public async Task<Exercise?> GetExerciseById(int exerciseId)
         {
-            try
-            {
-                var response = await httpClient.GetAsync($"{url}api/Exercise/{exerciseId}");
-                response.EnsureSuccessStatusCode();
-                var exercise = await response.Content.ReadFromJsonAsync<Exercise>();
-                return exercise ?? throw new InvalidOperationException("Exercise not found.");
-            }
-            catch (HttpRequestException ex)
-            {
-                Console.WriteLine($"HTTP Error fetching exercise by ID: {ex.Message}");
-                return null;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Unexpected error: {ex.Message}");
-                return null;
-            }
+            var response = await httpClient.GetAsync($"{url}api/Exercise/{exerciseId}");
+            response.EnsureSuccessStatusCode();
+            var exercise = await response.Content.ReadFromJsonAsync<Exercise>();
+            return exercise ?? throw new InvalidOperationException("Exercise not found.");
         }
     }
 }

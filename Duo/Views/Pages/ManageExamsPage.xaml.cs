@@ -38,28 +38,66 @@ namespace Duo.Views.Pages
 
         private async void ViewModel_ShowErrorMessageRequested(object sender, (string Title, string Message) e)
         {
-            await ShowErrorMessage(e.Title, e.Message);
+            try
+            {
+                await ShowErrorMessage(e.Title, e.Message);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Failed to show error dialog: {ex.Message}");
+            }
         }
 
         private async Task ShowErrorMessage(string title, string message)
         {
-            var dialog = new ContentDialog
+            try
             {
-                Title = title,
-                Content = message,
-                CloseButtonText = "OK",
-                XamlRoot = this.XamlRoot
-            };
+                var dialog = new ContentDialog
+                {
+                    Title = title,
+                    Content = message,
+                    CloseButtonText = "OK",
+                    XamlRoot = this.XamlRoot
+                };
 
-            await dialog.ShowAsync();
-        }
-        public void BackButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (this.Frame.CanGoBack)
+                await dialog.ShowAsync();
+            }
+            catch (Exception ex)
             {
-                this.Frame.GoBack();
+                System.Diagnostics.Debug.WriteLine($"ContentDialog error: {ex.Message}");
             }
         }
+
+        public void ViewModel_RequestGoBack(object sender, EventArgs e)
+        {
+            try
+            {
+                if (this.Frame.CanGoBack)
+                {
+                    this.Frame.GoBack();
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"ViewModel_RequestGoBack error: {ex.Message}");
+            }
+        }
+
+        public void BackButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (this.Frame.CanGoBack)
+                {
+                    this.Frame.GoBack();
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"BackButton_Click error: {ex.Message}");
+            }
+        }
+
         private async void ViewModel_openSelectExercises(List<Exercise> exercises)
         {
             var dialog = new ContentDialog

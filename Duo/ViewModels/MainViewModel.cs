@@ -1,3 +1,4 @@
+using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
@@ -17,7 +18,7 @@ namespace Duo.ViewModels
     /// </summary>
     public partial class MainViewModel : BaseViewModel, IMainViewModel
     {
-        private const int CurrentUserId = 0;
+        private int CurrentUserId { get; init; } = 1;
 
         private readonly ICourseService courseService;
         private readonly ICoinsService coinsService;
@@ -34,11 +35,7 @@ namespace Duo.ViewModels
         private ObservableCollection<Course> displayedCourses;
         public ObservableCollection<Course> DisplayedCourses
         {
-            get
-            {
-                return displayedCourses;
-            }
-
+            get => displayedCourses;
             set
             {
                 if (displayedCourses != value)
@@ -70,7 +67,14 @@ namespace Duo.ViewModels
 
         public async Task RefreshUserCoinBalanceAsync()
         {
-            UserCoinBalance = await coinsService.GetCoinBalanceAsync(CurrentUserId);
+            try
+            {
+                UserCoinBalance = await coinsService.GetCoinBalanceAsync(CurrentUserId);
+            }
+            catch (Exception ex)
+            {
+                RaiseErrorMessage("Failed to refresh coin balance", ex.Message);
+            }
         }
 
         /// <summary>
@@ -165,8 +169,11 @@ namespace Duo.ViewModels
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MainViewModel"/> class.
-        public MainViewModel(CoinsServiceProxy serviceProxy, CourseServiceProxy courseServiceProxy, ICourseService? courseService = null, ICoinsService? coinsService = null)
+        /// </summary>
+        public MainViewModel(CoinsServiceProxy serviceProxy, CourseServiceProxy courseServiceProxy, int currentUserId = 1,
+            ICourseService? courseService = null, ICoinsService? coinsService = null)
         {
+            this.CurrentUserId = currentUserId;
             this.courseService = courseService ?? new CourseService(courseServiceProxy);
             this.coinsService = coinsService ?? new CoinsService(serviceProxy);
 
@@ -175,15 +182,24 @@ namespace Duo.ViewModels
 
         private async void InitializeAsync()
         {
-            var courseList = await this.courseService.GetCoursesAsync();
-            DisplayedCourses = new ObservableCollection<Course>(courseList);
-            AvailableTags = new ObservableCollection<Tag>(await this.courseService.GetTagsAsync());
-            foreach (var tag in AvailableTags)
+            try
             {
-                tag.PropertyChanged += OnTagSelectionChanged;
-            }
+                var courseList = await this.courseService.GetCoursesAsync();
+                DisplayedCourses = new ObservableCollection<Course>(courseList);
+                AvailableTags = new ObservableCollection<Tag>(await this.courseService.GetTagsAsync());
+                foreach (var tag in AvailableTags)
+                {
+                    tag.PropertyChanged += OnTagSelectionChanged;
+                }
 
-            ResetAllFiltersCommand = new RelayCommand(ResetAllFilters);
+                ResetAllFiltersCommand = new RelayCommand(ResetAllFilters);
+
+                await RefreshUserCoinBalanceAsync();
+            }
+            catch (Exception e)
+            {
+                RaiseErrorMessage("Failed to load courses", e.Message);
+            }
         }
 
         /// <summary>
@@ -191,9 +207,17 @@ namespace Duo.ViewModels
         /// </summary>
         public async Task<bool> TryDailyLoginReward()
         {
-            bool loginRewardGranted = await coinsService.ApplyDailyLoginBonusAsync();
-            OnPropertyChanged(nameof(UserCoinBalance));
-            return loginRewardGranted;
+            try
+            {
+                bool loginRewardGranted = await coinsService.ApplyDailyLoginBonusAsync(CurrentUserId);
+                await RefreshUserCoinBalanceAsync();
+                return loginRewardGranted;
+            }
+            catch (Exception ex)
+            {
+                RaiseErrorMessage("Daily login reward failed", ex.Message);
+                return false;
+            }
         }
 
         private void OnTagSelectionChanged(object? sender, PropertyChangedEventArgs eventArgs)
@@ -209,18 +233,25 @@ namespace Duo.ViewModels
         /// </summary>
         private void ResetAllFilters(object? parameter)
         {
-            SearchQuery = string.Empty;
-            FilterByPremium = false;
-            FilterByFree = false;
-            FilterByEnrolled = false;
-            FilterByNotEnrolled = false;
-
-            foreach (var tag in AvailableTags)
+            try
             {
-                tag.IsSelected = false;
-            }
+                SearchQuery = string.Empty;
+                FilterByPremium = false;
+                FilterByFree = false;
+                FilterByEnrolled = false;
+                FilterByNotEnrolled = false;
 
-            ApplyAllFilters();
+                foreach (var tag in AvailableTags)
+                {
+                    tag.IsSelected = false;
+                }
+
+                ApplyAllFilters();
+            }
+            catch (Exception ex)
+            {
+                RaiseErrorMessage("Reset filters failed", ex.Message);
+            }
         }
 
         /// <summary>
@@ -228,29 +259,37 @@ namespace Duo.ViewModels
         /// </summary>
         private async void ApplyAllFilters()
         {
-            if (AvailableTags == null)
+            try
             {
-                return;
+                if (AvailableTags == null)
+                {
+                    return;
+                }
+
+                DisplayedCourses.Clear();
+
+                var selectedTagIds = AvailableTags
+                    .Where(tag => tag.IsSelected)
+                    .Select(tag => tag.TagId)
+                    .ToList();
+
+                var filteredCourses = await courseService.GetFilteredCoursesAsync(
+                    searchQuery,
+                    filterByPremium,
+                    filterByFree,
+                    filterByEnrolled,
+                    filterByNotEnrolled,
+                    selectedTagIds,
+                    CurrentUserId);
+
+                foreach (var course in filteredCourses)
+                {
+                    DisplayedCourses.Add(course);
+                }
             }
-
-            var selectedTagIds = AvailableTags
-                .Where(tag => tag.IsSelected)
-                .Select(tag => tag.TagId)
-                .ToList();
-
-            var filteredCourses = await courseService.GetFilteredCoursesAsync(
-                searchQuery,
-                filterByPremium,
-                filterByFree,
-                filterByEnrolled,
-                filterByNotEnrolled,
-                selectedTagIds,
-                CurrentUserId); // Added the missing 'userId' parameter
-
-            DisplayedCourses.Clear();
-            foreach (var course in filteredCourses)
+            catch (Exception e)
             {
-                DisplayedCourses.Add(course);
+                RaiseErrorMessage("Failed to apply filters", e.Message);
             }
         }
     }

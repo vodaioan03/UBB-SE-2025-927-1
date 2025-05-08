@@ -1,6 +1,7 @@
 using System;
-using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics;
 using System.Net.Http;
+using System.Threading.Tasks;
 using Duo.Models;
 using Duo.Services;
 using Duo.ViewModels;
@@ -10,72 +11,119 @@ using Microsoft.UI.Xaml.Navigation;
 
 namespace Duo.Views
 {
-    [ExcludeFromCodeCoverage]
     public sealed partial class MainPage : Page
     {
-        // keep this static so that the dialog is only shown once. The page is recreated every time it is navigated to.
         private static bool isDialogShown = false;
+        private int CurrentUserId { get; init; } = 1;
 
         public MainPage()
         {
-            this.InitializeComponent();
+            try
+            {
+                this.InitializeComponent();
 
-            // Create an HttpClient instance (assuming you're not using Dependency Injection)
-            HttpClient httpClient = new HttpClient();
+                HttpClient httpClient = new HttpClient();
 
-            // Create an instance of ServiceProxy
-            var serviceProxy = new CoinsServiceProxy(httpClient);
+                var serviceProxy = new CoinsServiceProxy(httpClient);
+                var courseServiceProxy = new CourseServiceProxy(httpClient);
 
-            var courseServiceProxy = new CourseServiceProxy(httpClient);
+                var courseService = new CourseService(courseServiceProxy);
+                var coinsService = new CoinsService(serviceProxy);
 
-            // Create a CourseService instance (you can replace with your existing service)
-            var courseService = new CourseService(courseServiceProxy);
+                var vm = new MainViewModel(
+                    serviceProxy,
+                    courseServiceProxy,
+                    CurrentUserId,
+                    courseService,
+                    coinsService);
 
-            // Create a CoinsService instance, passing ServiceProxy
-            var coinsService = new CoinsService(serviceProxy);
+                vm.ShowErrorMessageRequested += ViewModel_ShowErrorMessageRequested;
 
-            // Set the DataContext with the updated MainViewModel constructor
-            this.DataContext = new MainViewModel(
-                serviceProxy, // Pass the ServiceProxy
-                courseServiceProxy, // Pass the CourseServiceProxy
-                courseService, // Pass the CourseService
-                coinsService);
+                this.DataContext = vm;
 
-            // Set up the ItemClick event handler
-            CoursesListView.ItemClick += CoursesListView_ItemClick;
+                CoursesListView.ItemClick += CoursesListView_ItemClick;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Initialization error: {ex.Message}");
+            }
         }
 
         private async void RootGrid_Loaded(object sender, RoutedEventArgs e)
         {
-            // Ensure the dialog is only shown once. Just in case.
-            if (!isDialogShown)
+            try
             {
-                isDialogShown = true;
-
-#pragma warning disable SA1009 // Closing parenthesis should be spaced correctly
-                bool dailyLoginRewardEligible = await (this.DataContext as MainViewModel)!.TryDailyLoginReward();
-#pragma warning restore SA1009 // Closing parenthesis should be spaced correctly
-
-                if (dailyLoginRewardEligible)
+                if (!isDialogShown)
                 {
-                    ContentDialog welcomeDialog = new ContentDialog
+                    isDialogShown = true;
+
+                    bool dailyLoginRewardEligible = await (this.DataContext as MainViewModel) !.TryDailyLoginReward();
+
+                    if (dailyLoginRewardEligible)
                     {
-                        Title = "Welcome!",
-                        Content = "You have been granted the daily login reward! 100 coins Just for you <3",
-                        CloseButtonText = "Cheers!",
-                        XamlRoot = RootGrid.XamlRoot
-                    };
-                    await welcomeDialog.ShowAsync();
+                        ContentDialog welcomeDialog = new ContentDialog
+                        {
+                            Title = "Welcome!",
+                            Content = "You have been granted the daily login reward! 100 coins Just for you <3",
+                            CloseButtonText = "Cheers!",
+                            XamlRoot = RootGrid.XamlRoot
+                        };
+                        await welcomeDialog.ShowAsync();
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error during RootGrid_Loaded: {ex.Message}");
             }
         }
 
-        private void CoursesListView_ItemClick(object sender, ItemClickEventArgs e)
+        private async void CoursesListView_ItemClick(object sender, ItemClickEventArgs e)
         {
-            if (e.ClickedItem is Course selectedCourse)
+            try
             {
-                var courseVM = new CourseViewModel(selectedCourse);
-                this.Frame.Navigate(typeof(CoursePage), courseVM);
+                if (e.ClickedItem is Course selectedCourse)
+                {
+                    var courseVM = new CourseViewModel(selectedCourse, CurrentUserId);
+                    await courseVM.InitializeAsync(CurrentUserId);
+                    this.Frame.Navigate(typeof(CoursePage), courseVM);
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Course navigation error: {ex.Message}");
+            }
+        }
+
+        private async void ViewModel_ShowErrorMessageRequested(object sender, (string Title, string Message) e)
+        {
+            try
+            {
+                await ShowErrorMessage(e.Title, e.Message);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Failed to show error dialog: {ex.Message}");
+            }
+        }
+
+        private async Task ShowErrorMessage(string title, string message)
+        {
+            try
+            {
+                var dialog = new ContentDialog
+                {
+                    Title = title,
+                    Content = message,
+                    CloseButtonText = "OK",
+                    XamlRoot = this.XamlRoot
+                };
+
+                await dialog.ShowAsync();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error displaying ContentDialog: {ex.Message}");
             }
         }
     }

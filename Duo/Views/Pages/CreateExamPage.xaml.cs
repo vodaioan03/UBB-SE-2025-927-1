@@ -8,16 +8,8 @@ using System.Threading.Tasks;
 using Duo.Models.Exercises;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Data;
-using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
 
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
 namespace Duo.Views.Pages
 {
     /// <summary>
@@ -45,73 +37,93 @@ namespace Duo.Views.Pages
 
         private async Task ShowErrorMessage(string title, string message)
         {
-            var dialog = new ContentDialog
+            try
             {
-                Title = title,
-                Content = message,
-                CloseButtonText = "OK",
-                XamlRoot = this.XamlRoot
-            };
+                var dialog = new ContentDialog
+                {
+                    Title = title,
+                    Content = message,
+                    CloseButtonText = "OK",
+                    XamlRoot = this.XamlRoot
+                };
 
-            await dialog.ShowAsync();
+                await dialog.ShowAsync();
+            }
+            catch (Exception ex)
+            {
+                // You may optionally log this or suppress it to avoid recursive dialog errors
+                Console.WriteLine($"Error dialog failed to display. Details: {ex.Message}");
+            }
         }
 
         public void ViewModel_RequestGoBack(object sender, EventArgs e)
         {
-            if (this.Frame.CanGoBack)
+            try
             {
-                this.Frame.GoBack();
+                if (this.Frame.CanGoBack)
+                {
+                    this.Frame.GoBack();
+                }
+            }
+            catch (Exception ex)
+            {
+                _ = ShowErrorMessage("Navigation Error", $"Failed to navigate back.\nDetails: {ex.Message}");
             }
         }
 
         private async void ViewModel_openSelectExercises(List<Exercise> exercises)
         {
-            var dialog = new ContentDialog
+            try
             {
-                Title = "Select Exercise",
-                CloseButtonText = "Cancel",
-                DefaultButton = ContentDialogButton.Primary,
-                XamlRoot = this.XamlRoot
-            };
+                var dialog = new ContentDialog
+                {
+                    Title = "Select Exercise",
+                    CloseButtonText = "Cancel",
+                    DefaultButton = ContentDialogButton.Primary,
+                    XamlRoot = this.XamlRoot
+                };
 
-            if (this.XamlRoot is not null)
-            {
-                dialog.XamlRoot = this.XamlRoot;
+                var listView = new ListView
+                {
+                    ItemsSource = exercises,
+                    SelectionMode = ListViewSelectionMode.Single,
+                    MaxHeight = 300,
+                    ItemTemplate = (DataTemplate)Resources["ExerciseSelectionItemTemplate"]
+                };
+
+                dialog.Content = listView;
+                dialog.PrimaryButtonText = "Add";
+                dialog.IsPrimaryButtonEnabled = false;
+
+                listView.SelectionChanged += (s, args) =>
+                {
+                    dialog.IsPrimaryButtonEnabled = listView.SelectedItem != null;
+                };
+
+                var result = await dialog.ShowAsync();
+                if (result == ContentDialogResult.Primary && listView.SelectedItem is Exercise selectedExercise)
+                {
+                    ViewModel.AddExercise(selectedExercise);
+                }
             }
-            else
+            catch (Exception ex)
             {
-                Debug.WriteLine("XamlRoot is null. Cannot show dialog.");
-                return;
-            }
-
-            var listView = new ListView
-            {
-                ItemsSource = exercises,
-                SelectionMode = ListViewSelectionMode.Single,
-                MaxHeight = 300,
-                ItemTemplate = (DataTemplate)Resources["ExerciseSelectionItemTemplate"]
-            };
-
-            dialog.Content = listView;
-            dialog.PrimaryButtonText = "Add";
-            dialog.IsPrimaryButtonEnabled = false;
-
-            listView.SelectionChanged += (s, args) =>
-            {
-                dialog.IsPrimaryButtonEnabled = listView.SelectedItem != null;
-            };
-
-            var result = await dialog.ShowAsync();
-            if (result == ContentDialogResult.Primary && listView.SelectedItem is Exercise selectedExercise)
-            {
-                ViewModel.AddExercise(selectedExercise);
+                await ShowErrorMessage("Dialog Error", $"Failed to open exercise selection dialog.\nDetails: {ex.Message}");
             }
         }
+
         private void CancelButton_Click(object sender, RoutedEventArgs e)
         {
-            if (this.Frame.CanGoBack)
+            try
             {
-                this.Frame.GoBack();
+                if (this.Frame.CanGoBack)
+                {
+                    this.Frame.GoBack();
+                }
+            }
+            catch (Exception ex)
+            {
+                _ = ShowErrorMessage("Navigation Error", $"Failed to cancel and go back.\nDetails: {ex.Message}");
             }
         }
     }

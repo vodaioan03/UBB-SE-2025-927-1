@@ -1,28 +1,36 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Duo.ViewModels.Base;
 
 namespace Duo.ViewModels
 {
+    /// <summary>
+    /// A ViewModel base class for admin-specific functionality like navigation and error handling.
+    /// </summary>
     internal partial class AdminBaseViewModel : ViewModelBase
     {
+        /// <summary>
+        /// Raised when the view should navigate back.
+        /// </summary>
         public event EventHandler? RequestGoBack;
-        public event EventHandler<(string Title, string Message)>? ShowErrorMessageRequested;
 
         public AdminBaseViewModel()
         {
         }
 
+        /// <summary>
+        /// Triggers the request to navigate back.
+        /// </summary>
         public void GoBack()
         {
             RequestGoBack?.Invoke(this, EventArgs.Empty);
         }
-        public virtual void RaiseErrorMessage(string title, string message)
+
+        /// <summary>
+        /// Optional override for customized error reporting.
+        /// </summary>
+        public override void RaiseErrorMessage(string title, string message)
         {
-            ShowErrorMessageRequested?.Invoke(this, (title, message));
+            base.RaiseErrorMessage(title, message);
         }
     }
 }

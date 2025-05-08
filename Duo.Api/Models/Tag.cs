@@ -25,6 +25,8 @@ namespace Duo.Api.Models
         [Required]
         public string Name { get; set; } = string.Empty;
 
+        public ICollection<CourseTag> CourseTags { get; set; } = new List<CourseTag>();
+
         #endregion
 
         #region Constructors

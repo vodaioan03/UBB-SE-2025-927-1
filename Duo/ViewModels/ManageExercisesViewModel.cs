@@ -17,6 +17,7 @@ namespace Duo.ViewModels
     partial class ManageExercisesViewModel : AdminBaseViewModel
     {
         private readonly IExerciseService exerciseService;
+
         public ObservableCollection<Exercise> Exercises { get; set; } = new ObservableCollection<Exercise>();
 
         public ManageExercisesViewModel()
@@ -28,8 +29,9 @@ namespace Duo.ViewModels
             catch (Exception ex)
             {
                 Debug.WriteLine(ex);
-                RaiseErrorMessage(ex.Message, string.Empty);
+                RaiseErrorMessage("Service initialization failed", ex.Message);
             }
+
             DeleteExerciseCommand = new RelayCommandWithParameter<Exercise>(exercise => _ = DeleteExercise(exercise));
 
             InitializeViewModel();
@@ -43,6 +45,11 @@ namespace Duo.ViewModels
         }
 
         public ICommand DeleteExerciseCommand { get; }
+
+        // Placeholder for potential future initialization logic
+        public void InitializeViewModel()
+        {
+        }
 
         // Method to load exercises asynchronously
         private async Task LoadExercisesAsync()
@@ -63,17 +70,13 @@ namespace Duo.ViewModels
             {
                 Debug.WriteLine($"Error during LoadExercisesAsync: {ex.Message}");
                 Debug.WriteLine(ex.StackTrace);
-                // Optional: RaiseErrorMessage("Failed to load exercises.", ex.Message);
+                RaiseErrorMessage("Failed to load exercises", ex.Message);
             }
         }
 
-        public void InitializeViewModel()
-        {
-        }
-
+        // Method to delete an exercise and refresh the list
         public async Task DeleteExercise(Exercise exercise)
         {
-            Debug.WriteLine(exercise);
             try
             {
                 await exerciseService.DeleteExercise(exercise.ExerciseId);
@@ -81,8 +84,9 @@ namespace Duo.ViewModels
             }
             catch (Exception ex)
             {
-                RaiseErrorMessage(ex.Message, string.Empty);
-                Debug.WriteLine(ex);
+                Debug.WriteLine($"Error deleting exercise: {ex.Message}");
+                Debug.WriteLine(ex.StackTrace);
+                RaiseErrorMessage("Failed to delete exercise", ex.Message);
             }
         }
     }

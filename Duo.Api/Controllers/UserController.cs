@@ -63,15 +63,15 @@ namespace Duo.Api.Controllers
             try
             {
                 await repository.AddUserAsync(newUser);
-                return CreatedAtAction(nameof(GetUserById), new { id = user.UserId }, new
+                return CreatedAtAction(nameof(GetUserById), new { id = newUser.UserId }, new
                 {
-                    user.UserId,
-                    user.Username,
-                    user.Email,
-                    user.CoinBalance,
-                    user.NumberOfCompletedSections,
-                    user.NumberOfCompletedQuizzesInSection,
-                    user.LastLoginTime
+                    newUser.UserId,
+                    newUser.Username,
+                    newUser.Email,
+                    newUser.CoinBalance,
+                    newUser.NumberOfCompletedSections,
+                    newUser.NumberOfCompletedQuizzesInSection,
+                    newUser.LastLoginTime
                 });
             }
             catch (Exception ex)

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Duo.Models.Quizzes;
@@ -16,7 +15,6 @@ namespace Duo.ViewModels.Roadmap
     public class RoadmapSectionViewModel : ViewModelBase
     {
         private ISectionService sectionService;
-
         private int sectionId;
         private Section section;
         public Section Section
@@ -27,18 +25,6 @@ namespace Duo.ViewModels.Roadmap
         private bool isCompleted;
         private int nrOfCompletedQuizzes;
 
-        // TEMPORARY DATA
-        // private ObservableCollection<Quiz> _quizzes = new ObservableCollection<Quiz>
-        // {
-        //    new Quiz(1, null, null),
-        //    new Quiz(2, null, null),
-        //    new Quiz(3, null, null),
-        //    new Quiz(4, null, null),
-        //    new Quiz(5, null, null),
-        //    new Quiz(6, null, null),
-        //    new Quiz(7, null, null)
-        // };
-        // private Exam _exam = new Exam(2, null);
         public ICommand OpenQuizPreviewCommand { get; set; }
 
         private ObservableCollection<RoadmapButtonTemplate> quizButtonTemplates;
@@ -67,68 +53,90 @@ namespace Duo.ViewModels.Roadmap
 
         public RoadmapSectionViewModel()
         {
-            sectionService = (ISectionService)(App.ServiceProvider.GetService(typeof(ISectionService)));
-
-            var mainPageViewModel = (RoadmapMainPageViewModel)(App.ServiceProvider.GetService(typeof(RoadmapMainPageViewModel)));
-            OpenQuizPreviewCommand = mainPageViewModel.OpenQuizPreviewCommand;
-            quizButtonTemplates = new ObservableCollection<RoadmapButtonTemplate>();
+            try
+            {
+                sectionService = (ISectionService)(App.ServiceProvider.GetService(typeof(ISectionService)));
+                var mainPageViewModel = (RoadmapMainPageViewModel)(App.ServiceProvider.GetService(typeof(RoadmapMainPageViewModel)));
+                OpenQuizPreviewCommand = mainPageViewModel.OpenQuizPreviewCommand;
+                quizButtonTemplates = new ObservableCollection<RoadmapButtonTemplate>();
+            }
+            catch (Exception ex)
+            {
+                RaiseErrorMessage("Initialization Error", $"Failed to initialize RoadmapSectionViewModel.\nDetails: {ex.Message}");
+            }
         }
 
         public async Task SetupForSection(int sectionId, bool isCompleted, int nrOfCompletedQuizzes)
         {
-            Debug.WriteLine($"--------------------Setting up section with ID {sectionId}, Compl {isCompleted}, nr_quiz {nrOfCompletedQuizzes}");
-            this.sectionId = sectionId;
-            section = await sectionService.GetSectionById(this.sectionId);
+            try
+            {
+                Debug.WriteLine($"--------------------Setting up section with ID {sectionId}, Compl {isCompleted}, nr_quiz {nrOfCompletedQuizzes}");
+                this.sectionId = sectionId;
+                section = await sectionService.GetSectionById(this.sectionId);
 
-            IQuizService quizService = (IQuizService)App.ServiceProvider.GetService(typeof(IQuizService));
-            section.Quizzes = await quizService.GetAllQuizzesFromSection(this.sectionId);
-            section.Exam = await quizService.GetExamFromSection(this.sectionId);
+                IQuizService quizService = (IQuizService)App.ServiceProvider.GetService(typeof(IQuizService));
+                section.Quizzes = await quizService.GetAllQuizzesFromSection(this.sectionId);
+                section.Exam = await quizService.GetExamFromSection(this.sectionId);
 
-            this.isCompleted = isCompleted;
-            this.nrOfCompletedQuizzes = nrOfCompletedQuizzes;
+                this.isCompleted = isCompleted;
+                this.nrOfCompletedQuizzes = nrOfCompletedQuizzes;
 
-            OnPropertyChanged(nameof(Section));
+                OnPropertyChanged(nameof(Section));
 
-            PopulateQuizButtonTemplates();
+                PopulateQuizButtonTemplates();
+            }
+            catch (Exception ex)
+            {
+                RaiseErrorMessage("Setup Section Error", $"Failed to set up section with ID {sectionId}.\nDetails: {ex.Message}");
+            }
         }
 
         private void PopulateQuizButtonTemplates()
         {
-            Debug.WriteLine($"++++++ Populating section {section.Id}");
-            foreach (Quiz quiz in section.GetAllQuizzes())
+            try
             {
-                RoadmapButtonTemplate.QUIZ_STATUS quizStatus = RoadmapButtonTemplate.QUIZ_STATUS.LOCKED;
+                Debug.WriteLine($"++++++ Populating section {section.Id}");
+                quizButtonTemplates.Clear();
+                foreach (Quiz quiz in section.GetAllQuizzes())
+                {
+                    RoadmapButtonTemplate.QUIZ_STATUS quizStatus = RoadmapButtonTemplate.QUIZ_STATUS.LOCKED;
+                    if (isCompleted)
+                    {
+                        quizStatus = RoadmapButtonTemplate.QUIZ_STATUS.COMPLETED;
+                    }
+                    else if (quiz.OrderNumber <= nrOfCompletedQuizzes)
+                    {
+                        quizStatus = RoadmapButtonTemplate.QUIZ_STATUS.COMPLETED;
+                    }
+                    else if (quiz.OrderNumber == nrOfCompletedQuizzes + 1)
+                    {
+                        quizStatus = RoadmapButtonTemplate.QUIZ_STATUS.INCOMPLETE;
+                    }
+
+                    Debug.WriteLine($"++++++++++ Populating quiz {quiz.Id} -> {quizStatus}");
+                    quizButtonTemplates.Add(new RoadmapButtonTemplate(quiz, OpenQuizPreviewCommand, quizStatus));
+                }
+
+                RoadmapButtonTemplate.QUIZ_STATUS examStatus = RoadmapButtonTemplate.QUIZ_STATUS.LOCKED;
                 if (isCompleted)
                 {
-                    quizStatus = RoadmapButtonTemplate.QUIZ_STATUS.COMPLETED;
+                    examStatus = RoadmapButtonTemplate.QUIZ_STATUS.COMPLETED;
                 }
-                else if (quiz.OrderNumber <= nrOfCompletedQuizzes)
+                else if (section.GetAllQuizzes().Count<Quiz>() == nrOfCompletedQuizzes)
                 {
-                    quizStatus = RoadmapButtonTemplate.QUIZ_STATUS.COMPLETED;
-                }
-                else if (quiz.OrderNumber == nrOfCompletedQuizzes + 1)
-                {
-                    quizStatus = RoadmapButtonTemplate.QUIZ_STATUS.INCOMPLETE;
+                    examStatus = RoadmapButtonTemplate.QUIZ_STATUS.INCOMPLETE;
                 }
 
-                Debug.WriteLine($"++++++++++ Populating quiz {quiz.Id} -> {quizStatus}");
-                quizButtonTemplates.Add(new RoadmapButtonTemplate(quiz, OpenQuizPreviewCommand, quizStatus));
-                // Debug.WriteLine($"Added quiz with ID {quiz.Id} in section {_section.Id}");
-            }
-            RoadmapButtonTemplate.QUIZ_STATUS examStatus = RoadmapButtonTemplate.QUIZ_STATUS.LOCKED;
-            if (isCompleted)
-            {
-                examStatus = RoadmapButtonTemplate.QUIZ_STATUS.COMPLETED;
-            }
-            else if (section.GetAllQuizzes().Count<Quiz>() == nrOfCompletedQuizzes)
-            {
-                examStatus = RoadmapButtonTemplate.QUIZ_STATUS.INCOMPLETE;
-            }
-            Debug.WriteLine($"++++++++++ Populating exam -> {examStatus}");
-            examButtonTemplate = new RoadmapButtonTemplate(section.GetFinalExam(), OpenQuizPreviewCommand, examStatus);
+                Debug.WriteLine($"++++++++++ Populating exam -> {examStatus}");
+                examButtonTemplate = new RoadmapButtonTemplate(section.GetFinalExam(), OpenQuizPreviewCommand, examStatus);
 
-            OnPropertyChanged(nameof(QuizButtonTemplates));
-            OnPropertyChanged(nameof(ExamButtonTemplate));
+                OnPropertyChanged(nameof(QuizButtonTemplates));
+                OnPropertyChanged(nameof(ExamButtonTemplate));
+            }
+            catch (Exception ex)
+            {
+                RaiseErrorMessage("Populate Buttons Error", $"Failed to populate quiz and exam button templates.\nDetails: {ex.Message}");
+            }
         }
     }
 

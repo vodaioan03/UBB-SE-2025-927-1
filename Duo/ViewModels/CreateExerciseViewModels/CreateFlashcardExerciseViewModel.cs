@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Duo.Models;
 using Duo.Models.Exercises;
+using Duo.ViewModels.Base;
 using Duo.ViewModels.ExerciseViewModels;
 
 namespace Duo.ViewModels.CreateExerciseViewModels
@@ -15,6 +12,14 @@ namespace Duo.ViewModels.CreateExerciseViewModels
 
         public CreateFlashcardExerciseViewModel()
         {
+            try
+            {
+                // No additional initialization required
+            }
+            catch (Exception ex)
+            {
+                RaiseErrorMessage("Initialization Error", $"Failed to initialize CreateFlashcardExerciseViewModel.\nDetails: {ex.Message}");
+            }
         }
 
         public string Answer
@@ -22,16 +27,32 @@ namespace Duo.ViewModels.CreateExerciseViewModels
             get => answer;
             set
             {
-                if (answer != value)
+                try
                 {
-                    answer = value;
-                    OnPropertyChanged(nameof(Answer)); // Notify UI
+                    if (answer != value)
+                    {
+                        answer = value;
+                        OnPropertyChanged(nameof(Answer));
+                    }
+                }
+                catch (Exception ex)
+                {
+                    RaiseErrorMessage("Answer Error", $"Failed to set answer.\nDetails: {ex.Message}");
                 }
             }
         }
+
         public override Exercise CreateExercise(string question, Difficulty difficulty)
         {
-            return new FlashcardExercise(0, question, Answer, difficulty);
+            try
+            {
+                return new FlashcardExercise(0, question, Answer, difficulty);
+            }
+            catch (Exception ex)
+            {
+                RaiseErrorMessage("Create Exercise Error", $"Failed to create flashcard exercise.\nDetails: {ex.Message}");
+                return null; // Fallback, though ideally handled by caller
+            }
         }
     }
 }

@@ -2,16 +2,13 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
+using System.Linq;
 using System.Windows.Input;
 using Duo.Commands;
-using Duo.Models;
 using Duo.Models.Exercises;
 using Duo.Models.Quizzes;
 using Duo.Services;
-using Duo.ViewModels.Base;
 
 namespace Duo.ViewModels
 {
@@ -19,6 +16,7 @@ namespace Duo.ViewModels
     {
         private readonly IExerciseService exerciseService;
         private readonly IQuizService quizService;
+
         public ObservableCollection<Quiz> Quizes { get; set; } = new ObservableCollection<Quiz>();
         public ObservableCollection<Exercise> QuizExercises { get; private set; } = new ObservableCollection<Exercise>();
         public ObservableCollection<Exercise> AvailableExercises { get; private set; } = new ObservableCollection<Exercise>();
@@ -37,10 +35,27 @@ namespace Duo.ViewModels
             catch (Exception ex)
             {
                 Debug.WriteLine(ex);
+                RaiseErrorMessage("Initialization error", ex.Message);
             }
+
             DeleteQuizCommand = new RelayCommandWithParameter<Quiz>(quiz => _ = DeleteQuiz(quiz));
-            OpenSelectExercisesCommand = new RelayCommand((_) => _ = OpenSelectExercises());
+
+            OpenSelectExercisesCommand = new RelayCommand((_) =>
+            {
+                try
+                {
+                    OpenSelectExercises();
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"OpenSelectExercises error: {ex.Message}");
+                    RaiseErrorMessage("Failed to open exercise selection.", ex.Message);
+                }
+                return Task.CompletedTask;
+            });
+
             RemoveExerciseFromQuizCommand = new RelayCommandWithParameter<Exercise>(exercise => _ = RemoveExerciseFromQuiz(exercise));
+
             _ = Task.Run(async () => await LoadExercisesAsync());
             _ = Task.Run(async () => await InitializeViewModel());
         }
@@ -83,8 +98,7 @@ namespace Duo.ViewModels
             catch (Exception ex)
             {
                 Debug.WriteLine($"Error during DeleteQuiz: {ex.Message}");
-                Debug.WriteLine(ex.StackTrace);
-                RaiseErrorMessage(ex.Message, string.Empty);
+                RaiseErrorMessage("Failed to delete quiz", ex.Message);
             }
         }
 
@@ -93,6 +107,8 @@ namespace Duo.ViewModels
             try
             {
                 List<Quiz> quizes = await quizService.Get();
+                Quizes.Clear();
+
                 foreach (var quiz in quizes)
                 {
                     Quizes.Add(quiz);
@@ -102,7 +118,7 @@ namespace Duo.ViewModels
             catch (Exception ex)
             {
                 Debug.WriteLine(ex);
-                RaiseErrorMessage(ex.Message, string.Empty);
+                RaiseErrorMessage("Failed to load quizzes", ex.Message);
             }
         }
 
@@ -123,40 +139,47 @@ namespace Duo.ViewModels
 
                 foreach (var exercise in exercisesOfSelectedQuiz)
                 {
-                    Debug.WriteLine(exercise);
                     QuizExercises.Add(exercise);
                 }
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"Error during UpdateQuizExercises: {ex.Message}");
-                Debug.WriteLine(ex.StackTrace);
+                RaiseErrorMessage("Failed to load quiz exercises", ex.Message);
             }
         }
 
-        public async Task OpenSelectExercises()
+        public void OpenSelectExercises()
         {
-            Debug.WriteLine("Opening select exercises...");
-            ShowListViewModal?.Invoke(AvailableExercises.ToList());
+            try
+            {
+                Debug.WriteLine("Opening select exercises...");
+                ShowListViewModal?.Invoke(AvailableExercises.ToList());
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error while opening select exercises: {ex.Message}");
+                RaiseErrorMessage("Failed to open select exercises", ex.Message);
+            }
         }
+
         private async Task LoadExercisesAsync()
         {
             try
             {
-                AvailableExercises.Clear(); // Clear the ObservableCollection
+                AvailableExercises.Clear();
 
                 var exercises = await exerciseService.GetAllExercises();
 
                 foreach (var exercise in exercises)
                 {
-                    Debug.WriteLine(exercise); // Add each exercise to the ObservableCollection
                     AvailableExercises.Add(exercise);
                 }
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"Error during LoadExercisesAsync: {ex.Message}");
-                Debug.WriteLine(ex.StackTrace);
+                RaiseErrorMessage("Failed to load available exercises", ex.Message);
             }
         }
 
@@ -168,7 +191,7 @@ namespace Duo.ViewModels
 
                 if (SelectedQuiz == null)
                 {
-                    Debug.WriteLine("No quiz selected.");
+                    RaiseErrorMessage("No quiz selected", "Please select a quiz before adding exercises.");
                     return;
                 }
 
@@ -180,14 +203,12 @@ namespace Duo.ViewModels
             catch (Exception ex)
             {
                 Debug.WriteLine($"Error while adding exercise: {ex.Message}");
-                Debug.WriteLine(ex.StackTrace);
-                RaiseErrorMessage(ex.Message, string.Empty);
+                RaiseErrorMessage("Failed to add exercise to quiz", ex.Message);
             }
         }
 
         public async Task RemoveExerciseFromQuiz(Exercise selectedExercise)
         {
-            Debug.WriteLine("Removing exercise...");
             try
             {
                 await quizService.RemoveExerciseFromQuiz(SelectedQuiz.Id, selectedExercise.ExerciseId);
@@ -196,8 +217,8 @@ namespace Duo.ViewModels
             }
             catch (Exception ex)
             {
-                Debug.WriteLine(ex);
-                RaiseErrorMessage(ex.Message, string.Empty);
+                Debug.WriteLine($"Error while removing exercise: {ex.Message}");
+                RaiseErrorMessage("Failed to remove exercise from quiz", ex.Message);
             }
         }
     }

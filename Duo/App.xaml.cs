@@ -24,6 +24,7 @@ using Duo.Services;
 using Duo.ViewModels;
 using Duo.ViewModels.Roadmap;
 using Duo.Helpers;
+using Duo.Services.Interfaces;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -77,6 +78,30 @@ namespace Duo
             {
                 var proxy = sp.GetRequiredService<IUserServiceProxy>();
                 return new UserService(proxy);
+            });
+
+            // Course
+            services.AddSingleton<ICourseServiceProxy>(sp =>
+            {
+                var httpClient = sp.GetRequiredService<HttpClient>();
+                return new CourseServiceProxy(httpClient);
+            });
+            services.AddSingleton<ICourseService>(sp =>
+            {
+                var proxy = sp.GetRequiredService<ICourseServiceProxy>();
+                return new CourseService(proxy);
+            });
+
+            // Coins
+            services.AddSingleton<ICoinsServiceProxy>(sp =>
+            {
+                var httpClient = sp.GetRequiredService<HttpClient>();
+                return new CoinsServiceProxy(httpClient);
+            });
+            services.AddSingleton<ICoinsService>(sp =>
+            {
+                var proxy = sp.GetRequiredService<ICoinsServiceProxy>();
+                return new CoinsService(proxy);
             });
 
             // Exercise

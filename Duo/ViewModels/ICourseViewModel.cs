@@ -102,7 +102,7 @@ namespace Duo.ViewModels
         /// <summary>
         /// Retrieves and updates the current coin balance asynchronously.
         /// </summary>
-        Task<int> GetCoinBalanceAsync();
+        Task<int> GetCoinBalanceAsync(int currentUserId);
 
         /// <summary>
         /// Starts the timer that tracks course progress.
@@ -112,29 +112,29 @@ namespace Duo.ViewModels
         /// <summary>
         /// Pauses the course progress timer and saves the current progress asynchronously.
         /// </summary>
-        Task PauseCourseProgressTimer();
+        Task PauseCourseProgressTimer(int currentUserId);
 
         /// <summary>
         /// Refreshes the module roadmap by reloading module statuses asynchronously.
         /// </summary>
-        Task RefreshCourseModulesDisplay();
+        Task RefreshCourseModulesDisplay(int currentUserId);
 
         /// <summary
         /// >Marks a module as completed and checks for rewards asynchronously.
         /// </summary>
         /// <param name="targetModuleId">The ID of the module to mark as completed.</param>
-        Task MarkModuleAsCompletedAndCheckRewards(int targetModuleId);
+        Task MarkModuleAsCompletedAndCheckRewards(int targetModuleId, int currentUserId);
 
         /// <summary>
         /// Attempts to purchase a bonus module asynchronously.
         /// </summary>
         /// <param name="module">The module to purchase.</param>
-        Task AttemptBonusModulePurchaseAsync(Module? module);
+        Task AttemptBonusModulePurchaseAsync(Module? module, int currentUserId);
 
         /// <summary>
         /// Loads and organizes all modules for the course asynchronously.
         /// </summary>
-        Task LoadAndOrganizeCourseModules();
+        Task LoadAndOrganizeCourseModules(int currentUserId);
 
         #endregion
     }

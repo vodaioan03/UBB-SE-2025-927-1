@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Input;
 using Duo.Commands;
 using Duo.Models;
@@ -16,61 +14,106 @@ namespace Duo.ViewModels.CreateExerciseViewModels
 {
     partial class CreateFillInTheBlankExerciseViewModel : CreateExerciseViewModelBase
     {
-        private ExerciseCreationViewModel parentViewModel;
+        private readonly ExerciseCreationViewModel parentViewModel;
         public ObservableCollection<Answer> Answers { get; set; } = new ObservableCollection<Answer>();
         public const int MAX_ANSWERS = 3;
 
+        public ICommand AddNewAnswerCommand { get; }
+
         public CreateFillInTheBlankExerciseViewModel(ExerciseCreationViewModel parentViewModel)
         {
-            this.parentViewModel = parentViewModel;
-            Answers.Add(new Answer(string.Empty));
-            AddNewAnswerCommand = new RelayCommand(async _ => AddNewAnswer());
+            try
+            {
+                this.parentViewModel = parentViewModel ?? throw new ArgumentNullException(nameof(parentViewModel));
+                Answers.Add(new Answer(string.Empty));
+                AddNewAnswerCommand = new RelayCommand(_ => AddNewAnswer());
+            }
+            catch (Exception ex)
+            {
+                RaiseErrorMessage("Initialization Error", $"Failed to initialize CreateFillInTheBlankExerciseViewModel.\nDetails: {ex.Message}");
+            }
         }
-
-        public ICommand AddNewAnswerCommand { get; }
 
         public override Exercise CreateExercise(string question, Difficulty difficulty)
         {
-            Exercise newExercise = new Models.Exercises.FillInTheBlankExercise(0, question, difficulty, GenerateAnswerList(Answers));
-            return newExercise;
+            try
+            {
+                Exercise newExercise = new Models.Exercises.FillInTheBlankExercise(0, question, difficulty, GenerateAnswerList(Answers));
+                return newExercise;
+            }
+            catch (Exception ex)
+            {
+                RaiseErrorMessage("Create Exercise Error", $"Failed to create fill-in-the-blank exercise.\nDetails: {ex.Message}");
+                return null; // Fallback, though ideally handled by caller
+            }
         }
 
         public List<string> GenerateAnswerList(ObservableCollection<Answer> answers)
         {
-            List<string> answerList = new List<string>();
-            foreach (Answer answer in answers)
+            try
             {
-                answerList.Add(answer.Value);
+                List<string> answerList = new List<string>();
+                foreach (Answer answer in answers)
+                {
+                    answerList.Add(answer.Value);
+                }
+                return answerList;
             }
-            return answerList;
+            catch (Exception ex)
+            {
+                RaiseErrorMessage("Generate Answers Error", $"Failed to generate answer list.\nDetails: {ex.Message}");
+                return new List<string>();
+            }
         }
 
         public void AddNewAnswer()
         {
-            if (Answers.Count >= MAX_ANSWERS)
+            try
             {
-                parentViewModel.RaiseErrorMessage("You can only have 3 answers for a fill in the blank exercise.", string.Empty);
-                return;
+                if (Answers.Count >= MAX_ANSWERS)
+                {
+                    parentViewModel.RaiseErrorMessage("Maximum Answers Reached", $"You can only have {MAX_ANSWERS} answers for a fill-in-the-blank exercise.");
+                    return;
+                }
+                Answers.Add(new Answer(string.Empty));
             }
-            Answers.Add(new Answer(string.Empty));
+            catch (Exception ex)
+            {
+                RaiseErrorMessage("Add Answer Error", $"Failed to add new answer.\nDetails: {ex.Message}");
+            }
         }
 
         public class Answer : ViewModelBase
         {
             private string value;
+
             public string Value
             {
                 get => value;
                 set
                 {
-                    this.value = value;
-                    OnPropertyChanged(nameof(Value));
+                    try
+                    {
+                        this.value = value;
+                        OnPropertyChanged(nameof(Value));
+                    }
+                    catch (Exception ex)
+                    {
+                        RaiseErrorMessage("Answer Value Error", $"Failed to set answer value.\nDetails: {ex.Message}");
+                    }
                 }
             }
 
             public Answer(string value)
             {
-                this.value = value;
+                try
+                {
+                    this.value = value;
+                }
+                catch (Exception ex)
+                {
+                    RaiseErrorMessage("Answer Initialization Error", $"Failed to initialize Answer.\nDetails: {ex.Message}");
+                }
             }
         }
     }
