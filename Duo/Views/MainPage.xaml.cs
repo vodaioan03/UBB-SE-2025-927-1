@@ -123,8 +123,6 @@ namespace Duo.Views
             }
             catch (Exception ex)
             {
-                var courseVM = new CourseViewModel(selectedCourse, CurrentUserId);
-                this.Frame.Navigate(typeof(CoursePage), courseVM);
                 Debug.WriteLine($"Error displaying ContentDialog: {ex.Message}");
             }
         }
