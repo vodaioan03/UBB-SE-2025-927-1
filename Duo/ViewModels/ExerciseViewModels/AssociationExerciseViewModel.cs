@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Duo.Models.Exercises;
 using Duo.Services;
@@ -18,37 +17,59 @@ namespace Duo.ViewModels.ExerciseViewModels
 
         public ObservableCollection<(string, string)>? UserAnswers
         {
-            get { return userAnswers; }
-            set { SetProperty(ref userAnswers, value); }
+            get => userAnswers;
+            set => SetProperty(ref userAnswers, value);
         }
 
         public AssociationExerciseViewModel(IExerciseService exerciseService)
         {
-            this.exerciseService = exerciseService;
+            try
+            {
+                this.exerciseService = exerciseService ?? throw new ArgumentNullException(nameof(exerciseService));
+            }
+            catch (Exception ex)
+            {
+                RaiseErrorMessage("Initialization Error", $"Failed to initialize AssociationExerciseViewModel.\nDetails: {ex.Message}");
+            }
         }
 
         public async Task GetExercise(int id)
         {
-            Exercise exercise = await exerciseService.GetExerciseById(id);
-            if (exercise is AssociationExercise associationExercise)
+            try
             {
-                this.exercise = associationExercise;
+                Exercise exercise = await exerciseService.GetExerciseById(id);
+                if (exercise is AssociationExercise associationExercise)
+                {
+                    this.exercise = associationExercise;
+                    userAnswers = new ObservableCollection<(string, string)>();
+                }
+                else
+                {
+                    RaiseErrorMessage("Exercise Error", $"Invalid exercise type for ID {id}. Expected AssociationExercise.");
+                }
             }
-            else
+            catch (Exception ex)
             {
-                throw new Exception("Invalid exercise type given to viewModel");
+                RaiseErrorMessage("Exercise Load Error", $"Failed to load exercise with ID {id}.\nDetails: {ex.Message}");
             }
-
-            userAnswers = new ObservableCollection<(string, string)>();
         }
 
         public bool VerifyIfAnswerIsCorrect()
         {
-            if (exercise == null || userAnswers == null)
+            try
             {
+                if (exercise == null || userAnswers == null)
+                {
+                    RaiseErrorMessage("Validation Error", "Exercise or UserAnswers is not initialized.");
+                    return false;
+                }
+                return exercise.ValidateAnswer(userAnswers.ToList());
+            }
+            catch (Exception ex)
+            {
+                RaiseErrorMessage("Validation Error", $"Failed to verify answer.\nDetails: {ex.Message}");
                 return false;
             }
-            return exercise.ValidateAnswer([.. userAnswers]);
         }
     }
 }
