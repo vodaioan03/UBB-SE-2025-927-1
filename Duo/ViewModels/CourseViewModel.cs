@@ -382,7 +382,6 @@ namespace Duo.ViewModels
                         IsCompleted = isCompleted
                     });
                 }
-
             }
             catch (Exception e)
             {

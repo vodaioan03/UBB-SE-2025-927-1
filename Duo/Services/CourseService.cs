@@ -72,7 +72,6 @@ namespace Duo.Services
             }
         }
 
-
         /// <summary>
         /// Retrieves all non-bonus modules for a course.
         /// </summary>

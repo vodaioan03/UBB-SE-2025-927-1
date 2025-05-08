@@ -3,10 +3,10 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text;
+using System;
 using System.Threading.Tasks;
 using Duo.Models;
 using Duo.Services.Interfaces;
-using System;
 
 namespace Duo.Services
 {
