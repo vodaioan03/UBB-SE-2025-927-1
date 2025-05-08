@@ -199,7 +199,6 @@ namespace Duo.Api.Controllers
             }
         }
 
-
         /// <summary>
         /// Updates an existing module.
         /// </summary>

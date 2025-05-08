@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Duo.Models;
 using Duo.Services.Interfaces;
+using System;
 
 namespace Duo.Services
 {
@@ -118,7 +119,17 @@ namespace Duo.Services
 
         public async Task<bool> IsModuleCompleted(int userId, int moduleId)
         {
-            return await httpClient.GetFromJsonAsync<bool>($"{url}/api/module/is-completed?userId={userId}&moduleId={moduleId}");
+            try
+            {
+                var response = await httpClient.GetFromJsonAsync<bool>(
+                    $"{url}/api/module/is-completed?userId={userId}&moduleId={moduleId}");
+                return response;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR] Failed to check IsModuleCompleted: {ex.Message}");
+                return false;
+            }
         }
 
         public async Task<int> GetCompletedModulesCount(int userId, int courseId)

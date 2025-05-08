@@ -435,7 +435,6 @@ namespace Duo.Api.Repositories
 
         Task<List<Module>> GetModulesByCourseIdAsync(int courseId);
 
-
         #endregion
 
         #region Exams
