@@ -1,11 +1,11 @@
 using System;
+using System.Net.Http;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Duo.Models;
 using Duo.ViewModels;
 using Duo.Services;
-using System.Net.Http;
 
 namespace Duo.Views
 {

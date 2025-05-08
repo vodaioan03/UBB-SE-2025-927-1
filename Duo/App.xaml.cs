@@ -58,9 +58,9 @@ namespace Duo
             var services = new ServiceCollection();
             services.AddSingleton(new HttpClient
             {
-                BaseAddress = new Uri("https://localhost:7174") 
+                BaseAddress = new Uri("https://localhost:7174")
             });
-            ;
+
             services.AddSingleton<IConfiguration>(configuration);
             services.AddSingleton<DatabaseConnection>();
 

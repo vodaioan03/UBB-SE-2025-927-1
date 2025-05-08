@@ -10,6 +10,7 @@ using Duo.Commands;
 using Duo.Models;
 using Duo.Services;
 using Duo.ViewModels.Helpers;
+using Windows.System;
 
 #pragma warning disable IDE0079 // Remove unnecessary suppression
 #pragma warning disable SA1010 // Opening square brackets should be spaced correctly
@@ -53,6 +54,8 @@ namespace Duo.ViewModels
 
         private string notificationMessageText = string.Empty;
         private bool shouldShowNotification = false;
+        private int currentUserId;
+
         #endregion
 
         #region Properties
@@ -67,7 +70,21 @@ namespace Duo.ViewModels
         public ICommand? EnrollCommand { get; private set; }
 
         /// <summary>Gets a value indicating whether the user is enrolled in this course</summary>
-        public bool IsEnrolled { get; set; }
+        public bool IsEnrolled
+        {
+            get => isEnrolled;
+            set
+            {
+                if (isEnrolled != value)
+                {
+                    isEnrolled = value;
+                    OnPropertyChanged(nameof(IsEnrolled));
+                    ((RelayCommand)EnrollCommand).RaiseCanExecuteChanged();
+                }
+            }
+        }
+
+        private bool isEnrolled;
 
         /// <summary>Gets whether coin information should be visible</summary>
         public bool CoinVisibility => CurrentCourse.IsPremium && !IsEnrolled;
@@ -83,6 +100,7 @@ namespace Duo.ViewModels
                 {
                     coinBalance = value;
                     OnPropertyChanged(nameof(CoinBalance));
+                    ((RelayCommand)EnrollCommand).RaiseCanExecuteChanged();
                 }
             }
         }
@@ -244,12 +262,17 @@ namespace Duo.ViewModels
             CourseServiceProxy? serviceProxy = null)
         {
             CurrentCourse = course ?? throw new ArgumentNullException(nameof(course));
+            this.currentUserId = currentUserId;
 
             var httpClient = new System.Net.Http.HttpClient();
             var defaultServiceProxy = serviceProxy ?? new CourseServiceProxy(httpClient);
 
             this.courseService = courseService ?? new CourseService(defaultServiceProxy);
             this.coinsService = coinsService ?? new CoinsService(new CoinsServiceProxy(httpClient));
+
+            EnrollCommand = new RelayCommand(
+                async (_) => await EnrollUserInCourseAsync(_, currentUserId),
+                (_) => !IsEnrolled && CoinBalance >= CurrentCourse.Cost);
 
             InitializeTimersAndNotificationHelper(timerService, notificationTimerService, notificationHelper);
         }
@@ -265,6 +288,18 @@ namespace Duo.ViewModels
             {
                 RaiseErrorMessage("Initialization Error", $"Failed to initialize course data.\nDetails: {ex.Message}");
             }
+        }
+
+        private bool CanExecuteEnroll(object? parameter)
+        {
+            return !IsEnrolled;
+        }
+
+        private async void ExecuteEnroll(object? parameter)
+        {
+            await courseService.EnrollInCourseAsync(currentUserId, CurrentCourse.CourseId);
+            IsEnrolled = true;
+            await LoadAndOrganizeCourseModules(currentUserId);
         }
 
         /// <summary>
@@ -296,10 +331,6 @@ namespace Duo.ViewModels
                 IsEnrolled = await courseService.IsUserEnrolledAsync(currentUserId, CurrentCourse.CourseId);
                 CoinBalance = await coinsService.GetCoinBalanceAsync(currentUserId);
 
-                EnrollCommand = new RelayCommand(
-                    async (_) => await EnrollUserInCourseAsync(_, currentUserId),
-                    (_) => !IsEnrolled && CoinBalance >= CurrentCourse.Cost);
-
                 OnPropertyChanged(nameof(EnrollCommand));
                 OnPropertyChanged(nameof(IsEnrolled));
                 OnPropertyChanged(nameof(CoinBalance));
@@ -309,7 +340,6 @@ namespace Duo.ViewModels
                 RaiseErrorMessage("Initialization Error", $"Failed to check enrollment.\nDetails: {ex.Message}");
             }
         }
-
 
         /// <summary>
         /// Loads the initial course-related data such as time spent, modules completed,
