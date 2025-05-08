@@ -70,33 +70,5 @@ namespace Duo.Views.Pages
 
             await dialog.ShowAsync();
         }
-
-        // this is where I put the commented code from their demo:
-        /* Demo implementation with dummy data
-private readonly Quiz? _quiz;
-private readonly TimeSpan? _timeTaken;
-
-public EndQuizPage()
-{
-    this.InitializeComponent();
-    ShowDemoQuizResults();
-}
-
-private void ShowDemoQuizResults()
-{
-    // Create a dummy quiz with good results
-    int correctAnswers = 8;
-    int totalQuestions = 10;
-    double scorePercentage = ((double)correctAnswers / totalQuestions) * 100;
-    // Display score
-    ScoreTextBlock.Text = $"{correctAnswers}/{totalQuestions} ({scorePercentage:F1}%)";
-    // Display a sample time (3 minutes and 45 seconds)
-    TimeTextBlock.Text = "3m 45s";
-
-    // Show a success message
-    FeedbackTextBlock.Text = "Great job! You've passed the quiz!";
-    FeedbackTextBlock.Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Green);
-}
-*/
     }
 }
