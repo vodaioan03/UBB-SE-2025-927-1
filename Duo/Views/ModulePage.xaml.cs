@@ -5,6 +5,7 @@ using Microsoft.UI.Xaml.Controls;
 using Duo.Models;
 using Duo.ViewModels;
 using Duo.Services;
+using System.Net.Http;
 
 namespace Duo.Views
 {
@@ -25,13 +26,39 @@ namespace Duo.Views
             if (e.Parameter is ValueTuple<Module, CourseViewModel> tuple)
             {
                 var (module, courseVM) = tuple;
+
+                var httpClient = new HttpClient
+                {
+                    BaseAddress = new Uri("https://localhost:7174")
+                };
+
                 viewModel = new ModuleViewModel(
-                            module,
-                            courseVM,
-                            CurrentUserId,
-                            new CourseService(new CourseServiceProxy(new System.Net.Http.HttpClient())),          // as IModuleCompletionService
-                            new CoinsService(new CoinsServiceProxy(new System.Net.Http.HttpClient())));         // as ICoinsService
+                    module,
+                    courseVM,
+                    CurrentUserId,
+                    new CourseService(new CourseServiceProxy(httpClient)),
+                    new CoinsService(new CoinsServiceProxy(httpClient)));
+
                 this.DataContext = viewModel;
+
+                DispatcherQueue.TryEnqueue(async () =>
+                {
+                    try
+                    {
+                        await viewModel.InitializeAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        var dialog = new ContentDialog
+                        {
+                            Title = "Error loading module",
+                            Content = $"Failed to initialize module: {ex.Message}",
+                            CloseButtonText = "OK",
+                            XamlRoot = this.XamlRoot
+                        };
+                        await dialog.ShowAsync();
+                    }
+                });
             }
         }
         private void BackButton_Click(object sender, RoutedEventArgs e)

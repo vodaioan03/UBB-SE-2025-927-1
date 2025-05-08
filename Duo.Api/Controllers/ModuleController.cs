@@ -142,7 +142,7 @@ namespace Duo.Api.Controllers
                     return NotFound(new { message = "Module not found!" });
                 }
 
-                return Ok(new { result = module, message = "Successfully retrieved module!" });
+                return Ok(module);
             }
             catch (Exception e)
             {
@@ -162,7 +162,7 @@ namespace Duo.Api.Controllers
             try
             {
                 var modules = await repository.GetModulesFromDbAsync();
-                return Ok(new { result = modules, message = "Successfully retrieved list of modules." });
+                return Ok(modules);
             }
             catch (Exception e)
             {
@@ -185,11 +185,6 @@ namespace Duo.Api.Controllers
             {
                 var modules = await repository.GetModulesFromDbAsync();
                 var filteredModules = modules.Where(m => m.CourseId == courseId).ToList();
-
-                if (!filteredModules.Any())
-                {
-                    return NotFound(new { result = new List<Module>(), message = "No modules found for the specified course!" });
-                }
 
                 return Ok(filteredModules);
             }

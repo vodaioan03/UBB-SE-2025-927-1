@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Duo.Commands;
@@ -30,16 +31,19 @@ namespace Duo.ViewModels
         {
             this.UserId = userId;
 
-            courseService = courseServiceOverride ?? new CourseService(new CourseServiceProxy(new System.Net.Http.HttpClient()));
-            coinsService = coinsServiceOverride ?? new CoinsService(new CoinsServiceProxy(new System.Net.Http.HttpClient()));
+            var httpClient = new HttpClient
+            {
+                BaseAddress = new Uri("https://localhost:7174")
+            };
+
+            courseService = courseServiceOverride ?? new CourseService(new CourseServiceProxy(httpClient));
+            coinsService = coinsServiceOverride ?? new CoinsService(new CoinsServiceProxy(httpClient));
             var userService = App.ServiceProvider.GetRequiredService<IUserService>();
 
             _ = EnsureUserExistsAsync(userService);
 
             CurrentModule = module;
             // Fix for CS0029: Await the asynchronous method to get the result
-            IsCompleted = courseService.IsModuleCompletedAsync(UserId, module.ModuleId).GetAwaiter().GetResult();
-
             courseViewModel = courseVM;
 
             CompleteModuleCommand = new RelayCommand(ExecuteCompleteModule, CanCompleteModule);
@@ -51,26 +55,44 @@ namespace Duo.ViewModels
             _ = InitializeAsync();
         }
 
-        private async Task InitializeAsync()
+        public async Task InitializeAsync()
         {
-            IsCompleted = await courseService.IsModuleCompletedAsync(UserId, CurrentModule.ModuleId);
-            await courseService.OpenModuleAsync(UserId, CurrentModule.ModuleId);
-
-            courseViewModel.PropertyChanged += (s, e) =>
+            try
             {
-                if (e.PropertyName == nameof(courseViewModel.FormattedTimeRemaining))
+                var userService = App.ServiceProvider.GetRequiredService<IUserService>();
+                await EnsureUserExistsAsync(userService);
+
+                IsCompleted = await courseService.IsModuleCompletedAsync(UserId, CurrentModule.ModuleId);
+                await courseService.OpenModuleAsync(UserId, CurrentModule.ModuleId);
+
+                courseViewModel.PropertyChanged += (s, e) =>
                 {
-                    OnPropertyChanged(nameof(TimeSpent));
-                }
-            };
+                    if (e.PropertyName == nameof(courseViewModel.FormattedTimeRemaining))
+                    {
+                        OnPropertyChanged(nameof(TimeSpent));
+                    }
+                };
+                OnPropertyChanged(nameof(IsCompleted));
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error in InitializeAsync: {ex.Message}");
+            }
         }
 
         public async Task HandleModuleImageClick(object? obj)
         {
-            var confirmStatus = courseService.ClickModuleImageAsync(UserId, CurrentModule.ModuleId).GetAwaiter().GetResult();
-            if (confirmStatus)
+            try
             {
-                OnPropertyChanged(nameof(CoinBalance));
+                var confirmStatus = await courseService.ClickModuleImageAsync(UserId, CurrentModule.ModuleId);
+                if (confirmStatus)
+                {
+                    OnPropertyChanged(nameof(CoinBalance));
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"ClickModuleImage failed: {ex.Message}");
             }
         }
 
@@ -108,7 +130,8 @@ namespace Duo.ViewModels
 
         public async Task ExecuteModuleImageClick(object? obj)
         {
-            if (courseService.ClickModuleImageAsync(UserId, CurrentModule.ModuleId).GetAwaiter().GetResult())
+            var success = await courseService.ClickModuleImageAsync(UserId, CurrentModule.ModuleId);
+            if (success)
             {
                 OnPropertyChanged(nameof(CoinBalance));
                 courseViewModel.RefreshCourseModulesDisplay(UserId);

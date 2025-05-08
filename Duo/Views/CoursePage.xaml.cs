@@ -99,16 +99,15 @@ namespace Duo.Views
                     this.Frame.Navigate(typeof(ModulePage), (moduleDisplay.Module, viewModel));
                     return;
                 }
-                
-                try{
-
-                if (moduleDisplay.Module!.IsBonus)
-                {
+                try
+                    {
                     if (moduleDisplay.Module!.IsBonus)
                     {
-                        await viewModel.AttemptBonusModulePurchaseAsync(moduleDisplay.Module, CurrentUserId);
+                        if (moduleDisplay.Module!.IsBonus)
+                        {
+                            await viewModel.AttemptBonusModulePurchaseAsync(moduleDisplay.Module, CurrentUserId);
+                        }
                     }
-                }
                 }
                 catch (Exception ex)
                 {
