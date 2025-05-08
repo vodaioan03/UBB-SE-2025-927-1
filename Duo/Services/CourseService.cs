@@ -62,8 +62,16 @@ namespace Duo.Services
         /// </summary>
         public async Task<List<Module>> GetModulesAsync(int courseId)
         {
-            return await courseServiceProxy.GetModulesByCourseId(courseId);
+            try
+            {
+                return await courseServiceProxy.GetModulesByCourseId(courseId);
+            }
+            catch
+            {
+                return new List<Module>();
+            }
         }
+
 
         /// <summary>
         /// Retrieves all non-bonus modules for a course.

@@ -4,6 +4,7 @@ using Microsoft.UI.Xaml.Controls;
 using Duo.Models;
 using Duo.ViewModels;
 using Microsoft.UI.Xaml.Navigation;
+using System;
 
 #pragma warning disable CS8602
 #pragma warning disable IDE0059
@@ -51,16 +52,25 @@ namespace Duo.Views
                     this.Frame.Navigate(typeof(ModulePage), (moduleDisplay.Module, viewModel));
                     return;
                 }
-                if (moduleDisplay.Module!.IsBonus)
+                try
                 {
-                    await viewModel.AttemptBonusModulePurchaseAsync(moduleDisplay.Module, CurrentUserId);
+                    if (moduleDisplay.Module!.IsBonus)
+                    {
+                        await viewModel.AttemptBonusModulePurchaseAsync(moduleDisplay.Module, CurrentUserId);
+                    }
                 }
-                var dialog = new ContentDialog
+                catch (Exception ex)
                 {
-                    Title = "Module Locked",
-                    Content = "You need to complete the previous modules to unlock this one.",
-                    CloseButtonText = "OK"
-                };
+                    var dialog = new ContentDialog
+                    {
+                        Title = "Error",
+                        Content = $"An error occurred while attempting to unlock the module: {ex.Message}",
+                        CloseButtonText = "OK",
+                        XamlRoot = this.XamlRoot
+                    };
+
+                    await dialog.ShowAsync();
+                }
             }
         }
     }

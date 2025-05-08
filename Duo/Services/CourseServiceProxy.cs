@@ -46,7 +46,14 @@ namespace Duo.Services
 
         public async Task<List<Module>> GetModulesByCourseId(int courseId)
         {
-            return await httpClient.GetFromJsonAsync<List<Module>>($"{url}/api/module/list/course/{courseId}");
+            try
+            {
+                return await httpClient.GetFromJsonAsync<List<Module>>($"{url}/api/module/list/by-course/{courseId}");
+            }
+            catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                return new List<Module>();
+            }
         }
 
         public async Task<Module> GetModule(int moduleId)
@@ -111,7 +118,7 @@ namespace Duo.Services
 
         public async Task<bool> IsModuleCompleted(int userId, int moduleId)
         {
-            return await httpClient.GetFromJsonAsync<bool>($"{url}/api/module/isCompleted?userId={userId}&moduleId={moduleId}");
+            return await httpClient.GetFromJsonAsync<bool>($"{url}/api/module/is-completed?userId={userId}&moduleId={moduleId}");
         }
 
         public async Task<int> GetCompletedModulesCount(int userId, int courseId)

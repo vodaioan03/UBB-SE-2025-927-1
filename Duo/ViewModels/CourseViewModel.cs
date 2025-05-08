@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -345,9 +346,13 @@ namespace Duo.ViewModels
         {
             try
             {
-                var modules = (await courseService.GetModulesAsync(CurrentCourse.CourseId))
-                           .OrderBy(module => module.Position)
-                           .ToList();
+                var modules = await courseService.GetModulesAsync(CurrentCourse.CourseId);
+                if (modules.Count == 0)
+                {
+                    Console.WriteLine("No modules found, skipping module display.");
+                    return;
+                }
+
 
                 ModuleRoadmap.Clear();
 
@@ -703,7 +708,15 @@ namespace Duo.ViewModels
                 {
                     moduleToUpdate.IsUnlocked = true;
                     moduleToUpdate.IsCompleted = false;
-                    await courseService.OpenModuleAsync(currentUserId, module.ModuleId);
+                    try
+                    {
+                        await courseService.OpenModuleAsync(currentUserId, module.ModuleId);
+                    }
+                    catch (KeyNotFoundException ex)
+                    {
+                        Console.WriteLine($"OpenModuleAsync failed: {ex.Message}");
+                        notificationHelper?.ShowTemporaryNotification("Something went wrong. Please try again.");
+                    }
                 }
             }
             catch (Exception e)
