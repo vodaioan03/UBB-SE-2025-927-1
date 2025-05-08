@@ -25,12 +25,10 @@ namespace Duo.ViewModels
         private object selectedExerciseContent;
 
         private string questionText = string.Empty;
-        // List of exercise types
         public ObservableCollection<string> ExerciseTypes { get; set; }
 
         public ObservableCollection<string> Difficulties { get; set; }
 
-        // Selected exercise type
         private string selectedExerciseType;
 
         private string selectedDifficulty;
@@ -70,21 +68,8 @@ namespace Duo.ViewModels
 
                 SaveButtonCommand = new RelayCommand((_) => _ = CreateExercise());
 
-                /*ExerciseTypes = new ObservableCollection<string>
-                {
-                    "Association",
-                    "Fill in the blank",
-                    "Multiple Choice",
-                    "Flashcard"
-                };*/
                 ExerciseTypes = new ObservableCollection<string>(Models.Exercises.ExerciseTypes.EXERCISE_TYPES);
 
-                /*Difficulties = new ObservableCollection<string>
-                {
-                    "Easy",
-                    "Normal",
-                    "Hard"
-                };*/
                 Difficulties = new ObservableCollection<string>(Models.DifficultyList.DIFFICULTIES);
 
                 SelectedExerciseContent = new TextBlock { Text = "Select an exercise type." };
@@ -105,7 +90,7 @@ namespace Duo.ViewModels
                 if (questionText != value)
                 {
                     questionText = value;
-                    OnPropertyChanged(nameof(QuestionText)); // Notify UI
+                    OnPropertyChanged(nameof(QuestionText));
                 }
             }
         }
@@ -168,10 +153,18 @@ namespace Duo.ViewModels
             set => SetProperty(ref isSuccessMessageVisible, value);
         }
 
-        public void ShowSuccessMessage()
+        public async void ShowSuccessMessage()
         {
-            // IsSuccessMessageVisible = true;
-            // Task.Delay(3000).ContinueWith(_ => IsSuccessMessageVisible = false);
+            try
+            {
+                IsSuccessMessageVisible = true;
+                await Task.Delay(3000);
+                IsSuccessMessageVisible = false;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error while showing success message: {ex.Message}");
+            }
         }
 
         private void UpdateExerciseContent(string exerciseType)
