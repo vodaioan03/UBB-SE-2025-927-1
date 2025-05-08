@@ -86,7 +86,6 @@ namespace Duo.Views
                     await viewModel.AttemptBonusModulePurchaseAsync(moduleDisplay.Module, CurrentUserId);
                 }
 
-                // Use RaiseErrorMessage instead of inline dialog
                 viewModel.RaiseErrorMessage("Module Locked", "You need to complete the previous modules to unlock this one.");
             }
         }
