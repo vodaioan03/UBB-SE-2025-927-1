@@ -27,6 +27,7 @@ namespace Duo.Api.Models.Exercises
         /// </summary>
         public FillInTheBlankExercise()
         {
+            //Type = "FillInTheBlank";
         }
 
         #endregion

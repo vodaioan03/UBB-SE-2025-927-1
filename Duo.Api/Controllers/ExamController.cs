@@ -1,4 +1,9 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using Duo.Api.DTO;
+using Duo.Api.Helpers;
+using Duo.Api.Models.Exercises;
 using Duo.Api.Models.Quizzes;
 using Duo.Api.Repositories;
 using Microsoft.AspNetCore.Mvc;
@@ -30,10 +35,12 @@ namespace Duo.Api.Controllers
         /// <param name="exam">The exam data to add.</param>
         /// <returns>The added exam.</returns>
         [HttpPost("add")]
-        public async Task<IActionResult> AddExam([FromForm] Exam exam)
+        public async Task<IActionResult> AddExam([FromBody] JsonElement rawJson)
         {
             try
             {
+                string json = rawJson.GetRawText();
+                var exam = await JsonSerializationUtil.DeserializeExamWithTypedExercises(json, this.repository);
                 await repository.AddExamAsync(exam);
                 return Ok(exam);
             }
@@ -53,12 +60,43 @@ namespace Duo.Api.Controllers
         {
             try
             {
-                var exam = await repository.GetExamByIdAsync(id);
+                var exam = await this.repository.GetExamByIdAsync(id);
                 if (exam == null)
                 {
                     return NotFound();
                 }
-                return Ok(exam);
+
+                // Handle polymorphysm
+                var exercises = exam.Exercises.ToList();
+                List<Exercise> exercisesWithType = new List<Exercise>(exercises.Count);
+                foreach (var exercise in exercises)
+                {
+                    var ex = await this.repository.GetExerciseByIdAsync(exercise.ExerciseId);
+                    if (ex == null)
+                    {
+                        return this.NotFound();
+                    }
+
+                    exercisesWithType.Add(ex);
+                }
+
+                var mergedExercises = ExerciseMerger.MergeExercises(exercisesWithType);
+
+                var options = new JsonSerializerOptions
+                {
+                    WriteIndented = true, // Pretty print
+                    DefaultIgnoreCondition = JsonIgnoreCondition.Never, // Ensure null values are not ignored
+                    ReferenceHandler = ReferenceHandler.Preserve,  // Handle object cycles
+                };
+
+                ExamDTO examDto = new ExamDTO
+                {
+                    Id = exam.Id,
+                    SectionId = exam.SectionId, // This will be included even if null
+                    Exercises = mergedExercises,
+                };
+
+                return Ok(examDto);
             }
             catch (Exception ex)
             {
@@ -75,8 +113,30 @@ namespace Duo.Api.Controllers
         {
             try
             {
-                var exams = await repository.GetExamsFromDbAsync();
-                return Ok(exams);
+                var exams = await this.repository.GetExamsFromDbAsync();
+                List<Exam> examList = new List<Exam>(exams.Count);
+
+                foreach (var exam in exams)
+                {
+                    var exercises = exam.Exercises.ToList();
+                    List<Exercise> exercisesWithType = new List<Exercise>(exercises.Count);
+                    foreach (var exercise in exercises)
+                    {
+                        var ex = await this.repository.GetExerciseByIdAsync(exercise.ExerciseId);
+                        if (ex == null)
+                        {
+                            return this.NotFound();
+                        }
+
+                        exercisesWithType.Add(ex);
+                    }
+
+                    var mergedExercises = ExerciseMerger.MergeExercises(exercisesWithType);
+                    exam.Exercises = mergedExercises;
+                    examList.Add(exam);
+                }
+
+                return Ok(examList);
             }
             catch (Exception ex)
             {
@@ -167,8 +227,30 @@ namespace Duo.Api.Controllers
         {
             try
             {
-                var exams = await repository.GetAvailableExamsAsync();
-                return Ok(exams);
+                var exams = await this.repository.GetAvailableExamsAsync();
+                List<Exam> examList = new List<Exam>(exams.Count);
+
+                foreach (var exam in exams)
+                {
+                    var exercises = exam.Exercises.ToList();
+                    List<Exercise> exercisesWithType = new List<Exercise>(exercises.Count);
+                    foreach (var exercise in exercises)
+                    {
+                        var ex = await this.repository.GetExerciseByIdAsync(exercise.ExerciseId);
+                        if (ex == null)
+                        {
+                            return this.NotFound();
+                        }
+
+                        exercisesWithType.Add(ex);
+                    }
+
+                    var mergedExercises = ExerciseMerger.MergeExercises(exercisesWithType);
+                    exam.Exercises = mergedExercises;
+                    examList.Add(exam);
+                }
+
+                return Ok(examList);
             }
             catch (Exception ex)
             {

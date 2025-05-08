@@ -1,11 +1,16 @@
 ﻿using System;
+using System.Text.Json.Serialization;
 
 namespace Duo.Models.Exercises;
 
 public class MultipleChoiceAnswerModel
 {
+    public int AnswerModelId { get; set; }
     public string Answer { get; set; }
     public bool IsCorrect { get; set; }
+
+    [JsonIgnore]
+    public Exercise Exercise { get; set; }
 
     public MultipleChoiceAnswerModel()
     {

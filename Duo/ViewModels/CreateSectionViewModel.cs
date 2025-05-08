@@ -47,9 +47,12 @@ namespace Duo.ViewModels
                 Debug.WriteLine(ex);
                 RaiseErrorMessage("Initialization error", ex.Message);
             }
-
-            OpenSelectQuizesCommand = new RelayCommand(_ => Task.Run(OpenSelectQuizes));
-            OpenSelectExamsCommand = new RelayCommand(_ => Task.Run(OpenSelectExams));
+            // OpenSelectQuizesCommand = new RelayCommand(OpenSelectQuizes);
+            // Update the RelayCommand initialization to use a lambda expression that matches the expected Func<object?, Task> signature.
+            OpenSelectQuizesCommand = new RelayCommand(_ => OpenSelectQuizes());
+            OpenSelectExamsCommand = new RelayCommand(_ => OpenSelectExams());
+            SaveButtonCommand = new RelayCommand(_ => CreateSection());
+            // OpenSelectExamsCommand = new RelayCommand(OpenSelectExams);
             SaveButtonCommand = new RelayCommand((_) => _ = CreateSection());
 
             RemoveQuizCommand = new RelayCommandWithParameter<Quiz>(RemoveSelectedQuiz);
@@ -232,7 +235,7 @@ namespace Duo.ViewModels
                 newSection.Quizzes = SelectedQuizes.ToList();
                 foreach (var quiz in newSection.Quizzes)
                 {
-                    quiz.ExerciseList = await exerciseService.GetAllExercisesFromQuiz(quiz.Id);
+                    quiz.Exercises = await exerciseService.GetAllExercisesFromQuiz(quiz.Id);
                 }
                 foreach (var quiz in newSection.Quizzes)
                 {
@@ -244,7 +247,7 @@ namespace Duo.ViewModels
                     return;
                 }
                 newSection.Exam = SelectedExams.ToList()[0];
-                newSection.Exam.ExerciseList = await exerciseService.GetAllExercisesFromExam(newSection.Exam.Id);
+                newSection.Exam.Exercises = await exerciseService.GetAllExercisesFromExam(newSection.Exam.Id);
                 int sectionId = await sectionService.AddSection(newSection);
                 foreach (var quiz in SelectedQuizes.ToList())
                 {

@@ -84,6 +84,21 @@ namespace Duo.Api.Migrations
                     b.ToTable("CourseCompletions");
                 });
 
+            modelBuilder.Entity("Duo.Api.Models.CourseTag", b =>
+                {
+                    b.Property<int>("CourseId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TagId")
+                        .HasColumnType("int");
+
+                    b.HasKey("CourseId", "TagId");
+
+                    b.HasIndex("TagId");
+
+                    b.ToTable("CourseTags", (string)null);
+                });
+
             modelBuilder.Entity("Duo.Api.Models.Enrollment", b =>
                 {
                     b.Property<int?>("UserId")
@@ -128,6 +143,9 @@ namespace Duo.Api.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<string>("Type")
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("ExerciseId");
 
                     b.HasIndex("Question")
@@ -142,8 +160,11 @@ namespace Duo.Api.Migrations
 
             modelBuilder.Entity("Duo.Api.Models.Exercises.MultipleChoiceAnswerModel", b =>
                 {
-                    b.Property<string>("AnswerModelId")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<int>("AnswerModelId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AnswerModelId"));
 
                     b.Property<string>("Answer")
                         .HasColumnType("nvarchar(max)");
@@ -503,6 +524,25 @@ namespace Duo.Api.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Duo.Api.Models.CourseTag", b =>
+                {
+                    b.HasOne("Duo.Api.Models.Course", "Course")
+                        .WithMany("CourseTags")
+                        .HasForeignKey("CourseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Duo.Api.Models.Tag", "Tag")
+                        .WithMany("CourseTags")
+                        .HasForeignKey("TagId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Course");
+
+                    b.Navigation("Tag");
+                });
+
             modelBuilder.Entity("Duo.Api.Models.Enrollment", b =>
                 {
                     b.HasOne("Duo.Api.Models.Course", "Course")
@@ -622,6 +662,8 @@ namespace Duo.Api.Migrations
 
             modelBuilder.Entity("Duo.Api.Models.Course", b =>
                 {
+                    b.Navigation("CourseTags");
+
                     b.Navigation("Enrollments");
                 });
 
@@ -640,6 +682,11 @@ namespace Duo.Api.Migrations
                     b.Navigation("Exam");
 
                     b.Navigation("Quizzes");
+                });
+
+            modelBuilder.Entity("Duo.Api.Models.Tag", b =>
+                {
+                    b.Navigation("CourseTags");
                 });
 
             modelBuilder.Entity("Duo.Api.Models.User", b =>

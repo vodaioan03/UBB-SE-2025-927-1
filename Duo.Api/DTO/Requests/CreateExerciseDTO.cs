@@ -8,5 +8,6 @@ namespace Duo.Api.DTO.Requests
         public Difficulty Difficulty { get; set; }
         public List<string>? Exams { get; set; }
         public List<string>? Quizzes { get; set; }
+        public string Type { get; set; }
     }
 }

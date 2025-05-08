@@ -29,13 +29,13 @@ namespace Duo.Helpers
             switch (exerciseType)
             {
                 case "Association":
-                    return associationExerciseView;
+                    return new CreateAssociationExercise();
                 case "Fill in the blank":
-                    return fillInTheBlankExerciseView;
+                    return new CreateFillInTheBlankExercise();
                 case "Multiple Choice":
-                    return multipleChoiceExerciseView;
+                    return new CreateMultipleChoiceExercise();
                 case "Flashcard":
-                    return flashcardExerciseView;
+                    return new CreateFlashcardExercise();
                 default:
                     return new TextBlock { Text = "Select an exercise type." };
             }

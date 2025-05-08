@@ -29,7 +29,7 @@ namespace Duo.Api.Controllers
         /// Adds a new quiz to the database.
         /// </summary>
         [HttpPost("add")]
-        public async Task<IActionResult> AddQuiz([FromForm] Quiz quiz)
+        public async Task<IActionResult> AddQuiz([FromBody] Quiz quiz)
         {
             try
             {

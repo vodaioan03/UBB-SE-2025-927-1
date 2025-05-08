@@ -382,7 +382,9 @@ namespace Duo.Api.Repositories
         /// <returns>A <see cref="Exercise"/> object representing the exercise with the given ID, or null if not found.</returns>
         public async Task<Exercise?> GetExerciseByIdAsync(int id)
         {
-            return await context.Exercises.FindAsync(id);
+            return await context.Exercises.
+                Include("Choices").
+                FirstOrDefaultAsync(e => e.ExerciseId == id);
         }
 
         /// <summary>
@@ -924,7 +926,7 @@ namespace Duo.Api.Repositories
         /// <returns>A list of all exams available in the database.</returns>
         public async Task<List<Exam>> GetExamsFromDbAsync()
         {
-            return await context.Exams.ToListAsync();
+            return await context.Exams.Include(exam => exam.Exercises).ToListAsync();
         }
 
         /// <summary>
@@ -934,7 +936,7 @@ namespace Duo.Api.Repositories
         /// <returns>The exam with the specified ID if found; otherwise, null.</returns>
         public async Task<Exam?> GetExamByIdAsync(int id)
         {
-            return await context.Exams.FindAsync(id);
+            return await context.Exams.Include(exam => exam.Exercises).FirstAsync(e => e.Id == id);
         }
 
         /// <summary>
