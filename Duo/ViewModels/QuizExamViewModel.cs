@@ -277,13 +277,13 @@ namespace Duo.ViewModels
                 {
                     Exercises = await exerciseService.GetAllExercisesFromQuiz(QuizId)
                         ?? new List<Exercise>();
-                    CurrentQuiz.ExerciseList = Exercises;
+                    CurrentQuiz.Exercises = Exercises;
                 }
                 else
                 {
                     Exercises = await exerciseService.GetAllExercisesFromExam(ExamId)
                         ?? new List<Exercise>();
-                    CurrentExam.ExerciseList = Exercises;
+                    CurrentExam.Exercises = Exercises;
                 }
 
                 CurrentExerciseIndex = 0;

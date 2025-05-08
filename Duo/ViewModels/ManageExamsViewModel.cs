@@ -91,7 +91,7 @@ namespace Duo.ViewModels
                     await UpdateExamExercises(SelectedExam);
                 }
 
-                foreach (var exercise in examToBeDeleted.ExerciseList)
+                foreach (var exercise in examToBeDeleted.Exercises)
                 {
                     AvailableExercises.Add(exercise);
                 }

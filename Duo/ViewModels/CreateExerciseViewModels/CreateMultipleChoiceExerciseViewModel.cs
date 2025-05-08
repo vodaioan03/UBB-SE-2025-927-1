@@ -59,9 +59,12 @@ namespace Duo.ViewModels.CreateExerciseViewModels
                 List<MultipleChoiceAnswerModel> multipleChoiceAnswerModels = new List<MultipleChoiceAnswerModel>();
                 foreach (Answer answer in finalAnswers)
                 {
-                    AnswerModelId = 0,
-                    Answer = answer.Value,
-                    IsCorrect = answer.IsCorrect
+                    multipleChoiceAnswerModels.Add(new MultipleChoiceAnswerModel
+                    {
+                        AnswerModelId = 0,
+                        Answer = answer.Value,
+                        IsCorrect = answer.IsCorrect
+                    });
                 }
                 return multipleChoiceAnswerModels;
             }
