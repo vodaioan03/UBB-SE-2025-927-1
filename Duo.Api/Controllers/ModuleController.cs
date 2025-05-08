@@ -251,6 +251,50 @@ namespace Duo.Api.Controllers
                 return BadRequest(new { message = e.Message });
             }
         }
+
+        [HttpPost("open")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> OpenModule([FromBody] OpenModuleRequest request)
+        {
+            if (request == null || request.UserId <= 0 || request.ModuleId <= 0)
+            {
+                return BadRequest("Invalid user or module ID.");
+            }
+
+            try
+            {
+                Console.WriteLine($"User {request.UserId} opened module {request.ModuleId}");
+
+                return Ok(new { message = "Module opened successfully!" });
+            }
+            catch (Exception e)
+            {
+                return BadRequest(new { message = e.Message });
+            }
+        }
+
+        [HttpGet("isOpen")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> IsModuleOpen([FromQuery] int userId, [FromQuery] int moduleId)
+        {
+            if (userId <= 0 || moduleId <= 0)
+            {
+                return BadRequest("Invalid userId or moduleId");
+            }
+
+            try
+            {
+                bool isUnlocked = await repository.IsModuleOpenAsync(userId, moduleId);
+
+                return Ok(isUnlocked);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
         #endregion
     }
 }
