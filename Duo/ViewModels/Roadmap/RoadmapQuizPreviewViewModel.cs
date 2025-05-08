@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Duo.Commands;
@@ -12,6 +9,7 @@ using Duo.Services;
 using Duo.ViewModels.Base;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
+
 namespace Duo.ViewModels.Roadmap
 {
     public class RoadmapQuizPreviewViewModel : ViewModelBase
@@ -37,93 +35,147 @@ namespace Duo.ViewModels.Roadmap
         {
             get
             {
-                if (this.quiz == null)
+                try
                 {
+                    if (this.quiz == null)
+                    {
+                        return "-1";
+                    }
+                    if (this.quiz is Exam)
+                    {
+                        return "Final Exam";
+                    }
+                    if (this.quiz is Quiz quizInstance)
+                    {
+                        return $"Quiz nr. {quizInstance.OrderNumber.ToString()}" ?? "-1";
+                    }
                     return "-1";
                 }
-                if (this.quiz is Exam)
+                catch (Exception ex)
                 {
-                    return "Final Exam";
+                    RaiseErrorMessage("Quiz Order Error", $"Failed to get quiz order number.\nDetails: {ex.Message}");
+                    return "-1";
                 }
-                if (this.quiz is Quiz quizInstance)
-                {
-                    return $"Quiz nr. {quizInstance.OrderNumber.ToString()}" ?? "-1";
-                }
-                return "-1";
             }
             set
             {
-                if (this.quiz is Quiz quizInstance)
+                try
                 {
-                    quizInstance.OrderNumber = int.Parse(value);
-                    OnPropertyChanged(nameof(QuizOrderNumber));
+                    if (this.quiz is Quiz quizInstance)
+                    {
+                        quizInstance.OrderNumber = int.Parse(value);
+                        OnPropertyChanged(nameof(QuizOrderNumber));
+                    }
+                }
+                catch (Exception ex)
+                {
+                    RaiseErrorMessage("Quiz Order Error", $"Failed to set quiz order number.\nDetails: {ex.Message}");
                 }
             }
         }
 
         public string SectionTitle
         {
-            get => section?.Title ?? "Unknown Section";
+            get
+            {
+                try
+                {
+                    return section?.Title ?? "Unknown Section";
+                }
+                catch (Exception ex)
+                {
+                    RaiseErrorMessage("Section Title Error", $"Failed to get section title.\nDetails: {ex.Message}");
+                    return "Unknown Section";
+                }
+            }
         }
-        public ICommand StartQuizCommand
-        {
-            get;
-            set;
-        }
-        public ICommand BackButtonCommand
-        {
-            get;
-            set;
-        }
+
+        public ICommand StartQuizCommand { get; set; }
+        public ICommand BackButtonCommand { get; set; }
 
         private DispatcherQueue dispatcherQueue;
 
         public RoadmapQuizPreviewViewModel()
         {
-            quizService = (IQuizService)App.ServiceProvider.GetService(typeof(IQuizService));
-            sectionService = (ISectionService)App.ServiceProvider.GetService(typeof(ISectionService));
-            isPreviewVisible = Visibility.Visible;
-
-            var mainPageViewModel = (RoadmapMainPageViewModel)App.ServiceProvider.GetService(typeof(RoadmapMainPageViewModel));
-            StartQuizCommand = mainPageViewModel.StartQuizCommand;
-            BackButtonCommand = new RelayCommand((_) =>
+            try
             {
-                isPreviewVisible = Visibility.Collapsed;
-                OnPropertyChanged(nameof(IsPreviewVisible));
-            });
+                quizService = (IQuizService)App.ServiceProvider.GetService(typeof(IQuizService));
+                sectionService = (ISectionService)App.ServiceProvider.GetService(typeof(ISectionService));
+                isPreviewVisible = Visibility.Visible;
 
-            dispatcherQueue = DispatcherQueue.GetForCurrentThread();
+                var mainPageViewModel = (RoadmapMainPageViewModel)App.ServiceProvider.GetService(typeof(RoadmapMainPageViewModel));
+                StartQuizCommand = mainPageViewModel.StartQuizCommand;
+                BackButtonCommand = new RelayCommand((_) =>
+                {
+                    try
+                    {
+                        isPreviewVisible = Visibility.Collapsed;
+                        OnPropertyChanged(nameof(IsPreviewVisible));
+                    }
+                    catch (Exception ex)
+                    {
+                        RaiseErrorMessage("Back Button Error", $"Failed to handle back button action.\nDetails: {ex.Message}");
+                    }
+                });
+
+                dispatcherQueue = DispatcherQueue.GetForCurrentThread();
+            }
+            catch (Exception ex)
+            {
+                RaiseErrorMessage("Initialization Error", $"Failed to initialize RoadmapQuizPreviewViewModel.\nDetails: {ex.Message}");
+            }
         }
 
         public async Task OpenForQuiz(int quizId, bool isExam)
         {
-            dispatcherQueue.TryEnqueue(() =>
+            try
             {
-                IsPreviewVisible = Visibility.Visible;
-                OnPropertyChanged(nameof(IsPreviewVisible));
-            });
+                dispatcherQueue.TryEnqueue(() =>
+                {
+                    try
+                    {
+                        IsPreviewVisible = Visibility.Visible;
+                        OnPropertyChanged(nameof(IsPreviewVisible));
+                    }
+                    catch (Exception ex)
+                    {
+                        RaiseErrorMessage("UI Update Error", $"Failed to update preview visibility.\nDetails: {ex.Message}");
+                    }
+                });
 
-            if (isExam)
-            {
-                quiz = await quizService.GetExamById(quizId);
+                if (isExam)
+                {
+                    quiz = await quizService.GetExamById(quizId);
+                }
+                else
+                {
+                    quiz = await quizService.GetQuizById(quizId);
+                    Debug.WriteLine($"Opening quiz: {quiz}");
+                }
+
+                section = await sectionService.GetSectionById((int)quiz.SectionId);
+
+                dispatcherQueue.TryEnqueue(() =>
+                {
+                    try
+                    {
+                        Quiz = quiz;
+                        OnPropertyChanged(nameof(Quiz));
+                        OnPropertyChanged(nameof(SectionTitle));
+                        OnPropertyChanged(nameof(QuizOrderNumber));
+                    }
+                    catch (Exception ex)
+                    {
+                        RaiseErrorMessage("UI Update Error", $"Failed to update UI properties.\nDetails: {ex.Message}");
+                    }
+                });
+
+                Debug.WriteLine($"VALUE OF QUIZ: {QuizOrderNumber}, {SectionTitle}, {IsPreviewVisible}");
             }
-            else
+            catch (Exception ex)
             {
-                quiz = await quizService.GetQuizById(quizId);
-                Debug.WriteLine($"Opening quiz: {quiz}");
+                RaiseErrorMessage("Open Quiz Error", $"Failed to open quiz with ID {quizId}.\nDetails: {ex.Message}");
             }
-
-            section = await sectionService.GetSectionById((int)quiz.SectionId);
-
-            dispatcherQueue.TryEnqueue(() =>
-            {
-                Quiz = quiz;
-                OnPropertyChanged(nameof(Quiz));
-                OnPropertyChanged(nameof(SectionTitle));
-                OnPropertyChanged(nameof(QuizOrderNumber));
-            });
-
-            Debug.WriteLine($"VALUE OF QUIZ: {QuizOrderNumber}, {SectionTitle}, {IsPreviewVisible}");
         }
     }
 }
