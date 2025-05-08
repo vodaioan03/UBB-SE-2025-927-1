@@ -1,35 +1,22 @@
 using System;
+using System.Threading.Tasks;
 using System.Collections.Generic;
-using System.Reflection.Metadata;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Data;
-using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
-using Duo.Views.Components;
-using Duo.ViewModels;
-using Microsoft.Extensions.DependencyInjection;
 using Duo.Models.Exercises;
+using Duo.ViewModels;
+using Duo.ViewModels.Base;
 using static Duo.Views.Components.AssociationExercise;
 using static Duo.Views.Components.MultipleChoiceExercise;
 using static Duo.Views.Components.FillInTheBlanksExercise;
+using Duo.Views.Components;
 
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
 namespace Duo.Views.Pages
 {
-    /// <summary>
-    /// An empty page that can be used on its own or navigated to within a Frame.
-    /// </summary>
     public sealed partial class ExamPage : Page
     {
         private static readonly SolidColorBrush CorrectBrush = new SolidColorBrush(Microsoft.UI.Colors.Green);
@@ -37,29 +24,89 @@ namespace Duo.Views.Pages
 
         public ExamPage()
         {
-            this.InitializeComponent();
+            try
+            {
+                this.InitializeComponent();
+                if (this.DataContext is ViewModelBase viewModel)
+                {
+                    viewModel.ShowErrorMessageRequested += ViewModel_ShowErrorMessageRequested;
+                }
+                else
+                {
+                    _ = ShowErrorMessage("Initialization Error", "DataContext is not set to a valid ViewModel.");
+                }
+            }
+            catch (Exception ex)
+            {
+                _ = ShowErrorMessage("Initialization Error", $"Failed to initialize ExamPage.\nDetails: {ex.Message}");
+            }
+        }
+
+        private async void ViewModel_ShowErrorMessageRequested(object sender, (string Title, string Message) e)
+        {
+            await ShowErrorMessage(e.Title, e.Message);
+        }
+
+        private async Task ShowErrorMessage(string title, string message)
+        {
+            try
+            {
+                var dialog = new ContentDialog
+                {
+                    Title = title,
+                    Content = message,
+                    CloseButtonText = "OK",
+                    XamlRoot = this.XamlRoot
+                };
+
+                await dialog.ShowAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error dialog failed to display. Details: {ex.Message}");
+            }
         }
 
         public void BackButton_Click(object sender, RoutedEventArgs e)
         {
-            if (this.Frame.CanGoBack)
+            try
             {
-                this.Frame.GoBack();
+                if (this.Frame.CanGoBack)
+                {
+                    this.Frame.GoBack();
+                }
+            }
+            catch (Exception ex)
+            {
+                _ = ShowErrorMessage("Back Navigation Error", $"Failed to navigate back.\nDetails: {ex.Message}");
             }
         }
 
-        public void CancelButton_Click(object senderm, RoutedEventArgs e)
+        public void CancelButton_Click(object sender, RoutedEventArgs e)
         {
-            if (this.Frame.CanGoBack)
+            try
             {
-                this.Frame.GoBack();
+                if (this.Frame.CanGoBack)
+                {
+                    this.Frame.GoBack();
+                }
+            }
+            catch (Exception ex)
+            {
+                _ = ShowErrorMessage("Cancel Navigation Error", $"Failed to cancel and navigate back.\nDetails: {ex.Message}");
             }
         }
 
         private void LoadCurrentExercise()
         {
-            if (ViewModel != null && ViewModel.Exercises != null)
+            try
             {
+                if (ViewModel == null || ViewModel.Exercises == null)
+                {
+                    _ = ShowErrorMessage("Load Exercise Error", "ViewModel or Exercises collection is not initialized.");
+                    return;
+                }
+
                 var currentExercise = ViewModel.CurrentExercise;
 
                 if (currentExercise != null)
@@ -78,7 +125,7 @@ namespace Duo.Views.Pages
                     }
                     else if (currentExercise is Models.Exercises.FillInTheBlankExercise fillInTheBlanksExercise)
                     {
-                        var fillInTheBlanksControl = new FillInTheBlanksExercise()
+                        var fillInTheBlanksControl = new Components.FillInTheBlanksExercise()
                         {
                             Question = fillInTheBlanksExercise.Question
                         };
@@ -97,53 +144,103 @@ namespace Duo.Views.Pages
 
                         ExerciseContentControl.Content = multipleChoiceControl;
                     }
+                    else if (currentExercise is Models.Exercises.FlashcardExercise flashcardExercise)
+                    {
+                        var flashcardControl = new Components.FlashcardExercise()
+                        {
+                            Question = flashcardExercise.Question,
+                            Answer = flashcardExercise.Answer
+                        };
+                        flashcardControl.OnSendClicked += FlashcardControl_OnSendClicked;
+
+                        ExerciseContentControl.Content = flashcardControl;
+                    }
                 }
                 else
                 {
                     ExerciseContentControl.Content = null;
                 }
             }
+            catch (Exception ex)
+            {
+                _ = ShowErrorMessage("Load Exercise Error", $"Failed to load current exercise.\nDetails: {ex.Message}");
+            }
         }
 
         private void AssociationControl_OnSendClicked(object sender, AssociationExerciseEventArgs e)
         {
-            var contentPairs = e.ContentPairs;
-
-            var valid = (bool)ViewModel.ValidateCurrentExercise(contentPairs);
-
-            var loadedNext = ViewModel.LoadNext();
-
-            if (loadedNext)
+            try
             {
-                LoadCurrentExercise();
+                var contentPairs = e.ContentPairs;
+                var valid = (bool)ViewModel.ValidateCurrentExercise(contentPairs);
+                var loadedNext = ViewModel.LoadNext();
+
+                if (loadedNext)
+                {
+                    LoadCurrentExercise();
+                }
+            }
+            catch (Exception ex)
+            {
+                _ = ShowErrorMessage("Association Exercise Error", $"Failed to process association exercise response.\nDetails: {ex.Message}");
             }
         }
+
         private void MultipleChoiceControl_OnSendClicked(object sender, MultipleChoiceExerciseEventArgs e)
         {
-            var contentPairs = e.ContentPairs;
-
-            var valid = (bool)ViewModel.ValidateCurrentExercise(contentPairs);
-
-            var loadedNext = ViewModel.LoadNext();
-
-            if (loadedNext)
+            try
             {
-                LoadCurrentExercise();
+                var contentPairs = e.ContentPairs;
+                var valid = (bool)ViewModel.ValidateCurrentExercise(contentPairs);
+                var loadedNext = ViewModel.LoadNext();
+
+                if (loadedNext)
+                {
+                    LoadCurrentExercise();
+                }
+            }
+            catch (Exception ex)
+            {
+                _ = ShowErrorMessage("Multiple Choice Exercise Error", $"Failed to process multiple choice exercise response.\nDetails: {ex.Message}");
             }
         }
+
         private void FillInTheBlanksControl_OnSendClicked(object sender, FillInTheBlanksExerciseEventArgs e)
         {
-            var contentPairs = e.ContentPairs;
-
-            var valid = (bool)ViewModel.ValidateCurrentExercise(contentPairs);
-
-            var loadedNext = ViewModel.LoadNext();
-
-            if (loadedNext)
+            try
             {
-                LoadCurrentExercise();
+                var contentPairs = e.ContentPairs;
+                var valid = (bool)ViewModel.ValidateCurrentExercise(contentPairs);
+                var loadedNext = ViewModel.LoadNext();
+
+                if (loadedNext)
+                {
+                    LoadCurrentExercise();
+                }
+            }
+            catch (Exception ex)
+            {
+                _ = ShowErrorMessage("Fill In The Blanks Exercise Error", $"Failed to process fill-in-the-blanks exercise response.\nDetails: {ex.Message}");
+            }
+        }
+
+        private void FlashcardControl_OnSendClicked(object sender, FlashcardExerciseEventArgs e)
+        {
+            try
+            {
+                var contentPairs = e.ContentPairs;
+                var valid = (bool)ViewModel.ValidateCurrentExercise(contentPairs);
+                var loadedNext = ViewModel.LoadNext();
+
+                if (loadedNext)
+                {
+                    LoadCurrentExercise();
+                }
+            }
+            catch (Exception ex)
+            {
+                _ = ShowErrorMessage("Flashcard Exercise Error", $"Failed to process flashcard exercise response.\nDetails: {ex.Message}");
             }
         }
     }
 }
-
