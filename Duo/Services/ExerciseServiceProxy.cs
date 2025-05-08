@@ -60,66 +60,6 @@ namespace Duo.Services
                 {
                     exercise.ExerciseId = idObj.ExerciseId;
                 }
-
-                /*switch (exercise.Type)
-                {
-                    case "Association":
-                        {
-                            var typedExercise = (AssociationExercise)exercise;
-                            var json = JsonSerializer.Serialize(typedExercise, new JsonSerializerOptions
-                            {
-                                WriteIndented = true // makes it more readable
-                            });
-
-                            // Then send it manually:
-                            var content = new StringContent(json, Encoding.UTF8, "application/json");
-                            var response = await httpClient.PostAsync($"{url}api/Exercise", content);
-                            response.EnsureSuccessStatusCode();
-                            break;
-                        }
-                    case "Flashcard":
-                        {
-                            var typedExercise = (FlashcardExercise)exercise;
-                            var json = JsonSerializer.Serialize(typedExercise, new JsonSerializerOptions
-                            {
-                                WriteIndented = true // makes it more readable
-                            });
-
-                            // Then send it manually:
-                            var content = new StringContent(json, Encoding.UTF8, "application/json");
-                            var response = await httpClient.PostAsync($"{url}api/Exercise", content);
-                            response.EnsureSuccessStatusCode();
-                            break;
-                        }
-                    case "MultipleChoice":
-                        {
-                            var typedExercise = (MultipleChoiceExercise)exercise;
-                            var json = JsonSerializer.Serialize(typedExercise, new JsonSerializerOptions
-                            {
-                                WriteIndented = true // makes it more readable
-                            });
-
-                            // Then send it manually:
-                            var content = new StringContent(json, Encoding.UTF8, "application/json");
-                            var response = await httpClient.PostAsync($"{url}api/Exercise", content);
-                            response.EnsureSuccessStatusCode();
-                            break;
-                        }
-                    case "FillInTheBlank":
-                        {
-                            var typedExercise = (FillInTheBlankExercise)exercise;
-                            var json = JsonSerializer.Serialize(typedExercise, new JsonSerializerOptions
-                            {
-                                WriteIndented = true // makes it more readable
-                            });
-
-                            // Then send it manually:
-                            var content = new StringContent(json, Encoding.UTF8, "application/json");
-                            var response = await httpClient.PostAsync($"{url}api/Exercise", content);
-                            response.EnsureSuccessStatusCode();
-                            break;
-                        }
-                }*/
             }
             catch (HttpRequestException ex)
             {
@@ -173,49 +113,6 @@ namespace Duo.Services
                         throw new Exception($"Failed to deserialize exercise of type: {type}");
                     }
                     exercises.Add(mc);
-
-                    /*switch (type)
-                    {
-                        case "MultipleChoice":
-                        {
-                            var mc = element.Deserialize<MultipleChoiceExercise>(new JsonSerializerOptions
-                            {
-                                PropertyNameCaseInsensitive = true
-                            });
-                            exercises.Add(mc);
-                            break;
-                        }
-                        case "FillInTheBlank":
-                        {
-                                var fib = element.Deserialize<FillInTheBlankExercise>(new JsonSerializerOptions
-                                {
-                                    PropertyNameCaseInsensitive = true
-                                });
-                                exercises.Add(fib);
-                                break;
-                        }
-                        case "Association":
-                        {
-                                var association = element.Deserialize<AssociationExercise>(new JsonSerializerOptions
-                                {
-                                    PropertyNameCaseInsensitive = true
-                                });
-                                exercises.Add(association);
-                                break;
-                        }
-                        case "Flashcard":
-                        {
-                                var flashcard = element.Deserialize<FlashcardExercise>(new JsonSerializerOptions
-                                {
-                                    PropertyNameCaseInsensitive = true
-                                });
-                                exercises.Add(flashcard);
-                                break;
-                        }
-                        // Add more cases here if needed (e.g., "Flashcard")
-                        default:
-                            throw new Exception($"Unknown type: {type}");
-                    }*/
                 }
                 return exercises ?? new List<Exercise>();
             }

@@ -24,8 +24,6 @@ namespace Duo.Helpers
                 exam.Id,
                 exam.SectionId,
                 Exercises = exam.Exercises.Select(e => e.ExerciseId).ToList(),
-                // MaxExercises = exam.Exercises.Count,
-                // Threshold = exam.GetPassingThreshold()
             };
 
             return JsonSerializer.Serialize(examDto, options);
