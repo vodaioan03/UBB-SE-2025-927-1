@@ -67,7 +67,7 @@ namespace Duo
             {
                 BaseAddress = new Uri("https://localhost:7174")
             });
-            
+
             services.AddSingleton<IConfiguration>(configuration);
             services.AddSingleton<DatabaseConnection>();
 

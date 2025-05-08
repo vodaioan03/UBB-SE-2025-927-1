@@ -1,4 +1,4 @@
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using System;
 using Microsoft.UI.Xaml;
@@ -26,35 +26,45 @@ namespace Duo.Views
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
-            if (e.Parameter is CourseViewModel vm)
+            switch (e.Parameter)
             {
-                viewModel = vm;
-                this.DataContext = viewModel;
+                case CourseViewModel vm:
+                    viewModel = vm;
+                    break;
 
-                ModulesListView.ItemClick += ModulesListView_ItemClick;
+                case ValueTuple<Module, CourseViewModel> tuple:
+                    viewModel = tuple.Item2;
+                    break;
 
-                DispatcherQueue.TryEnqueue(async () =>
-                {
-                    try
-                    {
-                        Console.WriteLine("Starting InitializeAsync");
-                        await viewModel.InitializeAsync(CurrentUserId);
-                        Console.WriteLine("Finished InitializeAsync");
-                        viewModel.StartCourseProgressTimer();
-                    }
-                    catch (Exception ex)
-                    {
-                        var dialog = new ContentDialog
-                        {
-                            Title = "Initialization Error",
-                            Content = $"Failed to initialize course: {ex.Message}",
-                            CloseButtonText = "OK",
-                            XamlRoot = this.XamlRoot
-                        };
-                        await dialog.ShowAsync();
-                    }
-                });
+                default:
+                    return;
             }
+
+            this.DataContext = viewModel;
+
+            ModulesListView.ItemClick += ModulesListView_ItemClick;
+
+            DispatcherQueue.TryEnqueue(async () =>
+            {
+                try
+                {
+                    Console.WriteLine("Starting InitializeAsync");
+                    await viewModel.InitializeAsync(CurrentUserId);
+                    Console.WriteLine("Finished InitializeAsync");
+                    viewModel.StartCourseProgressTimer();
+                }
+                catch (Exception ex)
+                {
+                    var dialog = new ContentDialog
+                    {
+                        Title = "Initialization Error",
+                        Content = $"Failed to initialize course: {ex.Message}",
+                        CloseButtonText = "OK",
+                        XamlRoot = this.XamlRoot
+                    };
+                    await dialog.ShowAsync();
+                }
+            });
         }
 
         /// <summary>

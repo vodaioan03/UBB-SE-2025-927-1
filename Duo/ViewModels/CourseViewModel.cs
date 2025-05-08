@@ -79,7 +79,11 @@ namespace Duo.ViewModels
                 {
                     isEnrolled = value;
                     OnPropertyChanged(nameof(IsEnrolled));
-                    ((RelayCommand)EnrollCommand).RaiseCanExecuteChanged();
+
+                    if (EnrollCommand is RelayCommand cmd)
+                    {
+                        cmd.RaiseCanExecuteChanged();
+                    }
                 }
             }
         }
@@ -100,7 +104,11 @@ namespace Duo.ViewModels
                 {
                     coinBalance = value;
                     OnPropertyChanged(nameof(CoinBalance));
-                    ((RelayCommand)EnrollCommand).RaiseCanExecuteChanged();
+
+                    if (EnrollCommand is RelayCommand cmd)
+                    {
+                        cmd.RaiseCanExecuteChanged();
+                    }
                 }
             }
         }
@@ -271,8 +279,8 @@ namespace Duo.ViewModels
             this.coinsService = coinsService ?? new CoinsService(new CoinsServiceProxy(httpClient));
 
             EnrollCommand = new RelayCommand(
-                async (_) => await EnrollUserInCourseAsync(_, currentUserId),
-                (_) => !IsEnrolled && CoinBalance >= CurrentCourse.Cost);
+            async (_) => await EnrollUserInCourseAsync(_, currentUserId),
+            (_) => !IsEnrolled && (CurrentCourse.Cost == 0 || CoinBalance >= CurrentCourse.Cost));
 
             InitializeTimersAndNotificationHelper(timerService, notificationTimerService, notificationHelper);
         }
@@ -330,6 +338,10 @@ namespace Duo.ViewModels
             {
                 IsEnrolled = await courseService.IsUserEnrolledAsync(currentUserId, CurrentCourse.CourseId);
                 CoinBalance = await coinsService.GetCoinBalanceAsync(currentUserId);
+
+                EnrollCommand = new RelayCommand(
+            async (_) => await EnrollUserInCourseAsync(_, currentUserId),
+            (_) => !IsEnrolled && (CurrentCourse.Cost == 0 || CoinBalance >= CurrentCourse.Cost));
 
                 OnPropertyChanged(nameof(EnrollCommand));
                 OnPropertyChanged(nameof(IsEnrolled));
@@ -510,11 +522,14 @@ namespace Duo.ViewModels
         {
             try
             {
-                bool coinDeductionSuccessful = await coinsService.TrySpendingCoinsAsync(currentUserId, CurrentCourse.Cost);
-                if (!coinDeductionSuccessful)
+                if (CurrentCourse.Cost > 0)
                 {
-                    RaiseErrorMessage("Insufficient Coins", "You do not have enough coins to enroll.");
-                    return;
+                    bool coinDeductionSuccessful = await coinsService.TrySpendingCoinsAsync(currentUserId, CurrentCourse.Cost);
+                    if (!coinDeductionSuccessful)
+                    {
+                        RaiseErrorMessage("Insufficient Coins", "You do not have enough coins to enroll.");
+                        return;
+                    }
                 }
 
                 bool enrollmentSuccessful = await courseService.EnrollInCourseAsync(currentUserId, CurrentCourse.CourseId);
