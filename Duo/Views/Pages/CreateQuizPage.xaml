@@ -21,7 +21,7 @@
             <StackPanel Orientation="Horizontal"
                     Spacing="8">
                 <TextBlock Text="Exercise #"/>
-                <TextBlock Text="{Binding Id}"/>
+                <TextBlock Text="{Binding ExerciseId}"/>
                 <TextBlock Text=" - "/>
                 <TextBlock Text="{Binding Question}"/>
             </StackPanel>
@@ -80,7 +80,7 @@
                         <StackPanel Orientation="Horizontal"
                                 Spacing="8">
                             <TextBlock Text="Exercise #"/>
-                            <TextBlock Text="{Binding Id}"/>
+                            <TextBlock Text="{Binding ExerciseId}"/>
                             <TextBlock Text=" - "/>
                             <TextBlock Text="{Binding Question}"/>
                         </StackPanel>

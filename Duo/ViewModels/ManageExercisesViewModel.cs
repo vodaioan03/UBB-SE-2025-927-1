@@ -11,6 +11,7 @@ using Duo.Models;
 using Duo.Models.Exercises;
 using Duo.Services;
 using Duo.ViewModels.Base;
+using Microsoft.UI.Dispatching;
 
 namespace Duo.ViewModels
 {
@@ -35,7 +36,9 @@ namespace Duo.ViewModels
             DeleteExerciseCommand = new RelayCommandWithParameter<Exercise>(exercise => _ = DeleteExercise(exercise));
 
             InitializeViewModel();
-            _ = Task.Run(async () => await LoadExercisesAsync());
+
+            // Fire and forget
+            _ = LoadExercisesAsync();
         }
 
         public ICommand DeleteExerciseCommand { get; }
@@ -48,17 +51,20 @@ namespace Duo.ViewModels
         // Method to load exercises asynchronously
         private async Task LoadExercisesAsync()
         {
+            // handle real async logic here
             try
             {
-                Exercises.Clear(); // Clear the ObservableCollection
-
                 var exercises = await exerciseService.GetAllExercises();
 
-                foreach (var exercise in exercises)
+                DispatcherQueueHandler callback = () =>
                 {
-                    Debug.WriteLine(exercise); // Add each exercise to the ObservableCollection
-                    Exercises.Add(exercise);
-                }
+                    Exercises.Clear();
+                    foreach (var exercise in exercises)
+                    {
+                        Exercises.Add(exercise);
+                    }
+                };
+                bool res = DispatcherQueue.GetForCurrentThread().TryEnqueue(DispatcherQueuePriority.Normal, callback: callback);
             }
             catch (Exception ex)
             {
@@ -73,8 +79,7 @@ namespace Duo.ViewModels
         {
             try
             {
-                Debug.WriteLine($"Attempting to delete exercise: {exercise}");
-                await exerciseService.DeleteExercise(exercise.Id);
+                await exerciseService.DeleteExercise(exercise.ExerciseId);
                 await LoadExercisesAsync();
             }
             catch (Exception ex)

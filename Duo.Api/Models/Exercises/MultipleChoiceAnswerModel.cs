@@ -18,7 +18,8 @@ namespace Duo.Api.Models.Exercises
         /// Gets or sets the unique identifier for the answer model.
         /// </summary>
         [Key]
-        public string? AnswerModelId { get; set; }
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public int AnswerModelId { get; set; }
 
         /// <summary>
         /// Gets or sets the text of the answer.

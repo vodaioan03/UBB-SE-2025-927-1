@@ -160,7 +160,7 @@ namespace Duo.ViewModels
                 }
 
                 int quizId = await quizService.CreateQuiz(newQuiz);
-                await quizService.AddExercisesToQuiz(quizId, newQuiz.ExerciseList);
+                await quizService.AddExercisesToQuiz(quizId, newQuiz.Exercises);
 
                 GoBack();
                 Debug.WriteLine(newQuiz);

@@ -1,5 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using Duo.Models.Exercises;
 using Microsoft.UI.Xaml;
@@ -16,17 +20,14 @@ namespace Duo.Views.Pages
         public CreateExamPage()
         {
             this.InitializeComponent();
+            this.Loaded += CreateExamPage_Loaded;
+        }
 
-            try
-            {
-                ViewModel.ShowListViewModal += ViewModel_openSelectExercises;
-                ViewModel.RequestGoBack += ViewModel_RequestGoBack;
-                ViewModel.ShowErrorMessageRequested += ViewModel_ShowErrorMessageRequested;
-            }
-            catch (Exception e)
-            {
-                _ = ShowErrorMessage("Initialization Error", $"Failed to bind ViewModel events.\nDetails: {e.Message}");
-            }
+        private void CreateExamPage_Loaded(object sender, RoutedEventArgs e)
+        {
+            ViewModel.ShowListViewModal += ViewModel_openSelectExercises;
+            ViewModel.RequestGoBack += ViewModel_RequestGoBack;
+            ViewModel.ShowErrorMessageRequested += ViewModel_ShowErrorMessageRequested;
         }
 
         private async void ViewModel_ShowErrorMessageRequested(object sender, (string Title, string Message) e)

@@ -90,7 +90,7 @@ namespace Duo.Services
                 var ids = new List<int>();
                 foreach (var ex in exercises)
                 {
-                    ids.Add(ex.Id);
+                    ids.Add(ex.ExerciseId);
                 }
 
                 await serviceProxy.AddExercisesToQuizAsync(quizId, ids).ConfigureAwait(false);

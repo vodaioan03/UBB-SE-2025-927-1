@@ -1,4 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization.Metadata;
+using System.Text.Json;
 using Duo.Api.DTO.Requests;
 using Duo.Api.Models.Exercises;
 using Duo.Api.Repositories;
@@ -144,30 +146,65 @@ namespace Duo.Api.Controllers
         /// <param name="exercise">The exercise to add.</param>
         /// <returns>The created exercise.</returns>
         [HttpPost]
-        public async Task<ActionResult> AddExercise([FromBody] CreateExerciseDto dto)
+        public async Task<ActionResult> AddExercise([FromBody] JsonElement rawJson)
         {
-            if (dto == null)
+
+            string json = rawJson.GetRawText();
+
+            using var doc = JsonDocument.Parse(json);
+            if (!doc.RootElement.TryGetProperty("Type", out var typeProp))
             {
-                return BadRequest("Invalid payload.");
+                return BadRequest("Missing 'type' discriminator.");
+            }
+
+            var type = typeProp.GetString();
+
+            Exercise? exercise = type switch
+            {
+                "Flashcard" => JsonSerializer.Deserialize<FlashcardExercise>(json),
+                "MultipleChoice" => JsonSerializer.Deserialize<MultipleChoiceExercise>(json),
+                "FillInTheBlank" => JsonSerializer.Deserialize<FillInTheBlankExercise>(json),
+                "Association" => JsonSerializer.Deserialize<AssociationExercise>(json),
+                _ => null
+            };
+
+            if (exercise == null)
+            {
+                return this.BadRequest("Invalid payload.");
             }
 
             try
             {
-                var exercise = new MultipleChoiceExercise
+                switch (exercise.Type)
                 {
-                    Question = dto.Question,
-                    Difficulty = dto.Difficulty,
-                };
+                    case "Association":
+                        AssociationExercise associationExercise = (AssociationExercise)exercise;
+                        await this.repository.AddExerciseAsync(associationExercise);
+                        break;
+                    case "FillInTheBlank":
+                        FillInTheBlankExercise fillInTheBlankExercise = (FillInTheBlankExercise)exercise;
+                        await this.repository.AddExerciseAsync(fillInTheBlankExercise);
+                        break;
+                    case "Flashcard":
+                        FlashcardExercise flashcardExercise = (FlashcardExercise)exercise;
+                        await this.repository.AddExerciseAsync(flashcardExercise);
+                        break;
+                    case "MultipleChoice":
+                        MultipleChoiceExercise multipleChoiceExercise = (MultipleChoiceExercise)exercise;
+                        await this.repository.AddExerciseAsync(multipleChoiceExercise);
+                        break;
+                    default:
+                        throw new InvalidOperationException("Invalid exercise type.");
+                }
 
-                await repository.AddExerciseAsync(exercise);
-                return CreatedAtRoute(
+                return this.CreatedAtRoute(
                   routeName: "GetExerciseById",
                   routeValues: new { id = exercise.ExerciseId },
-                  value: exercise);
+                  value: exercise.ExerciseId);
             }
             catch (Exception ex)
             {
-                return StatusCode(500, ex.Message);
+                return this.StatusCode(500, ex.Message);
             }
         }
 

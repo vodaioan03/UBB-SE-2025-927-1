@@ -42,7 +42,7 @@ public class RoadmapServiceTests
                 {
                     Id = 1,
                     SectionId = 1,
-                    ExerciseList = new List<Exercise>
+                    Exercises = new List<Exercise>
                     {
                         new AssociationExercise
                         (

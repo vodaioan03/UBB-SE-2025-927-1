@@ -28,6 +28,11 @@ namespace Duo.Views.Pages
         public CreateSectionPage()
         {
             this.InitializeComponent();
+            this.Loaded += RunAfterLoaded;
+        }
+
+        private void RunAfterLoaded(object sender, RoutedEventArgs e)
+        {
             ViewModel.ShowListViewModalQuizes += ViewModel_openSelectQuizes;
             ViewModel.ShowListViewModalExams += ViewModel_openSelectExams;
             ViewModel.ShowErrorMessageRequested += ViewModel_ShowErrorMessageRequested;

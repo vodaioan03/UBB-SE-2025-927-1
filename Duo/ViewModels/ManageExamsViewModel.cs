@@ -55,9 +55,13 @@ namespace Duo.ViewModels
             });
 
             RemoveExerciseFromQuizCommand = new RelayCommandWithParameter<Exercise>(exercise => _ = RemoveExerciseFromExam(exercise));
+            InitView();
+        }
 
-            _ = Task.Run(async () => await LoadExercisesAsync());
-            _ = Task.Run(async () => await InitializeViewModel());
+        public async void InitView()
+        {
+            await LoadExercisesAsync();
+            await InitializeViewModel();
         }
 
         public Exam SelectedExam
@@ -87,7 +91,7 @@ namespace Duo.ViewModels
                     await UpdateExamExercises(SelectedExam);
                 }
 
-                foreach (var exercise in examToBeDeleted.ExerciseList)
+                foreach (var exercise in examToBeDeleted.Exercises)
                 {
                     AvailableExercises.Add(exercise);
                 }
@@ -195,7 +199,8 @@ namespace Duo.ViewModels
                 }
 
                 SelectedExam.AddExercise(selectedExercise);
-                await quizService.AddExerciseToQuiz(SelectedExam.Id, selectedExercise.Id);
+
+                await quizService.AddExerciseToQuiz(SelectedExam.Id, selectedExercise.ExerciseId);
                 await UpdateExamExercises(SelectedExam);
             }
             catch (Exception ex)
@@ -211,13 +216,7 @@ namespace Duo.ViewModels
             {
                 Debug.WriteLine("Removing exercise...");
 
-                if (SelectedExam == null)
-                {
-                    RaiseErrorMessage("No exam selected", "Please select an exam before removing exercises.");
-                    return;
-                }
-
-                await quizService.RemoveExerciseFromQuiz(SelectedExam.Id, selectedExercise.Id);
+                await quizService.RemoveExerciseFromQuiz(SelectedExam.Id, selectedExercise.ExerciseId);
                 SelectedExam.RemoveExercise(selectedExercise);
                 await UpdateExamExercises(SelectedExam);
             }
