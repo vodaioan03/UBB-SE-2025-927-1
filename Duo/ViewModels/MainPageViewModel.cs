@@ -45,16 +45,20 @@ namespace Duo.ViewModels
                             pageType = typeof(Duo.Views.MainPage);
                             break;
                         default:
-                            Debug.WriteLine($"Unknown page tag: {tag}");
-                            break;
+                            RaiseErrorMessage("Navigation Error", $"Unknown page tag: {tag}");
+                            return;
                     }
 
-                    NavigationRequested?.Invoke(this, pageType);
+                    if (pageType != null)
+                    {
+                        NavigationRequested?.Invoke(this, pageType);
+                    }
                 }
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"Error in navigation selection: {ex.Message}");
+                RaiseErrorMessage("Navigation Failed", ex.Message);
             }
         }
     }

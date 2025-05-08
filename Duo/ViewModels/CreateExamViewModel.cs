@@ -41,13 +41,11 @@ namespace Duo.ViewModels
             }
             catch (Exception ex)
             {
-                Debug.WriteLine(ex);
+                RaiseErrorMessage("Initialization Error", ex.Message);
             }
             _ = Task.Run(async () => await LoadExercisesAsync());
             SaveButtonCommand = new RelayCommand((_) => _ = CreateExam());
-            // Update the RelayCommand initialization for OpenSelectExercisesCommand to match the expected signature.
             OpenSelectExercisesCommand = new RelayCommand(async (_) => await Task.Run(OpenSelectExercises));
-            // OpenSelectExercisesCommand = new RelayCommand(OpenSelectExercises);
             RemoveExerciseCommand = new RelayCommandWithParameter<Exercise>(RemoveExercise);
         }
 
@@ -64,51 +62,78 @@ namespace Duo.ViewModels
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error loading exercises: {ex.Message}");
+                RaiseErrorMessage("Load Exercises Error", ex.Message);
             }
         }
 
         public void OpenSelectExercises()
         {
-            ShowListViewModal?.Invoke(GetAvailableExercises());
+            try
+            {
+                ShowListViewModal?.Invoke(GetAvailableExercises());
+            }
+            catch (Exception ex)
+            {
+                RaiseErrorMessage("Open Exercise Selector Error", ex.Message);
+            }
         }
 
         public List<Exercise> GetAvailableExercises()
         {
-            List<Exercise> availableExercises = new List<Exercise>();
-            foreach (var exercise in Exercises)
+            try
             {
-                if (!SelectedExercises.Contains(exercise))
+                List<Exercise> availableExercises = new List<Exercise>();
+                foreach (var exercise in Exercises)
                 {
-                    availableExercises.Add(exercise);
+                    if (!SelectedExercises.Contains(exercise))
+                    {
+                        availableExercises.Add(exercise);
+                    }
                 }
+                return availableExercises;
             }
-            return availableExercises;
+            catch (Exception ex)
+            {
+                RaiseErrorMessage("Get Available Exercises Error", ex.Message);
+                return new List<Exercise>();
+            }
         }
 
         public void AddExercise(Exercise selectedExercise)
         {
-            if (SelectedExercises.Count < MAX_EXERCISES)
+            try
             {
-                SelectedExercises.Add(selectedExercise);
+                if (SelectedExercises.Count < MAX_EXERCISES)
+                {
+                    SelectedExercises.Add(selectedExercise);
+                }
+                else
+                {
+                    RaiseErrorMessage("Add Exercise Error", $"Maximum number of exercises ({MAX_EXERCISES}) reached.");
+                }
             }
-            else
+            catch (Exception ex)
             {
-                Debug.WriteLine("Cannot add more exercises", $"Maximum number of exercises ({MAX_EXERCISES}) reached.");
+                RaiseErrorMessage("Add Exercise Error", ex.Message);
             }
         }
 
         public void RemoveExercise(Exercise exerciseToBeRemoved)
         {
-            SelectedExercises.Remove(exerciseToBeRemoved);
-            Debug.WriteLine("Removing exercise...");
+            try
+            {
+                SelectedExercises.Remove(exerciseToBeRemoved);
+            }
+            catch (Exception ex)
+            {
+                RaiseErrorMessage("Remove Exercise Error", ex.Message);
+            }
         }
 
         public async Task CreateExam()
         {
             try
             {
-                Debug.WriteLine("Creating exam...");
                 Exam newExam = new Exam(0, null);
 
                 foreach (var exercise in SelectedExercises)
@@ -117,14 +142,11 @@ namespace Duo.ViewModels
                 }
 
                 int examId = await quizService.CreateExam(newExam);
-                // await quizService.AddExercisesToExam(examId, newExam.ExerciseList);
-                Debug.WriteLine(newExam);
                 GoBack();
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error during CreateExam: {ex.Message}");
-                Debug.WriteLine(ex.StackTrace);
+                RaiseErrorMessage("Create Exam Error", ex.Message);
             }
         }
     }

@@ -37,7 +37,7 @@ namespace Duo.Views.Components
         /// <summary>
         /// Updates display and notifies subscribers on each tick.
         /// </summary>
-        private void Timer_Tick(object sender, object e)
+        private void Timer_Tick(object? sender, object e)
         {
             UpdateTime();
             TimerTick?.Invoke(this, stopwatch.Elapsed);

@@ -30,52 +30,93 @@ namespace Duo.Views.Pages
     {
         public CreateExercisePage()
         {
-            this.InitializeComponent();
-            ViewModel.RequestGoBack += ViewModel_RequestGoBack;
-            ViewModel.ShowErrorMessageRequested += ViewModel_ShowErrorMessageRequested;
+            try
+            {
+                this.InitializeComponent();
+                ViewModel.RequestGoBack += ViewModel_RequestGoBack;
+                ViewModel.ShowErrorMessageRequested += ViewModel_ShowErrorMessageRequested;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Initialization error: {ex.Message}");
+            }
         }
 
         private async void ViewModel_ShowErrorMessageRequested(object sender, (string Title, string Message) e)
         {
-            await ShowErrorMessage(e.Title, e.Message);
+            try
+            {
+                await ShowErrorMessage(e.Title, e.Message);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Failed to show error dialog: {ex.Message}");
+            }
         }
 
         private async Task ShowErrorMessage(string title, string message)
         {
-            var dialog = new ContentDialog
+            try
             {
-                Title = title,
-                Content = message,
-                CloseButtonText = "OK",
-                XamlRoot = this.XamlRoot
-            };
+                var dialog = new ContentDialog
+                {
+                    Title = title,
+                    Content = message,
+                    CloseButtonText = "OK",
+                    XamlRoot = this.XamlRoot
+                };
 
-            await dialog.ShowAsync();
+                await dialog.ShowAsync();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"ContentDialog error: {ex.Message}");
+            }
         }
 
         public void BackButton_Click(object sender, RoutedEventArgs e)
         {
-            if (this.Frame.CanGoBack)
+            try
             {
-                this.Frame.GoBack();
+                if (this.Frame.CanGoBack)
+                {
+                    this.Frame.GoBack();
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"BackButton_Click error: {ex.Message}");
             }
         }
 
         public void CancelButton_Click(object senderm, RoutedEventArgs e)
         {
-            if (this.Frame.CanGoBack)
+            try
             {
-                this.Frame.GoBack();
+                if (this.Frame.CanGoBack)
+                {
+                    this.Frame.GoBack();
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"CancelButton_Click error: {ex.Message}");
             }
         }
 
         public void ViewModel_RequestGoBack(object sender, EventArgs e)
         {
-            if (this.Frame.CanGoBack)
+            try
             {
-                this.Frame.GoBack();
+                if (this.Frame.CanGoBack)
+                {
+                    this.Frame.GoBack();
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"ViewModel_RequestGoBack error: {ex.Message}");
             }
         }
     }
 }
-

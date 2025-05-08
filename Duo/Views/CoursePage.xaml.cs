@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Threading.Tasks;
 using System;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -56,6 +57,30 @@ namespace Duo.Views
             }
         }
 
+        /// <summary>
+        /// Displays an error message from the ViewModel.
+        /// </summary>
+        private async void ViewModel_ShowErrorMessageRequested(object? sender, (string Title, string Message) e)
+        {
+            await ShowErrorMessage(e.Title, e.Message);
+        }
+
+        /// <summary>
+        /// Shows a ContentDialog with an error message.
+        /// </summary>
+        private async Task ShowErrorMessage(string title, string message)
+        {
+            var dialog = new ContentDialog
+            {
+                Title = title,
+                Content = message,
+                CloseButtonText = "OK",
+                XamlRoot = this.XamlRoot
+            };
+
+            await dialog.ShowAsync();
+        }
+
         private void BackButton_Click(object sender, RoutedEventArgs e)
         {
             if (this.Frame.CanGoBack)
@@ -74,12 +99,16 @@ namespace Duo.Views
                     this.Frame.Navigate(typeof(ModulePage), (moduleDisplay.Module, viewModel));
                     return;
                 }
-                try
+                
+                try{
+
+                if (moduleDisplay.Module!.IsBonus)
                 {
                     if (moduleDisplay.Module!.IsBonus)
                     {
                         await viewModel.AttemptBonusModulePurchaseAsync(moduleDisplay.Module, CurrentUserId);
                     }
+                }
                 }
                 catch (Exception ex)
                 {
@@ -93,6 +122,8 @@ namespace Duo.Views
 
                     await dialog.ShowAsync();
                 }
+
+                viewModel.RaiseErrorMessage("Module Locked", "You need to complete the previous modules to unlock this one.");
             }
         }
     }

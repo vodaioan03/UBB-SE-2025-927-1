@@ -14,8 +14,6 @@ using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
 namespace Duo.Views.Pages
 {
     /// <summary>
@@ -25,32 +23,61 @@ namespace Duo.Views.Pages
     {
         public ManageExercisesPage()
         {
-            this.InitializeComponent();
-            ViewModel.ShowErrorMessageRequested += ViewModel_ShowErrorMessageRequested;
+            try
+            {
+                this.InitializeComponent();
+                ViewModel.ShowErrorMessageRequested += ViewModel_ShowErrorMessageRequested;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Initialization error: {ex.Message}");
+            }
         }
+
         private async void ViewModel_ShowErrorMessageRequested(object sender, (string Title, string Message) e)
         {
-            await ShowErrorMessage(e.Title, e.Message);
+            try
+            {
+                await ShowErrorMessage(e.Title, e.Message);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Failed to show error dialog: {ex.Message}");
+            }
         }
 
         private async Task ShowErrorMessage(string title, string message)
         {
-            var dialog = new ContentDialog
+            try
             {
-                Title = title,
-                Content = message,
-                CloseButtonText = "OK",
-                XamlRoot = this.XamlRoot
-            };
+                var dialog = new ContentDialog
+                {
+                    Title = title,
+                    Content = message,
+                    CloseButtonText = "OK",
+                    XamlRoot = this.XamlRoot
+                };
 
-            await dialog.ShowAsync();
+                await dialog.ShowAsync();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"ContentDialog error: {ex.Message}");
+            }
         }
 
         public void BackButton_Click(object sender, RoutedEventArgs e)
         {
-            if (this.Frame.CanGoBack)
+            try
             {
-                this.Frame.GoBack();
+                if (this.Frame.CanGoBack)
+                {
+                    this.Frame.GoBack();
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"BackButton_Click error: {ex.Message}");
             }
         }
     }
