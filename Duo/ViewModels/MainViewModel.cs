@@ -35,11 +35,7 @@ namespace Duo.ViewModels
         private ObservableCollection<Course> displayedCourses;
         public ObservableCollection<Course> DisplayedCourses
         {
-            get
-            {
-                return displayedCourses;
-            }
-
+            get => displayedCourses;
             set
             {
                 if (displayedCourses != value)
@@ -71,7 +67,14 @@ namespace Duo.ViewModels
 
         public async Task RefreshUserCoinBalanceAsync()
         {
-            UserCoinBalance = await coinsService.GetCoinBalanceAsync(CurrentUserId);
+            try
+            {
+                UserCoinBalance = await coinsService.GetCoinBalanceAsync(CurrentUserId);
+            }
+            catch (Exception ex)
+            {
+                RaiseErrorMessage("Failed to refresh coin balance", ex.Message);
+            }
         }
 
         /// <summary>
@@ -166,6 +169,7 @@ namespace Duo.ViewModels
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MainViewModel"/> class.
+        /// </summary>
         public MainViewModel(CoinsServiceProxy serviceProxy, CourseServiceProxy courseServiceProxy, int currentUserId = 1,
             ICourseService? courseService = null, ICoinsService? coinsService = null)
         {
@@ -194,7 +198,7 @@ namespace Duo.ViewModels
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.Message);
+                RaiseErrorMessage("Failed to load courses", e.Message);
             }
         }
 
@@ -203,9 +207,17 @@ namespace Duo.ViewModels
         /// </summary>
         public async Task<bool> TryDailyLoginReward()
         {
-            bool loginRewardGranted = await coinsService.ApplyDailyLoginBonusAsync(CurrentUserId);
-            OnPropertyChanged(nameof(UserCoinBalance));
-            return loginRewardGranted;
+            try
+            {
+                bool loginRewardGranted = await coinsService.ApplyDailyLoginBonusAsync(CurrentUserId);
+                await RefreshUserCoinBalanceAsync();
+                return loginRewardGranted;
+            }
+            catch (Exception ex)
+            {
+                RaiseErrorMessage("Daily login reward failed", ex.Message);
+                return false;
+            }
         }
 
         private void OnTagSelectionChanged(object? sender, PropertyChangedEventArgs eventArgs)
@@ -221,18 +233,25 @@ namespace Duo.ViewModels
         /// </summary>
         private void ResetAllFilters(object? parameter)
         {
-            SearchQuery = string.Empty;
-            FilterByPremium = false;
-            FilterByFree = false;
-            FilterByEnrolled = false;
-            FilterByNotEnrolled = false;
-
-            foreach (var tag in AvailableTags)
+            try
             {
-                tag.IsSelected = false;
-            }
+                SearchQuery = string.Empty;
+                FilterByPremium = false;
+                FilterByFree = false;
+                FilterByEnrolled = false;
+                FilterByNotEnrolled = false;
 
-            ApplyAllFilters();
+                foreach (var tag in AvailableTags)
+                {
+                    tag.IsSelected = false;
+                }
+
+                ApplyAllFilters();
+            }
+            catch (Exception ex)
+            {
+                RaiseErrorMessage("Reset filters failed", ex.Message);
+            }
         }
 
         /// <summary>
@@ -261,7 +280,7 @@ namespace Duo.ViewModels
                     filterByEnrolled,
                     filterByNotEnrolled,
                     selectedTagIds,
-                    CurrentUserId); // Added the missing 'userId' parameter
+                    CurrentUserId);
 
                 foreach (var course in filteredCourses)
                 {
@@ -270,7 +289,7 @@ namespace Duo.ViewModels
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.Message);
+                RaiseErrorMessage("Failed to apply filters", e.Message);
             }
         }
     }

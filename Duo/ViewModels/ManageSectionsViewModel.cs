@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Duo.Commands;
@@ -19,27 +18,11 @@ namespace Duo.ViewModels
     {
         private readonly ISectionService sectionService;
         private readonly IQuizService quizService;
+
         public ObservableCollection<Section> Sections { get; set; } = new ObservableCollection<Section>();
         public ObservableCollection<Quiz> SectionQuizes { get; private set; } = new ObservableCollection<Quiz>();
 
         private Section selectedSection;
-
-        public ICommand DeleteSectionCommand;
-
-        public ManageSectionsViewModel()
-        {
-            try
-            {
-                sectionService = (ISectionService)App.ServiceProvider.GetService(typeof(ISectionService));
-                quizService = (IQuizService)App.ServiceProvider.GetService(typeof(IQuizService));
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine(ex);
-            }
-            _ = Task.Run(async () => await LoadSectionsAsync());
-            DeleteSectionCommand = new RelayCommandWithParameter<Section>(section => _ = DeleteSection(section));
-        }
         public Section SelectedSection
         {
             get => selectedSection;
@@ -51,12 +34,32 @@ namespace Duo.ViewModels
             }
         }
 
+        public ICommand DeleteSectionCommand { get; }
+
+        public ManageSectionsViewModel()
+        {
+            try
+            {
+                sectionService = (ISectionService)App.ServiceProvider.GetService(typeof(ISectionService));
+                quizService = (IQuizService)App.ServiceProvider.GetService(typeof(IQuizService));
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+                RaiseErrorMessage("Initialization error", ex.Message);
+            }
+
+            DeleteSectionCommand = new RelayCommandWithParameter<Section>(section => _ = DeleteSection(section));
+            _ = Task.Run(async () => await LoadSectionsAsync());
+        }
+
         public async Task LoadSectionsAsync()
         {
             try
             {
                 var sections = await sectionService.GetAllSections();
                 Sections.Clear();
+
                 foreach (var section in sections)
                 {
                     Sections.Add(section);
@@ -64,8 +67,8 @@ namespace Duo.ViewModels
             }
             catch (Exception ex)
             {
-                Debug.WriteLine(ex);
-                RaiseErrorMessage(ex.Message, string.Empty);
+                Debug.WriteLine($"LoadSectionsAsync error: {ex.Message}");
+                RaiseErrorMessage("Failed to load sections", ex.Message);
             }
         }
 
@@ -73,7 +76,7 @@ namespace Duo.ViewModels
         {
             try
             {
-                Debug.WriteLine("Updating quiz exercises...");
+                Debug.WriteLine("Updating section quizzes...");
                 SectionQuizes.Clear();
 
                 if (selectedSection == null)
@@ -82,18 +85,16 @@ namespace Duo.ViewModels
                     return;
                 }
 
-                List<Quiz> quizzesOfSelectedQuiz = await quizService.GetAllQuizzesFromSection(selectedSection.Id);
-
-                foreach (var quiz in quizzesOfSelectedQuiz)
+                var quizzes = await quizService.GetAllQuizzesFromSection(selectedSection.Id);
+                foreach (var quiz in quizzes)
                 {
-                    Debug.WriteLine(quiz);
                     SectionQuizes.Add(quiz);
                 }
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error during UpdateSectionQuizes: {ex.Message}");
-                Debug.WriteLine(ex.StackTrace);
+                Debug.WriteLine($"UpdateSectionQuizes error: {ex.Message}");
+                RaiseErrorMessage("Failed to load quizzes for section", ex.Message);
             }
         }
 
@@ -113,9 +114,8 @@ namespace Duo.ViewModels
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error during DeleteSection: {ex.Message}");
-                Debug.WriteLine(ex.StackTrace);
-                RaiseErrorMessage(ex.Message, string.Empty);
+                Debug.WriteLine($"DeleteSection error: {ex.Message}");
+                RaiseErrorMessage("Failed to delete section", ex.Message);
             }
         }
     }

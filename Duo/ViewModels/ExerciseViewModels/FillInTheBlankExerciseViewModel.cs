@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Duo.Models.Exercises;
 using Duo.Services;
@@ -16,41 +14,63 @@ namespace Duo.ViewModels.ExerciseViewModels
         private FillInTheBlankExercise? exercise;
         private readonly IExerciseService exerciseService;
         private ObservableCollection<string>? userAnswers;
+
         public ObservableCollection<string>? UserAnswers
         {
-            get { return userAnswers; }
-            set { SetProperty(ref userAnswers, value); }
+            get => userAnswers;
+            set => SetProperty(ref userAnswers, value);
         }
 
         public FillInTheBlankExerciseViewModel(IExerciseService service)
         {
-            exerciseService = service;
+            try
+            {
+                exerciseService = service ?? throw new ArgumentNullException(nameof(service));
+            }
+            catch (Exception ex)
+            {
+                RaiseErrorMessage("Initialization Error", $"Failed to initialize FillInTheBlankExerciseViewModel.\nDetails: {ex.Message}");
+            }
         }
 
         public async Task GetExercise(int id)
         {
-            Exercise exercise = await exerciseService.GetExerciseById(id);
-            if (exercise is FillInTheBlankExercise fillInTheBlankExercise)
+            try
             {
-                this.exercise = fillInTheBlankExercise;
+                Exercise exercise = await exerciseService.GetExerciseById(id);
+                if (exercise is FillInTheBlankExercise fillInTheBlankExercise)
+                {
+                    this.exercise = fillInTheBlankExercise;
+                    userAnswers = new ObservableCollection<string>(Enumerable.Repeat(string.Empty, this.exercise.PossibleCorrectAnswers.Count));
+                }
+                else
+                {
+                    RaiseErrorMessage("Exercise Error", $"Invalid exercise type for ID {id}. Expected FillInTheBlankExercise.");
+                }
             }
-            else
+            catch (Exception ex)
             {
-                throw new Exception("Invalid exercise type given to viewModel");
+                RaiseErrorMessage("Exercise Load Error", $"Failed to load exercise with ID {id}.\nDetails: {ex.Message}");
             }
-
-            userAnswers =
-                [.. Enumerable.Repeat(string.Empty, this.exercise.PossibleCorrectAnswers.Count)];
         }
 
         public bool VerifyIfAnswerIsCorrect()
         {
-            if (exercise == null || userAnswers == null)
+            try
             {
-                throw new InvalidOperationException("Exercise or UserAnswers is not initialized.");
-            }
+                if (exercise == null || userAnswers == null)
+                {
+                    RaiseErrorMessage("Validation Error", "Exercise or UserAnswers is not initialized.");
+                    return false;
+                }
 
-            return exercise.ValidateAnswer(userAnswers.ToList());
+                return exercise.ValidateAnswer(userAnswers.ToList());
+            }
+            catch (Exception ex)
+            {
+                RaiseErrorMessage("Validation Error", $"Failed to verify answer.\nDetails: {ex.Message}");
+                return false;
+            }
         }
     }
 }

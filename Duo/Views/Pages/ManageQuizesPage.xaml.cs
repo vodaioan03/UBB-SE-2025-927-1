@@ -15,8 +15,6 @@ using Microsoft.UI.Xaml.Navigation;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
 namespace Duo.Views.Pages
 {
     /// <summary>
@@ -26,66 +24,103 @@ namespace Duo.Views.Pages
     {
         public ManageQuizesPage()
         {
-            this.InitializeComponent();
-            ViewModel.ShowListViewModal += ViewModel_openSelectExercises;
-
-            ViewModel.ShowErrorMessageRequested += ViewModel_ShowErrorMessageRequested;
+            try
+            {
+                this.InitializeComponent();
+                ViewModel.ShowListViewModal += ViewModel_openSelectExercises;
+                ViewModel.ShowErrorMessageRequested += ViewModel_ShowErrorMessageRequested;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Initialization error: {ex.Message}");
+            }
         }
+
         private async void ViewModel_ShowErrorMessageRequested(object sender, (string Title, string Message) e)
         {
-            await ShowErrorMessage(e.Title, e.Message);
+            try
+            {
+                await ShowErrorMessage(e.Title, e.Message);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Failed to show error dialog: {ex.Message}");
+            }
         }
 
         private async Task ShowErrorMessage(string title, string message)
         {
-            var dialog = new ContentDialog
+            try
             {
-                Title = title,
-                Content = message,
-                CloseButtonText = "OK",
-                XamlRoot = this.XamlRoot
-            };
+                var dialog = new ContentDialog
+                {
+                    Title = title,
+                    Content = message,
+                    CloseButtonText = "OK",
+                    XamlRoot = this.XamlRoot
+                };
 
-            await dialog.ShowAsync();
-        }
-        public void BackButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (this.Frame.CanGoBack)
+                await dialog.ShowAsync();
+            }
+            catch (Exception ex)
             {
-                this.Frame.GoBack();
+                System.Diagnostics.Debug.WriteLine($"ContentDialog error: {ex.Message}");
             }
         }
+
+        public void BackButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (this.Frame.CanGoBack)
+                {
+                    this.Frame.GoBack();
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"BackButton_Click error: {ex.Message}");
+            }
+        }
+
         private async void ViewModel_openSelectExercises(List<Exercise> exercises)
         {
-            var dialog = new ContentDialog
+            try
             {
-                Title = "Select Exercise",
-                CloseButtonText = "Cancel",
-                DefaultButton = ContentDialogButton.Primary,
-                XamlRoot = this.XamlRoot
-            };
+                var dialog = new ContentDialog
+                {
+                    Title = "Select Exercise",
+                    CloseButtonText = "Cancel",
+                    DefaultButton = ContentDialogButton.Primary,
+                    XamlRoot = this.XamlRoot
+                };
 
-            var listView = new ListView
+                var listView = new ListView
+                {
+                    ItemsSource = exercises,
+                    SelectionMode = ListViewSelectionMode.Single,
+                    MaxHeight = 300,
+                    ItemTemplate = (DataTemplate)Resources["ExerciseSelectionItemTemplate"]
+                };
+
+                dialog.Content = listView;
+                dialog.PrimaryButtonText = "Add";
+                dialog.IsPrimaryButtonEnabled = false;
+
+                listView.SelectionChanged += (s, args) =>
+                {
+                    dialog.IsPrimaryButtonEnabled = listView.SelectedItem != null;
+                };
+
+                var result = await dialog.ShowAsync();
+                if (result == ContentDialogResult.Primary && listView.SelectedItem is Exercise selectedExercise)
+                {
+                    ViewModel.AddExercise(selectedExercise);
+                }
+            }
+            catch (Exception ex)
             {
-                ItemsSource = exercises,
-                SelectionMode = ListViewSelectionMode.Single,
-                MaxHeight = 300,
-                ItemTemplate = (DataTemplate)Resources["ExerciseSelectionItemTemplate"]
-            };
-
-            dialog.Content = listView;
-            dialog.PrimaryButtonText = "Add";
-            dialog.IsPrimaryButtonEnabled = false;
-
-            listView.SelectionChanged += (s, args) =>
-            {
-                dialog.IsPrimaryButtonEnabled = listView.SelectedItem != null;
-            };
-
-            var result = await dialog.ShowAsync();
-            if (result == ContentDialogResult.Primary && listView.SelectedItem is Exercise selectedExercise)
-            {
-                ViewModel.AddExercise(selectedExercise);
+                System.Diagnostics.Debug.WriteLine($"ViewModel_openSelectExercises error: {ex.Message}");
             }
         }
     }

@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Input;
 using Duo.Commands;
 using Duo.Models;
@@ -16,7 +14,7 @@ namespace Duo.ViewModels.CreateExerciseViewModels
 {
     partial class CreateMultipleChoiceExerciseViewModel : CreateExerciseViewModelBase
     {
-        private ExerciseCreationViewModel parentViewModel;
+        private readonly ExerciseCreationViewModel parentViewModel;
         public const int MINIMUM_ANSWERS = 2;
         public const int MAXIMUM_ANSWERS = 5;
 
@@ -26,31 +24,54 @@ namespace Duo.ViewModels.CreateExerciseViewModels
 
         public CreateMultipleChoiceExerciseViewModel(ExerciseCreationViewModel parentViewModel)
         {
-            this.parentViewModel = parentViewModel;
-            AddNewAnswerCommand = new RelayCommand(async _ => AddNewAnswer());
-            UpdateSelectedAnswerComand = new RelayCommandWithParameter<string>(UpdateSelectedAnswer);
+            try
+            {
+                this.parentViewModel = parentViewModel ?? throw new ArgumentNullException(nameof(parentViewModel));
+                AddNewAnswerCommand = new RelayCommand(_ => AddNewAnswer());
+                UpdateSelectedAnswerComand = new RelayCommandWithParameter<string>(UpdateSelectedAnswer);
+            }
+            catch (Exception ex)
+            {
+                RaiseErrorMessage("Initialization Error", $"Failed to initialize CreateMultipleChoiceExerciseViewModel.\nDetails: {ex.Message}");
+            }
         }
 
         public override Exercise CreateExercise(string questionText, Difficulty difficulty)
         {
-            List<MultipleChoiceAnswerModel> multipleChoiceAnswerModelList = GenerateAnswerModelList();
-            Exercise newExercise = new Models.Exercises.MultipleChoiceExercise(0, questionText, difficulty, multipleChoiceAnswerModelList);
-            return newExercise;
+            try
+            {
+                List<MultipleChoiceAnswerModel> multipleChoiceAnswerModelList = GenerateAnswerModelList();
+                Exercise newExercise = new Models.Exercises.MultipleChoiceExercise(0, questionText, difficulty, multipleChoiceAnswerModelList);
+                return newExercise;
+            }
+            catch (Exception ex)
+            {
+                RaiseErrorMessage("Create Exercise Error", $"Failed to create multiple choice exercise.\nDetails: {ex.Message}");
+                return null; // Fallback, though ideally handled by caller
+            }
         }
 
         public List<MultipleChoiceAnswerModel> GenerateAnswerModelList()
         {
-            List<Answer> finalAnswers = Answers.ToList();
-            List<MultipleChoiceAnswerModel> multipleChoiceAnswerModels = new List<MultipleChoiceAnswerModel>();
-            foreach (Answer answer in finalAnswers)
+            try
             {
-                multipleChoiceAnswerModels.Add(new ()
+                List<Answer> finalAnswers = Answers.ToList();
+                List<MultipleChoiceAnswerModel> multipleChoiceAnswerModels = new List<MultipleChoiceAnswerModel>();
+                foreach (Answer answer in finalAnswers)
                 {
-                    Answer = answer.Value,
-                    IsCorrect = answer.IsCorrect
-                });
+                    multipleChoiceAnswerModels.Add(new MultipleChoiceAnswerModel
+                    {
+                        Answer = answer.Value,
+                        IsCorrect = answer.IsCorrect
+                    });
+                }
+                return multipleChoiceAnswerModels;
             }
-            return multipleChoiceAnswerModels;
+            catch (Exception ex)
+            {
+                RaiseErrorMessage("Generate Answers Error", $"Failed to generate answer model list.\nDetails: {ex.Message}");
+                return new List<MultipleChoiceAnswerModel>();
+            }
         }
 
         public string SelectedAnswer
@@ -58,8 +79,15 @@ namespace Duo.ViewModels.CreateExerciseViewModels
             get => selectedAnswer;
             set
             {
-                selectedAnswer = value;
-                OnPropertyChanged(nameof(SelectedAnswer));
+                try
+                {
+                    selectedAnswer = value;
+                    OnPropertyChanged(nameof(SelectedAnswer));
+                }
+                catch (Exception ex)
+                {
+                    RaiseErrorMessage("Selected Answer Error", $"Failed to set selected answer.\nDetails: {ex.Message}");
+                }
             }
         }
 
@@ -68,23 +96,37 @@ namespace Duo.ViewModels.CreateExerciseViewModels
 
         private void AddNewAnswer()
         {
-            if (Answers.Count == MAXIMUM_ANSWERS)
+            try
             {
-                parentViewModel.RaiseErrorMessage("Cannot add more answers", $"Maximum number of answers ({MAXIMUM_ANSWERS}) reached.");
-                return;
+                if (Answers.Count >= MAXIMUM_ANSWERS)
+                {
+                    parentViewModel.RaiseErrorMessage("Maximum Answers Reached", $"Maximum number of answers ({MAXIMUM_ANSWERS}) reached.");
+                    return;
+                }
+                Answers.Add(new Answer(string.Empty, false));
             }
-            Answers.Add(new Answer(string.Empty, false));
+            catch (Exception ex)
+            {
+                RaiseErrorMessage("Add Answer Error", $"Failed to add new answer.\nDetails: {ex.Message}");
+            }
         }
 
         private void UpdateSelectedAnswer(string selectedValue)
         {
-            foreach (var answer in Answers)
+            try
             {
-                answer.IsCorrect = answer.Value == selectedValue;
-            }
+                foreach (var answer in Answers)
+                {
+                    answer.IsCorrect = answer.Value == selectedValue;
+                }
 
-            SelectedAnswer = selectedValue; // Update the selected answer reference
-            OnPropertyChanged(nameof(Answers)); // Notify UI
+                SelectedAnswer = selectedValue; // Update the selected answer reference
+                OnPropertyChanged(nameof(Answers)); // Notify UI
+            }
+            catch (Exception ex)
+            {
+                RaiseErrorMessage("Update Selected Answer Error", $"Failed to update selected answer.\nDetails: {ex.Message}");
+            }
         }
 
         public class Answer : ViewModelBase
@@ -97,8 +139,15 @@ namespace Duo.ViewModels.CreateExerciseViewModels
                 get => value;
                 set
                 {
-                    this.value = value;
-                    OnPropertyChanged(nameof(Value));
+                    try
+                    {
+                        this.value = value;
+                        OnPropertyChanged(nameof(Value));
+                    }
+                    catch (Exception ex)
+                    {
+                        RaiseErrorMessage("Answer Value Error", $"Failed to set answer value.\nDetails: {ex.Message}");
+                    }
                 }
             }
 
@@ -107,18 +156,32 @@ namespace Duo.ViewModels.CreateExerciseViewModels
                 get => isCorrect;
                 set
                 {
-                    if (isCorrect != value)
+                    try
                     {
-                        isCorrect = value;
-                        OnPropertyChanged(nameof(isCorrect));
+                        if (isCorrect != value)
+                        {
+                            isCorrect = value;
+                            OnPropertyChanged(nameof(IsCorrect));
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        RaiseErrorMessage("Answer IsCorrect Error", $"Failed to set IsCorrect value.\nDetails: {ex.Message}");
                     }
                 }
             }
 
             public Answer(string value, bool isCorrect)
             {
-                this.value = value;
-                this.isCorrect = isCorrect;
+                try
+                {
+                    this.value = value;
+                    this.isCorrect = isCorrect;
+                }
+                catch (Exception ex)
+                {
+                    RaiseErrorMessage("Answer Initialization Error", $"Failed to initialize Answer.\nDetails: {ex.Message}");
+                }
             }
         }
     }

@@ -25,12 +25,10 @@ namespace Duo.ViewModels
         private object selectedExerciseContent;
 
         private string questionText = string.Empty;
-        // List of exercise types
         public ObservableCollection<string> ExerciseTypes { get; set; }
 
         public ObservableCollection<string> Difficulties { get; set; }
 
-        // Selected exercise type
         private string selectedExerciseType;
 
         private string selectedDifficulty;
@@ -63,37 +61,25 @@ namespace Duo.ViewModels
             {
                 exerciseService = (IExerciseService)App.ServiceProvider.GetService(typeof(IExerciseService));
                 exerciseViewFactory = (IExerciseViewFactory)App.ServiceProvider.GetService(typeof(IExerciseViewFactory));
+
+                CreateMultipleChoiceExerciseViewModel = new CreateMultipleChoiceExerciseViewModel(this);
+                CreateAssociationExerciseViewModel = new CreateAssociationExerciseViewModel(this);
+                CreateFillInTheBlankExerciseViewModel = new CreateFillInTheBlankExerciseViewModel(this);
+
+                SaveButtonCommand = new RelayCommand((_) => _ = CreateExercise());
+
+                ExerciseTypes = new ObservableCollection<string>(Models.Exercises.ExerciseTypes.EXERCISE_TYPES);
+
+                Difficulties = new ObservableCollection<string>(Models.DifficultyList.DIFFICULTIES);
+
+                SelectedExerciseContent = new TextBlock { Text = "Select an exercise type." };
+                currentExerciseViewModel = CreateAssociationExerciseViewModel;
             }
             catch (Exception ex)
             {
                 Debug.WriteLine(ex);
+                RaiseErrorMessage("Failed to initialize ExerciseCreationViewModel", ex.Message);
             }
-
-            CreateMultipleChoiceExerciseViewModel = new CreateMultipleChoiceExerciseViewModel(this);
-            CreateAssociationExerciseViewModel = new CreateAssociationExerciseViewModel(this);
-            CreateFillInTheBlankExerciseViewModel = new CreateFillInTheBlankExerciseViewModel(this);
-
-            SaveButtonCommand = new RelayCommand((_) => _ = CreateExercise());
-
-            /*ExerciseTypes = new ObservableCollection<string>
-            {
-                "Association",
-                "Fill in the blank",
-                "Multiple Choice",
-                "Flashcard"
-            };*/
-            ExerciseTypes = new ObservableCollection<string>(Models.Exercises.ExerciseTypes.EXERCISE_TYPES);
-
-            /*Difficulties = new ObservableCollection<string>
-            {
-                "Easy",
-                "Normal",
-                "Hard"
-            };*/
-            Difficulties = new ObservableCollection<string>(Models.DifficultyList.DIFFICULTIES);
-
-            SelectedExerciseContent = new TextBlock { Text = "Select an exercise type." };
-            currentExerciseViewModel = CreateAssociationExerciseViewModel;
         }
 
         public string QuestionText
@@ -104,7 +90,7 @@ namespace Duo.ViewModels
                 if (questionText != value)
                 {
                     questionText = value;
-                    OnPropertyChanged(nameof(QuestionText)); // Notify UI
+                    OnPropertyChanged(nameof(QuestionText));
                 }
             }
         }
@@ -167,37 +153,49 @@ namespace Duo.ViewModels
             set => SetProperty(ref isSuccessMessageVisible, value);
         }
 
-        public void ShowSuccessMessage()
+        public async void ShowSuccessMessage()
         {
-            // IsSuccessMessageVisible = true;
-            // Task.Delay(3000).ContinueWith(_ => IsSuccessMessageVisible = false);
+            try
+            {
+                IsSuccessMessageVisible = true;
+                await Task.Delay(3000);
+                IsSuccessMessageVisible = false;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error while showing success message: {ex.Message}");
+            }
         }
 
         private void UpdateExerciseContent(string exerciseType)
         {
-            Debug.WriteLine(exerciseType);
-
-            // Use the factory to create the appropriate exercise view
-            SelectedExerciseContent = exerciseViewFactory.CreateExerciseView(exerciseType);
-
-            // Depending on the exercise type, set the CurrentExerciseViewModel
-            switch (exerciseType)
+            try
             {
-                case "Association":
-                    CurrentExerciseViewModel = CreateAssociationExerciseViewModel;
-                    break;
-                case "Fill in the blank":
-                    CurrentExerciseViewModel = CreateFillInTheBlankExerciseViewModel;
-                    break;
-                case "Multiple Choice":
-                    CurrentExerciseViewModel = CreateMultipleChoiceExerciseViewModel;
-                    break;
-                case "Flashcard":
-                    CurrentExerciseViewModel = CreateFlashcardExerciseViewModel;
-                    break;
-                default:
-                    SelectedExerciseContent = new TextBlock { Text = "Select an exercise type." };
-                    break;
+                SelectedExerciseContent = exerciseViewFactory.CreateExerciseView(exerciseType);
+
+                switch (exerciseType)
+                {
+                    case "Association":
+                        CurrentExerciseViewModel = CreateAssociationExerciseViewModel;
+                        break;
+                    case "Fill in the blank":
+                        CurrentExerciseViewModel = CreateFillInTheBlankExerciseViewModel;
+                        break;
+                    case "Multiple Choice":
+                        CurrentExerciseViewModel = CreateMultipleChoiceExerciseViewModel;
+                        break;
+                    case "Flashcard":
+                        CurrentExerciseViewModel = CreateFlashcardExerciseViewModel;
+                        break;
+                    default:
+                        SelectedExerciseContent = new TextBlock { Text = "Select an exercise type." };
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+                RaiseErrorMessage("Failed to update exercise content", ex.Message);
             }
         }
 
@@ -210,23 +208,28 @@ namespace Duo.ViewModels
 
         public async Task CreateExercise()
         {
-            Debug.WriteLine(SelectedExerciseType);
-            switch (SelectedExerciseType)
+            try
             {
-                case "Multiple Choice":
-                    await CreateMultipleChoiceExercise();
-                    break;
-                case "Association":
-                    await CreateAssocitationExercise();
-                    break;
-                case "Flashcard":
-                    await CreateFlashcardExercise();
-                    break;
-                case "Fill in the blank":
-                    await CreateFillInTheBlankExercise();
-                    break;
-                default:
-                    break;
+                Debug.WriteLine(SelectedExerciseType);
+                switch (SelectedExerciseType)
+                {
+                    case "Multiple Choice":
+                        await CreateMultipleChoiceExercise(); break;
+                    case "Association":
+                        await CreateAssocitationExercise(); break;
+                    case "Flashcard":
+                        await CreateFlashcardExercise(); break;
+                    case "Fill in the blank":
+                        await CreateFillInTheBlankExercise(); break;
+                    default:
+                        RaiseErrorMessage("Invalid type", "No valid exercise type selected.");
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+                RaiseErrorMessage("Exercise creation failed", ex.Message);
             }
         }
 
@@ -304,16 +307,21 @@ namespace Duo.ViewModels
 
         private Duo.Models.Difficulty GetDifficulty(string difficulty)
         {
-            switch (difficulty)
+            try
             {
-                case "Easy":
-                    return Models.Difficulty.Easy;
-                case "Normal":
-                    return Models.Difficulty.Normal;
-                case "Hard":
-                    return Models.Difficulty.Hard;
-                default:
-                    return Models.Difficulty.Normal;
+                return difficulty switch
+                {
+                    "Easy" => Models.Difficulty.Easy,
+                    "Normal" => Models.Difficulty.Normal,
+                    "Hard" => Models.Difficulty.Hard,
+                    _ => Models.Difficulty.Normal
+                };
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+                RaiseErrorMessage("Failed to parse difficulty", ex.Message);
+                return Models.Difficulty.Normal;
             }
         }
     }

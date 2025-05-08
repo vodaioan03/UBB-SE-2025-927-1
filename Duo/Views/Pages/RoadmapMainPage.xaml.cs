@@ -1,57 +1,79 @@
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Collections.ObjectModel;
-using System.Linq;
 using System.Diagnostics;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
+using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Data;
-using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
-using Duo.Models.Exercises;
-using Duo.Models.Quizzes;
-using Microsoft.Extensions.DependencyInjection;
+using Duo.ViewModels.Base;
 using Duo.ViewModels.Roadmap;
 
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
 namespace Duo.Views.Pages
 {
-    /// <summary>
-    /// An empty page that can be used on its own or navigated to within a Frame.
-    /// </summary>
     public sealed partial class RoadmapMainPage : Page
     {
         public RoadmapMainPage()
         {
-            this.InitializeComponent();
+            try
+            {
+                this.InitializeComponent();
+                if (ViewModel is ViewModelBase viewModel)
+                {
+                    viewModel.ShowErrorMessageRequested += ViewModel_ShowErrorMessageRequested;
+                }
+                else
+                {
+                    _ = ShowErrorMessage("Initialization Error", "ViewModel is not set to a valid ViewModelBase instance.");
+                }
+            }
+            catch (Exception ex)
+            {
+                _ = ShowErrorMessage("Initialization Error", $"Failed to initialize RoadmapMainPage.\nDetails: {ex.Message}");
+            }
+        }
+
+        private async void ViewModel_ShowErrorMessageRequested(object sender, (string Title, string Message) e)
+        {
+            await ShowErrorMessage(e.Title, e.Message);
+        }
+
+        private async Task ShowErrorMessage(string title, string message)
+        {
+            try
+            {
+                var dialog = new ContentDialog
+                {
+                    Title = title,
+                    Content = message,
+                    CloseButtonText = "OK",
+                    XamlRoot = this.XamlRoot
+                };
+
+                await dialog.ShowAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error dialog failed to display. Details: {ex.Message}");
+            }
         }
 
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
-            // var ViewModel = (RoadmapMainPageViewModel)(App.serviceProvider.GetService(typeof(RoadmapMainPageViewModel)));
-            await ViewModel.SetupViewModel();
-            base.OnNavigatedTo(e);
+            try
+            {
+                if (ViewModel is RoadmapMainPageViewModel viewModel)
+                {
+                    await viewModel.SetupViewModel();
+                }
+                else
+                {
+                    _ = ShowErrorMessage("Navigation Error", "ViewModel is not set to a valid RoadmapMainPageViewModel.");
+                }
+                base.OnNavigatedTo(e);
+            }
+            catch (Exception ex)
+            {
+                _ = ShowErrorMessage("Navigation Error", $"Failed to set up RoadmapMainPage.\nDetails: {ex.Message}");
+            }
         }
-
-            // public ObservableCollection<MultipleChoiceAnswerModel> Answers = new ObservableCollection<MultipleChoiceAnswerModel>
-            // {
-            //    new() { Answer = "Option A", IsCorrect = false },
-            //    new() { Answer = "Option B", IsCorrect = true }
-            // };
-            // public ObservableCollection<string> FirstAnswersList = new ObservableCollection<string>
-            // {
-            //    "Romania", "Bulgaria", "Moldova"
-            // };
-            // public ObservableCollection<string> SecondAnswersList = new ObservableCollection<string>
-            // {
-            //    "Bucharest", "Sofia", "Chisinau"
-            // };
     }
 }

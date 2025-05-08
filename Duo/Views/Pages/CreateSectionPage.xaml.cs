@@ -18,8 +18,6 @@ using Microsoft.UI.Xaml.Navigation;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
 namespace Duo.Views.Pages
 {
     /// <summary>
@@ -32,20 +30,13 @@ namespace Duo.Views.Pages
             this.InitializeComponent();
             ViewModel.ShowListViewModalQuizes += ViewModel_openSelectQuizes;
             ViewModel.ShowListViewModalExams += ViewModel_openSelectExams;
-
             ViewModel.ShowErrorMessageRequested += ViewModel_ShowErrorMessageRequested;
             ViewModel.RequestGoBack += ViewModel_RequestGoBack;
         }
+
         private async void ViewModel_ShowErrorMessageRequested(object sender, (string Title, string Message) e)
         {
             await ShowErrorMessage(e.Title, e.Message);
-        }
-        public void ViewModel_RequestGoBack(object sender, EventArgs e)
-        {
-            if (this.Frame.CanGoBack)
-            {
-                this.Frame.GoBack();
-            }
         }
 
         private async Task ShowErrorMessage(string title, string message)
@@ -61,71 +52,93 @@ namespace Duo.Views.Pages
             await dialog.ShowAsync();
         }
 
+        public void ViewModel_RequestGoBack(object sender, EventArgs e)
+        {
+            if (this.Frame.CanGoBack)
+            {
+                this.Frame.GoBack();
+            }
+        }
+
         private async void ViewModel_openSelectExams(List<Exam> exams)
         {
-            var dialog = new ContentDialog
+            try
             {
-                Title = "Select Exam",
-                CloseButtonText = "Cancel",
-                DefaultButton = ContentDialogButton.Primary,
-                XamlRoot = this.XamlRoot
-            };
+                var dialog = new ContentDialog
+                {
+                    Title = "Select Exam",
+                    CloseButtonText = "Cancel",
+                    DefaultButton = ContentDialogButton.Primary,
+                    XamlRoot = this.XamlRoot
+                };
 
-            var listView = new ListView
+                var listView = new ListView
+                {
+                    ItemsSource = exams,
+                    SelectionMode = ListViewSelectionMode.Single,
+                    MaxHeight = 300,
+                    ItemTemplate = (DataTemplate)Resources["QuizSelectionItemTemplate"]
+                };
+
+                dialog.Content = listView;
+                dialog.PrimaryButtonText = "Add";
+                dialog.IsPrimaryButtonEnabled = false;
+
+                listView.SelectionChanged += (s, args) =>
+                {
+                    dialog.IsPrimaryButtonEnabled = listView.SelectedItem != null;
+                };
+
+                var result = await dialog.ShowAsync();
+                if (result == ContentDialogResult.Primary && listView.SelectedItem is Exam selectedExam)
+                {
+                    ViewModel.AddExam(selectedExam);
+                }
+            }
+            catch (Exception ex)
             {
-                ItemsSource = exams,
-                SelectionMode = ListViewSelectionMode.Single,
-                MaxHeight = 300,
-                ItemTemplate = (DataTemplate)Resources["QuizSelectionItemTemplate"]
-            };
-
-            dialog.Content = listView;
-            dialog.PrimaryButtonText = "Add";
-            dialog.IsPrimaryButtonEnabled = false;
-
-            listView.SelectionChanged += (s, args) =>
-            {
-                dialog.IsPrimaryButtonEnabled = listView.SelectedItem != null;
-            };
-
-            var result = await dialog.ShowAsync();
-            if (result == ContentDialogResult.Primary && listView.SelectedItem is Exam selectedExam)
-            {
-                ViewModel.AddExam(selectedExam);
+                await ShowErrorMessage("Selection Error", $"Failed to add exam: {ex.Message}");
             }
         }
 
         private async void ViewModel_openSelectQuizes(List<Quiz> quizzes)
         {
-            var dialog = new ContentDialog
+            try
             {
-                Title = "Select Quiz",
-                CloseButtonText = "Cancel",
-                DefaultButton = ContentDialogButton.Primary,
-                XamlRoot = this.XamlRoot
-            };
+                var dialog = new ContentDialog
+                {
+                    Title = "Select Quiz",
+                    CloseButtonText = "Cancel",
+                    DefaultButton = ContentDialogButton.Primary,
+                    XamlRoot = this.XamlRoot
+                };
 
-            var listView = new ListView
+                var listView = new ListView
+                {
+                    ItemsSource = quizzes,
+                    SelectionMode = ListViewSelectionMode.Single,
+                    MaxHeight = 300,
+                    ItemTemplate = (DataTemplate)Resources["QuizSelectionItemTemplate"]
+                };
+
+                dialog.Content = listView;
+                dialog.PrimaryButtonText = "Add";
+                dialog.IsPrimaryButtonEnabled = false;
+
+                listView.SelectionChanged += (s, args) =>
+                {
+                    dialog.IsPrimaryButtonEnabled = listView.SelectedItem != null;
+                };
+
+                var result = await dialog.ShowAsync();
+                if (result == ContentDialogResult.Primary && listView.SelectedItem is Quiz selectedQuiz)
+                {
+                    ViewModel.AddQuiz(selectedQuiz);
+                }
+            }
+            catch (Exception ex)
             {
-                ItemsSource = quizzes,
-                SelectionMode = ListViewSelectionMode.Single,
-                MaxHeight = 300,
-                ItemTemplate = (DataTemplate)Resources["QuizSelectionItemTemplate"]
-            };
-
-            dialog.Content = listView;
-            dialog.PrimaryButtonText = "Add";
-            dialog.IsPrimaryButtonEnabled = false;
-
-            listView.SelectionChanged += (s, args) =>
-            {
-                dialog.IsPrimaryButtonEnabled = listView.SelectedItem != null;
-            };
-
-            var result = await dialog.ShowAsync();
-            if (result == ContentDialogResult.Primary && listView.SelectedItem is Quiz selectedQuiz)
-            {
-                ViewModel.AddQuiz(selectedQuiz);
+                await ShowErrorMessage("Selection Error", $"Failed to add quiz: {ex.Message}");
             }
         }
 

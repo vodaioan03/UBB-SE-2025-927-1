@@ -1,36 +1,23 @@
 using System;
+using System.Threading.Tasks;
 using System.Collections.Generic;
-using System.IO;
-using System.Reflection.Metadata;
-using System.Diagnostics;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Data;
-using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
-using Duo.Views.Components;
-using Duo.ViewModels;
-using Microsoft.Extensions.DependencyInjection;
 using Duo.Models.Exercises;
+using Duo.ViewModels;
+using Duo.ViewModels.Base;
 using static Duo.Views.Components.AssociationExercise;
 using static Duo.Views.Components.MultipleChoiceExercise;
 using static Duo.Views.Components.FillInTheBlanksExercise;
 using Duo.Models;
+using Duo.Views.Components;
 
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
 namespace Duo.Views.Pages
 {
-    /// <summary>
-    /// An empty page that can be used on its own or navigated to within a Frame.
-    /// </summary>
     public sealed partial class QuizPage : Page
     {
         private static readonly SolidColorBrush CorrectBrush = new SolidColorBrush(Microsoft.UI.Colors.Green);
@@ -38,58 +25,126 @@ namespace Duo.Views.Pages
 
         public QuizPage()
         {
-            this.InitializeComponent();
+            try
+            {
+                this.InitializeComponent();
+                if (this.DataContext is ViewModelBase viewModel)
+                {
+                    viewModel.ShowErrorMessageRequested += ViewModel_ShowErrorMessageRequested;
+                }
+                else
+                {
+                    _ = ShowErrorMessage("Initialization Error", "DataContext is not set to a valid ViewModel.");
+                }
+            }
+            catch (Exception ex)
+            {
+                _ = ShowErrorMessage("Initialization Error", $"Failed to initialize QuizPage.\nDetails: {ex.Message}");
+            }
+        }
+
+        private async void ViewModel_ShowErrorMessageRequested(object sender, (string Title, string Message) e)
+        {
+            await ShowErrorMessage(e.Title, e.Message);
+        }
+
+        private async Task ShowErrorMessage(string title, string message)
+        {
+            try
+            {
+                var dialog = new ContentDialog
+                {
+                    Title = title,
+                    Content = message,
+                    CloseButtonText = "OK",
+                    XamlRoot = this.XamlRoot
+                };
+
+                await dialog.ShowAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error dialog failed to display. Details: {ex.Message}");
+            }
         }
 
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
-            base.OnNavigatedTo(e);
-
-            if (e.Parameter is ValueTuple<int, bool> parameters)
+            try
             {
-                int quizId = parameters.Item1;
-                bool isExam = parameters.Item2;
+                base.OnNavigatedTo(e);
 
-                Debug.WriteLine($"QuizPage received QuizId: {quizId}, with isExam {isExam}");
-
-                if (isExam == true)
+                if (e.Parameter is ValueTuple<int, bool> parameters)
                 {
-                    await ViewModel.SetExamIdAsync(quizId);
+                    int quizId = parameters.Item1;
+                    bool isExam = parameters.Item2;
+
+                    if (isExam)
+                    {
+                        await ViewModel.SetExamIdAsync(quizId);
+                    }
+                    else
+                    {
+                        await ViewModel.SetQuizIdAsync(quizId);
+                    }
+
+                    LoadCurrentExercise();
                 }
                 else
                 {
-                    await ViewModel.SetQuizIdAsync(quizId);
+                    await ShowErrorMessage("Navigation Error", "Invalid navigation parameters.");
                 }
-
-                LoadCurrentExercise();
+            }
+            catch (Exception ex)
+            {
+                await ShowErrorMessage("Navigation Error", $"Failed to navigate to QuizPage.\nDetails: {ex.Message}");
             }
         }
 
         public void BackButton_Click(object sender, RoutedEventArgs e)
         {
-            if (this.Frame.CanGoBack)
+            try
             {
-                this.Frame.GoBack();
+                if (this.Frame.CanGoBack)
+                {
+                    this.Frame.GoBack();
+                }
+            }
+            catch (Exception ex)
+            {
+                _ = ShowErrorMessage("Back Navigation Error", $"Failed to navigate back.\nDetails: {ex.Message}");
             }
         }
 
-        public void CancelButton_Click(object senderm, RoutedEventArgs e)
+        public void CancelButton_Click(object sender, RoutedEventArgs e)
         {
-            if (this.Frame.CanGoBack)
+            try
             {
-                this.Frame.GoBack();
+                if (this.Frame.CanGoBack)
+                {
+                    this.Frame.GoBack();
+                }
+            }
+            catch (Exception ex)
+            {
+                _ = ShowErrorMessage("Cancel Navigation Error", $"Failed to cancel and navigate back.\nDetails: {ex.Message}");
             }
         }
 
         private void LoadCurrentExercise()
         {
-            if (ViewModel != null && ViewModel.Exercises != null)
+            try
             {
+                if (ViewModel == null || ViewModel.Exercises == null)
+                {
+                    _ = ShowErrorMessage("Load Exercise Error", "ViewModel or Exercises collection is not initialized.");
+                    return;
+                }
+
                 var currentExercise = ViewModel.CurrentExercise;
 
                 if (currentExercise != null)
                 {
-                    // Remove any existing difficulty indicators and progress bars
                     var mainStackPanel = ExerciseContentControl.Parent as StackPanel;
                     if (mainStackPanel != null)
                     {
@@ -127,13 +182,11 @@ namespace Duo.Views.Pages
 
                     progressGrid.Children.Add(progressBar);
 
-                    // Add the progress bar to the main StackPanel
                     if (mainStackPanel != null)
                     {
-                        mainStackPanel.Children.Insert(1, progressGrid); // Insert after the back button
+                        mainStackPanel.Children.Insert(1, progressGrid);
                     }
 
-                    // Add difficulty indicator
                     var difficultyGrid = new Grid
                     {
                         Background = new SolidColorBrush(Microsoft.UI.Colors.Transparent),
@@ -174,6 +227,8 @@ namespace Duo.Views.Pages
                             text.Text = "Hard";
                             text.Foreground = new SolidColorBrush(Microsoft.UI.Colors.Red);
                             break;
+                        default:
+                            throw new InvalidOperationException("Unknown difficulty level.");
                     }
 
                     Grid.SetColumn(icon, 0);
@@ -182,10 +237,9 @@ namespace Duo.Views.Pages
                     difficultyGrid.Children.Add(icon);
                     difficultyGrid.Children.Add(text);
 
-                    // Add the difficulty indicator to the main StackPanel
                     if (mainStackPanel != null)
                     {
-                        mainStackPanel.Children.Insert(2, difficultyGrid); // Insert after the progress bar
+                        mainStackPanel.Children.Insert(2, difficultyGrid);
                     }
 
                     if (currentExercise is Models.Exercises.AssociationExercise associationExercise)
@@ -202,7 +256,7 @@ namespace Duo.Views.Pages
                     }
                     else if (currentExercise is Models.Exercises.FillInTheBlankExercise fillInTheBlanksExercise)
                     {
-                        var fillInTheBlanksControl = new FillInTheBlanksExercise()
+                        var fillInTheBlanksControl = new Components.FillInTheBlanksExercise()
                         {
                             Question = fillInTheBlanksExercise.Question
                         };
@@ -236,13 +290,15 @@ namespace Duo.Views.Pages
                 else
                 {
                     var mainStackPanel = ExerciseContentControl.Parent as StackPanel;
-
-                    var existingProgressGrids = mainStackPanel.Children.OfType<Grid>()
+                    if (mainStackPanel != null)
+                    {
+                        var existingProgressGrids = mainStackPanel.Children.OfType<Grid>()
                             .Where(g => g.Children.OfType<ProgressBar>().Any())
                             .ToList();
-                    foreach (var grid in existingProgressGrids)
-                    {
-                        mainStackPanel.Children.Remove(grid);
+                        foreach (var grid in existingProgressGrids)
+                        {
+                            mainStackPanel.Children.Remove(grid);
+                        }
                     }
 
                     NextExerciseButton.Visibility = Visibility.Collapsed;
@@ -259,85 +315,130 @@ namespace Duo.Views.Pages
                     ExerciseContentControl.Content = endScreen;
                 }
             }
+            catch (Exception ex)
+            {
+                _ = ShowErrorMessage("Load Exercise Error", $"Failed to load current exercise.\nDetails: {ex.Message}");
+            }
         }
 
         private async void ShowMessage(FrameworkElement parentElement, bool valid)
         {
-            if (ViewModel.QuizId == -1)
+            try
             {
-                var loadedNext = ViewModel.LoadNext();
-
-                if (loadedNext)
+                if (ViewModel.QuizId == -1)
                 {
-                    LoadCurrentExercise();
+                    var loadedNext = ViewModel.LoadNext();
+                    if (loadedNext)
+                    {
+                        LoadCurrentExercise();
+                    }
+                    return;
                 }
-                return;
+
+                var feedbackPopup = new AnswerFeedbackPopup
+                {
+                    XamlRoot = parentElement.XamlRoot
+                };
+
+                if (valid)
+                {
+                    feedbackPopup.ShowCorrectAnswer(ViewModel.GetCurrentExerciseCorrectAnswer());
+                }
+                else
+                {
+                    feedbackPopup.ShowWrongAnswer(ViewModel.GetCurrentExerciseCorrectAnswer());
+                }
+
+                await feedbackPopup.ShowAsync();
             }
-
-            var feedbackPopup = new AnswerFeedbackPopup();
-            feedbackPopup.XamlRoot = parentElement.XamlRoot;
-
-            if (valid)
+            catch (Exception ex)
             {
-                feedbackPopup.ShowCorrectAnswer(ViewModel.GetCurrentExerciseCorrectAnswer());
+                await ShowErrorMessage("Show Feedback Error", $"Failed to show feedback popup.\nDetails: {ex.Message}");
             }
-            else
-            {
-                feedbackPopup.ShowWrongAnswer(ViewModel.GetCurrentExerciseCorrectAnswer());
-            }
-
-            await feedbackPopup.ShowAsync();
         }
 
         private void AssociationControl_OnSendClicked(object sender, AssociationExerciseEventArgs e)
         {
-            if (ViewModel.ValidatedCurrent == null)
+            try
             {
-                var contentPairs = e.ContentPairs;
-
-                var valid = (bool)ViewModel.ValidateCurrentExercise(contentPairs);
-
-                ShowMessage((FrameworkElement)sender, valid);
+                if (ViewModel.ValidatedCurrent == null)
+                {
+                    var contentPairs = e.ContentPairs;
+                    var valid = (bool)ViewModel.ValidateCurrentExercise(contentPairs);
+                    ShowMessage((FrameworkElement)sender, valid);
+                }
+            }
+            catch (Exception ex)
+            {
+                _ = ShowErrorMessage("Association Exercise Error", $"Failed to process association exercise response.\nDetails: {ex.Message}");
             }
         }
+
         private void MultipleChoiceControl_OnSendClicked(object sender, MultipleChoiceExerciseEventArgs e)
         {
-            if (ViewModel.ValidatedCurrent == null)
+            try
             {
-                var contentPairs = e.ContentPairs;
-
-                var valid = (bool)ViewModel.ValidateCurrentExercise(contentPairs);
-                ShowMessage((FrameworkElement)sender, valid);
+                if (ViewModel.ValidatedCurrent == null)
+                {
+                    var contentPairs = e.ContentPairs;
+                    var valid = (bool)ViewModel.ValidateCurrentExercise(contentPairs);
+                    ShowMessage((FrameworkElement)sender, valid);
+                }
+            }
+            catch (Exception ex)
+            {
+                _ = ShowErrorMessage("Multiple Choice Exercise Error", $"Failed to process multiple choice exercise response.\nDetails: {ex.Message}");
             }
         }
+
         private void FillInTheBlanksControl_OnSendClicked(object sender, FillInTheBlanksExerciseEventArgs e)
         {
-            if (ViewModel.ValidatedCurrent == null)
+            try
             {
-                var contentPairs = e.ContentPairs;
-
-                var valid = (bool)ViewModel.ValidateCurrentExercise(contentPairs);
-                ShowMessage((FrameworkElement)sender, valid);
+                if (ViewModel.ValidatedCurrent == null)
+                {
+                    var contentPairs = e.ContentPairs;
+                    var valid = (bool)ViewModel.ValidateCurrentExercise(contentPairs);
+                    ShowMessage((FrameworkElement)sender, valid);
+                }
+            }
+            catch (Exception ex)
+            {
+                _ = ShowErrorMessage("Fill In The Blanks Exercise Error", $"Failed to process fill-in-the-blanks exercise response.\nDetails: {ex.Message}");
             }
         }
+
         private void FlashcardControl_OnSendClicked(object sender, FlashcardExerciseEventArgs e)
         {
-            if (ViewModel.ValidatedCurrent == null)
+            try
             {
-                var contentPairs = e.ContentPairs;
-                var valid = (bool)ViewModel.ValidateCurrentExercise(contentPairs);
-                ShowMessage((FrameworkElement)sender, valid);
+                if (ViewModel.ValidatedCurrent == null)
+                {
+                    var contentPairs = e.ContentPairs;
+                    var valid = (bool)ViewModel.ValidateCurrentExercise(contentPairs);
+                    ShowMessage((FrameworkElement)sender, valid);
+                }
+            }
+            catch (Exception ex)
+            {
+                _ = ShowErrorMessage("Flashcard Exercise Error", $"Failed to process flashcard exercise response.\nDetails: {ex.Message}");
             }
         }
+
         private void NextQuiz_Click(object sender, RoutedEventArgs e)
         {
-            var loadedNext = ViewModel.LoadNext();
-
-            if (loadedNext)
+            try
             {
-                LoadCurrentExercise();
+                var loadedNext = ViewModel.LoadNext();
+                if (loadedNext)
+                {
+                    LoadCurrentExercise();
+                }
+            }
+            catch (Exception ex)
+            {
+                _ = ShowErrorMessage("Next Quiz Error", $"Failed to load next quiz.\nDetails: {ex.Message}");
             }
         }
     }
 }
-

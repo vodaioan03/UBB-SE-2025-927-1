@@ -40,15 +40,22 @@ namespace Duo.Views.Pages
 
         private async Task ShowErrorMessage(string title, string message)
         {
-            var dialog = new ContentDialog
+            try
             {
-                Title = title,
-                Content = message,
-                CloseButtonText = "OK",
-                XamlRoot = this.XamlRoot
-            };
+                var dialog = new ContentDialog
+                {
+                    Title = title,
+                    Content = message,
+                    CloseButtonText = "OK",
+                    XamlRoot = this.XamlRoot
+                };
 
-            await dialog.ShowAsync();
+                await dialog.ShowAsync();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Failed to show error dialog: {ex.Message}");
+            }
         }
 
         public void ViewModel_RequestGoBack(object sender, EventArgs e)

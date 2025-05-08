@@ -88,8 +88,16 @@ namespace Duo.ViewModels
 
         public async Task<int> GetCoinBalanceAsync(int currentUserId)
         {
-            CoinBalance = await coinsService.GetCoinBalanceAsync(currentUserId);
-            return CoinBalance;
+            try
+            {
+                CoinBalance = await coinsService.GetCoinBalanceAsync(currentUserId);
+                return CoinBalance;
+            }
+            catch (Exception e)
+            {
+                RaiseErrorMessage("Failed to load coin balance", e.Message);
+                return 0;
+            }
         }
 
         private ObservableCollection<Tag> tags = new ();
@@ -113,7 +121,7 @@ namespace Duo.ViewModels
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.Message);
+                RaiseErrorMessage("Failed to load tags", e.Message);
             }
         }
 
@@ -173,6 +181,7 @@ namespace Duo.ViewModels
 
         /// <summary>Gets whether timed completion reward was claimed</summary>
         public bool TimedRewardClaimed { get; private set; }
+
         #endregion
 
         #region Nested Classes
@@ -241,10 +250,18 @@ namespace Duo.ViewModels
 
             InitializeTimersAndNotificationHelper(timerService, notificationTimerService, notificationHelper);
         }
+
         public async Task InitializeAsync(int currentUserId)
         {
-            await InitializeProperties(currentUserId);
-            await LoadInitialData(currentUserId);
+            try
+            {
+                await InitializeProperties(currentUserId);
+                await LoadInitialData(currentUserId);
+            }
+            catch (Exception ex)
+            {
+                RaiseErrorMessage("Initialization Error", $"Failed to initialize course data.\nDetails: {ex.Message}");
+            }
         }
 
         /// <summary>
@@ -279,9 +296,9 @@ namespace Duo.ViewModels
                     async (parameter) => await EnrollUserInCourseAsync(parameter, currentUserId),
                     async (parameter) => await CanUserEnrollInCourseAsync(parameter, currentUserId));
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                Console.WriteLine(e.Message);
+                RaiseErrorMessage("Initialization Error", $"Failed to check enrollment.\nDetails: {ex.Message}");
             }
         }
 
@@ -304,11 +321,12 @@ namespace Duo.ViewModels
 
                 await LoadAndOrganizeCourseModules(currentUserId);
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                Console.WriteLine(e.Message);
+                RaiseErrorMessage("Course Load Error", $"Unable to load course data.\nDetails: {ex.Message}");
             }
         }
+
         #endregion
 
         #region Timer Methods
@@ -321,9 +339,16 @@ namespace Duo.ViewModels
         /// <param name="e">An <see cref="EventArgs"/> object that contains no event data.</param>
         private void OnCourseTimerTick(object? sender, EventArgs e)
         {
-            totalSecondsSpentOnCourse++;
-            UpdateTimeDisplay();
-            OnPropertyChanged(nameof(TimeRemaining));
+            try
+            {
+                totalSecondsSpentOnCourse++;
+                UpdateTimeDisplay();
+                OnPropertyChanged(nameof(TimeRemaining));
+            }
+            catch (Exception ex)
+            {
+                RaiseErrorMessage("Timer Error", $"An error occurred while updating the timer.\nDetails: {ex.Message}");
+            }
         }
 
         /// <summary>
@@ -331,9 +356,17 @@ namespace Duo.ViewModels
         /// </summary>
         private void UpdateTimeDisplay()
         {
-            int remainingSeconds = courseCompletionTimeLimitInSeconds - totalSecondsSpentOnCourse;
-            FormattedTimeRemaining = FormatTimeRemainingDisplay(Math.Max(0, remainingSeconds));
+            try
+            {
+                int remainingSeconds = courseCompletionTimeLimitInSeconds - totalSecondsSpentOnCourse;
+                FormattedTimeRemaining = FormatTimeRemainingDisplay(Math.Max(0, remainingSeconds));
+            }
+            catch (Exception ex)
+            {
+                RaiseErrorMessage("Display Update Error", $"Failed to update remaining time.\nDetails: {ex.Message}");
+            }
         }
+
         #endregion
 
         #region Module Management
@@ -351,11 +384,11 @@ namespace Duo.ViewModels
 
                 ModuleRoadmap.Clear();
 
-            for (int index = 0; index < modules.Count; index++)
-            {
-                var module = modules[index];
-                bool isCompleted = await courseService.IsModuleCompletedAsync(currentUserId, module.ModuleId);
-                bool isUnlocked = await GetModuleUnlockStatus(module, index, currentUserId);
+                for (int index = 0; index < modules.Count; index++)
+                {
+                    var module = modules[index];
+                    bool isCompleted = await courseService.IsModuleCompletedAsync(currentUserId, module.ModuleId);
+                    bool isUnlocked = await GetModuleUnlockStatus(module, index, currentUserId);
 
                     ModuleRoadmap.Add(new ModuleProgressStatus
                     {
@@ -364,13 +397,13 @@ namespace Duo.ViewModels
                         IsCompleted = isCompleted
                     });
                 }
+
+                OnPropertyChanged(nameof(ModuleRoadmap));
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.Message);
+                RaiseErrorMessage("Loading Modules Failed", $"Could not load modules.\nDetails: {e.Message}");
             }
-
-            OnPropertyChanged(nameof(ModuleRoadmap));
         }
 
         /// <summary>
@@ -393,7 +426,7 @@ namespace Duo.ViewModels
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.Message);
+                RaiseErrorMessage("Module Unlock Error", $"Failed to check unlock status.\nDetails: {e.Message}");
                 return false;
             }
         }
@@ -403,8 +436,16 @@ namespace Duo.ViewModels
         /// </summary>
         private async Task<bool> CanUserEnrollInCourseAsync(object? parameter, int currentUserId)
         {
-            int coinBalance = await GetCoinBalanceAsync(currentUserId);
-            return !IsEnrolled && coinBalance >= CurrentCourse.Cost;
+            try
+            {
+                int coinBalance = await GetCoinBalanceAsync(currentUserId);
+                return !IsEnrolled && coinBalance >= CurrentCourse.Cost;
+            }
+            catch (Exception e)
+            {
+                RaiseErrorMessage("Enrollment Check Failed", $"Unable to verify enrollment eligibility.\nDetails: {e.Message}");
+                return false;
+            }
         }
 
         /// <summary>
@@ -415,17 +456,18 @@ namespace Duo.ViewModels
             try
             {
                 bool coinDeductionSuccessful = await coinsService.TrySpendingCoinsAsync(currentUserId, CurrentCourse.Cost);
-
                 if (!coinDeductionSuccessful)
                 {
+                    RaiseErrorMessage("Insufficient Coins", "You do not have enough coins to enroll.");
                     return;
                 }
 
-            bool enrollmentSuccessful = await courseService.EnrollInCourseAsync(currentUserId, CurrentCourse.CourseId);
-            if (!enrollmentSuccessful)
-            {
-                return;
-            }
+                bool enrollmentSuccessful = await courseService.EnrollInCourseAsync(currentUserId, CurrentCourse.CourseId);
+                if (!enrollmentSuccessful)
+                {
+                    RaiseErrorMessage("Enrollment Failed", "Unable to enroll in the course.");
+                    return;
+                }
 
                 IsEnrolled = true;
                 ResetCourseProgressTracking();
@@ -437,7 +479,7 @@ namespace Duo.ViewModels
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.Message);
+                RaiseErrorMessage("Enrollment Error", $"Failed to enroll in the course.\nDetails: {e.Message}");
             }
         }
 
@@ -446,9 +488,17 @@ namespace Duo.ViewModels
         /// </summary>
         private void ResetCourseProgressTracking()
         {
-            totalSecondsSpentOnCourse = 0;
-            FormattedTimeRemaining = FormatTimeRemainingDisplay(totalSecondsSpentOnCourse);
+            try
+            {
+                totalSecondsSpentOnCourse = 0;
+                FormattedTimeRemaining = FormatTimeRemainingDisplay(totalSecondsSpentOnCourse);
+            }
+            catch (Exception e)
+            {
+                RaiseErrorMessage("Reset Progress Error", $"Failed to reset course progress.\nDetails: {e.Message}");
+            }
         }
+
         #endregion
 
         #region Timer Control Methods
@@ -458,10 +508,17 @@ namespace Duo.ViewModels
         /// </summary>
         public void StartCourseProgressTimer()
         {
-            if (!IsCourseTimerRunning && IsEnrolled)
+            try
             {
-                IsCourseTimerRunning = true;
-                courseProgressTimer!.Start();
+                if (!IsCourseTimerRunning && IsEnrolled)
+                {
+                    IsCourseTimerRunning = true;
+                    courseProgressTimer!.Start();
+                }
+            }
+            catch (Exception e)
+            {
+                RaiseErrorMessage("Timer Start Error", $"Could not start the course timer.\nDetails: {e.Message}");
             }
         }
 
@@ -470,11 +527,18 @@ namespace Duo.ViewModels
         /// </summary>
         public async Task PauseCourseProgressTimer(int currentUserId)
         {
-            if (IsCourseTimerRunning)
+            try
             {
-                courseProgressTimer!.Stop();
-                await SaveCourseProgressTime(currentUserId);
-                IsCourseTimerRunning = false;
+                if (IsCourseTimerRunning)
+                {
+                    courseProgressTimer!.Stop();
+                    await SaveCourseProgressTime(currentUserId);
+                    IsCourseTimerRunning = false;
+                }
+            }
+            catch (Exception e)
+            {
+                RaiseErrorMessage("Pause Timer Error", $"Could not pause and save the timer.\nDetails: {e.Message}");
             }
         }
 
@@ -500,7 +564,7 @@ namespace Duo.ViewModels
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.Message);
+                RaiseErrorMessage("Save Time Error", $"Could not save course progress.\nDetails: {e.Message}");
             }
         }
 
@@ -525,7 +589,14 @@ namespace Duo.ViewModels
         /// </summary>
         public async Task RefreshCourseModulesDisplay(int currentUserId)
         {
-            await LoadAndOrganizeCourseModules(currentUserId);
+            try
+            {
+                await LoadAndOrganizeCourseModules(currentUserId);
+            }
+            catch (Exception e)
+            {
+                RaiseErrorMessage("Module Refresh Error", $"Unable to refresh modules.\nDetails: {e.Message}");
+            }
         }
 
         #endregion
@@ -551,7 +622,7 @@ namespace Duo.ViewModels
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.Message);
+                RaiseErrorMessage("Module Completion Error", $"Failed to mark module as completed.\nDetails: {e.Message}");
             }
         }
 
@@ -568,7 +639,7 @@ namespace Duo.ViewModels
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.Message);
+                RaiseErrorMessage("Status Update Error", $"Failed to update module completion status.\nDetails: {e.Message}");
             }
         }
 
@@ -590,7 +661,7 @@ namespace Duo.ViewModels
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.Message);
+                RaiseErrorMessage("Completion Reward Error", $"Failed to claim course completion reward.\nDetails: {e.Message}");
             }
         }
 
@@ -615,7 +686,7 @@ namespace Duo.ViewModels
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.Message);
+                RaiseErrorMessage("Timed Reward Error", $"Failed to claim timed reward.\nDetails: {e.Message}");
             }
         }
 
@@ -628,8 +699,15 @@ namespace Duo.ViewModels
         /// </summary>
         private void ShowCourseCompletionRewardNotification()
         {
-            string message = $"Congratulations! You have completed all required modules in this course. {CourseCompletionRewardCoins} coins have been added to your balance.";
-            notificationHelper!.ShowTemporaryNotification(message);
+            try
+            {
+                string message = $"Congratulations! You have completed all required modules in this course. {CourseCompletionRewardCoins} coins have been added to your balance.";
+                notificationHelper!.ShowTemporaryNotification(message);
+            }
+            catch (Exception e)
+            {
+                RaiseErrorMessage("Notification Error", $"Failed to show course completion reward notification.\nDetails: {e.Message}");
+            }
         }
 
         /// <summary>
@@ -637,8 +715,15 @@ namespace Duo.ViewModels
         /// </summary>
         private void ShowTimedCompletionRewardNotification()
         {
-            string message = $"Congratulations! You completed the course within the time limit. {TimedCompletionRewardCoins} coins have been added to your balance.";
-            notificationHelper!.ShowTemporaryNotification(message);
+            try
+            {
+                string message = $"Congratulations! You completed the course within the time limit. {TimedCompletionRewardCoins} coins have been added to your balance.";
+                notificationHelper!.ShowTemporaryNotification(message);
+            }
+            catch (Exception e)
+            {
+                RaiseErrorMessage("Notification Error", $"Failed to show timed completion reward notification.\nDetails: {e.Message}");
+            }
         }
 
         /// <summary>
@@ -647,10 +732,18 @@ namespace Duo.ViewModels
         /// <param name="module">The module that was purchased</param>
         private async Task ShowModulePurchaseNotificationAsync(Module module, int currentUserId)
         {
-            string message = $"Congratulations! You have purchased bonus module {module.Title}, {module.Cost} coins have been deducted from your balance.";
-            notificationHelper!.ShowTemporaryNotification(message);
-            await RefreshCourseModulesDisplay(currentUserId);
+            try
+            {
+                string message = $"Congratulations! You have purchased bonus module {module.Title}, {module.Cost} coins have been deducted from your balance.";
+                notificationHelper!.ShowTemporaryNotification(message);
+                await RefreshCourseModulesDisplay(currentUserId);
+            }
+            catch (Exception e)
+            {
+                RaiseErrorMessage("Purchase Notification Error", $"Failed to show purchase success notification.\nDetails: {e.Message}");
+            }
         }
+
         #endregion
 
         #region Module Purchase
@@ -686,7 +779,7 @@ namespace Duo.ViewModels
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.Message);
+                RaiseErrorMessage("Purchase Error", $"Could not complete purchase of module '{module.Title}'.\nDetails: {e.Message}");
             }
         }
 
@@ -708,7 +801,7 @@ namespace Duo.ViewModels
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.Message);
+                RaiseErrorMessage("Update Error", $"Failed to update the status of purchased module '{module.Title}'.\nDetails: {e.Message}");
             }
         }
 
@@ -717,8 +810,16 @@ namespace Duo.ViewModels
         /// </summary>
         private void ShowPurchaseFailedNotification()
         {
-            notificationHelper!.ShowTemporaryNotification("You do not have enough coins to buy this module.");
+            try
+            {
+                notificationHelper!.ShowTemporaryNotification("You do not have enough coins to buy this module.");
+            }
+            catch (Exception e)
+            {
+                RaiseErrorMessage("Notification Error", $"Failed to show failed purchase notification.\nDetails: {e.Message}");
+            }
         }
+
         #endregion
     }
 }
