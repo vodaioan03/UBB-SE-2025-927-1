@@ -33,7 +33,6 @@ namespace Duo.Views
                 ModulesListView.ItemClick += ModulesListView_ItemClick;
                 vm.StartCourseProgressTimer();
 
-                // Subscribe to error message event
                 vm.ShowErrorMessageRequested += ViewModel_ShowErrorMessageRequested;
             }
         }
