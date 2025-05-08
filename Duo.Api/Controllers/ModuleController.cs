@@ -175,7 +175,6 @@ namespace Duo.Api.Controllers
         /// </summary>
         /// <param name="id">The ID of the course.</param>
         /// <returns>ActionResult with list of modules or error message.</returns>
-        [HttpGet("list/course/{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
