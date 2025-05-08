@@ -29,7 +29,23 @@ namespace Duo.Services
             }
             try
             {
-                switch (exercise.Type)
+                var options = new JsonSerializerOptions
+                {
+                    WriteIndented = true,
+                };
+
+                var jsonExercise = exercise.Type switch
+                {
+                    "Association" => JsonSerializer.Serialize((AssociationExercise)exercise, options),
+                    "Flashcard" => JsonSerializer.Serialize((FlashcardExercise)exercise, options),
+                    "MultipleChoice" => JsonSerializer.Serialize((MultipleChoiceExercise)exercise, options),
+                    "FillInTheBlank" => JsonSerializer.Serialize((FillInTheBlankExercise)exercise, options),
+                    _ => throw new NotSupportedException($"Exercise type '{exercise.Type}' is not supported.")
+                };
+                var response = await httpClient.PostAsync($"{url}api/Exercise", new StringContent(jsonExercise, Encoding.UTF8, "application/json"));
+                response.EnsureSuccessStatusCode();
+
+                /*switch (exercise.Type)
                 {
                     case "Association":
                         {
@@ -87,7 +103,7 @@ namespace Duo.Services
                             response.EnsureSuccessStatusCode();
                             break;
                         }
-                }
+                }*/
             }
             catch (HttpRequestException ex)
             {
@@ -128,11 +144,32 @@ namespace Duo.Services
                 // var exercises = await response.Content.ReadFromJsonAsync<List<Exercise>>();
                 var exercises = new List<Exercise>();
                 using JsonDocument doc = JsonDocument.Parse(responseJson);
+
+                var options = new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                };
+
                 foreach (var element in doc.RootElement.EnumerateArray())
                 {
-                    var type = element.GetProperty("type").GetString();
+                    string? type = element.GetProperty("type").GetString();
 
-                    switch (type)
+                    Exercise? mc = type switch
+                    {
+                        "MultipleChoice" => element.Deserialize<MultipleChoiceExercise>(options),
+                        "FillInTheBlank" => element.Deserialize<FillInTheBlankExercise>(options),
+                        "Association" => element.Deserialize<AssociationExercise>(options),
+                        "Flashcard" => element.Deserialize<FlashcardExercise>(options),
+                        _ => throw new Exception($"Unknown type: {type}")
+                    };
+
+                    if (mc == null)
+                    {
+                        throw new Exception($"Failed to deserialize exercise of type: {type}");
+                    }
+                    exercises.Add(mc);
+
+                    /*switch (type)
                     {
                         case "MultipleChoice":
                         {
@@ -173,7 +210,7 @@ namespace Duo.Services
                         // Add more cases here if needed (e.g., "Flashcard")
                         default:
                             throw new Exception($"Unknown type: {type}");
-                    }
+                    }*/
                 }
                 return exercises ?? new List<Exercise>();
             }
