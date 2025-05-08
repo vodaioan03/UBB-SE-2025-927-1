@@ -191,6 +191,8 @@ namespace Duo.ViewModels
 
             /// <summary>Gets or sets whether the module is completed</summary>
             public bool IsCompleted { get; set; }
+
+            public bool IsLockedBonus => Module?.IsBonus == true && !IsUnlocked;
         }
         #endregion
 
@@ -277,16 +279,22 @@ namespace Duo.ViewModels
             try
             {
                 IsEnrolled = await courseService.IsUserEnrolledAsync(currentUserId, CurrentCourse.CourseId);
+                CoinBalance = await coinsService.GetCoinBalanceAsync(currentUserId);
 
                 EnrollCommand = new RelayCommand(
-                    async (parameter) => await EnrollUserInCourseAsync(parameter, currentUserId),
-                    async (parameter) => await CanUserEnrollInCourseAsync(parameter, currentUserId));
+                    async (_) => await EnrollUserInCourseAsync(_, currentUserId),
+                    (_) => !IsEnrolled && CoinBalance >= CurrentCourse.Cost);
+
+                OnPropertyChanged(nameof(EnrollCommand));
+                OnPropertyChanged(nameof(IsEnrolled));
+                OnPropertyChanged(nameof(CoinBalance));
             }
             catch (Exception e)
             {
                 Console.WriteLine(e.Message);
             }
         }
+
 
         /// <summary>
         /// Loads the initial course-related data such as time spent, modules completed,
