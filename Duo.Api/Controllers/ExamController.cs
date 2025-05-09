@@ -195,10 +195,10 @@ namespace Duo.Api.Controllers
         }
 
         /// <summary>
-        /// Adds a single exercise to a quiz.
+        /// Adds a single exercise to an exam.
         /// </summary>
         /// <param name="examId">The ID of the exam to which the exercise will be added.</param>
-        /// <param name="exerciseId">The ID of the exercise to add to the quiz.</param>
+        /// <param name="exerciseId">The ID of the exercise to add to the exam.</param>
         /// <returns>An IActionResult indicating the result of the operation.</returns>
         [HttpPost("add-exercise")]
         public async Task<IActionResult> AddExerciseToExam([FromForm] int examId, [FromForm] int exerciseId)
