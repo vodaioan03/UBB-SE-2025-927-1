@@ -1,5 +1,9 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using Duo.Api.DTO;
+using Duo.Api.Helpers;
 using Duo.Api.Models.Exercises;
 using Duo.Api.Models.Quizzes;
 using Duo.Api.Persistence;
@@ -29,10 +33,12 @@ namespace Duo.Api.Controllers
         /// Adds a new quiz to the database.
         /// </summary>
         [HttpPost("add")]
-        public async Task<IActionResult> AddQuiz([FromBody] Quiz quiz)
+        public async Task<IActionResult> AddQuiz([FromBody] JsonElement rawJson)
         {
             try
             {
+                string json = rawJson.GetRawText();
+                var quiz = await JsonSerializationUtil.DeserializeQuiz(json, this.repository);
                 await repository.AddQuizAsync(quiz);
                 return Ok(quiz);
             }
@@ -56,7 +62,37 @@ namespace Duo.Api.Controllers
                     return NotFound();
                 }
 
-                return Ok(quiz);
+                var exercises = quiz.Exercises.ToList();
+                List<Exercise> exercisesWithType = new List<Exercise>(exercises.Count);
+                foreach (var exercise in exercises)
+                {
+                    var ex = await this.repository.GetExerciseByIdAsync(exercise.ExerciseId);
+                    if (ex == null)
+                    {
+                        return this.NotFound();
+                    }
+
+                    exercisesWithType.Add(ex);
+                }
+
+                var mergedExercises = ExerciseMerger.MergeExercises(exercisesWithType);
+
+                var options = new JsonSerializerOptions
+                {
+                    WriteIndented = true, // Pretty print
+                    DefaultIgnoreCondition = JsonIgnoreCondition.Never, // Ensure null values are not ignored
+                    ReferenceHandler = ReferenceHandler.Preserve,  // Handle object cycles
+                };
+
+                var quizDTO = new
+                {
+                    Id = quiz.Id,
+                    SectionId = quiz.SectionId, // This will be included even if null
+                    OrderNumber = quiz.OrderNumber,
+                    Exercises = mergedExercises,
+                };
+
+                return Ok(quizDTO);
             }
             catch (Exception ex)
             {
@@ -73,7 +109,29 @@ namespace Duo.Api.Controllers
             try
             {
                 var quizzes = await repository.GetQuizzesFromDbAsync();
-                return Ok(quizzes);
+                List<Quiz> quizList = new List<Quiz>(quizzes.Count);
+
+                foreach (var quiz in quizzes)
+                {
+                    var exercises = quiz.Exercises.ToList();
+                    List<Exercise> exercisesWithType = new List<Exercise>(exercises.Count);
+                    foreach (var exercise in exercises)
+                    {
+                        var ex = await this.repository.GetExerciseByIdAsync(exercise.ExerciseId);
+                        if (ex == null)
+                        {
+                            return this.NotFound();
+                        }
+
+                        exercisesWithType.Add(ex);
+                    }
+
+                    var mergedExercises = ExerciseMerger.MergeExercises(exercisesWithType);
+                    quiz.Exercises = mergedExercises;
+                    quizList.Add(quiz);
+                }
+
+                return Ok(quizList);
             }
             catch (Exception ex)
             {

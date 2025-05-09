@@ -7,6 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Duo.Helpers;
 using Duo.Models.Exercises;
 using Duo.Models.Exercises.DTO;
 
@@ -132,7 +133,8 @@ namespace Duo.Services
         {
             var response = await httpClient.GetAsync($"{url}api/Exercise/exam/{examId}");
             response.EnsureSuccessStatusCode();
-            var exercises = await response.Content.ReadFromJsonAsync<List<Exercise>>();
+            string responseJson = await response.Content.ReadAsStringAsync();
+            var exercises = JsonSerializationUtil.DeserializeExerciseList(responseJson);
             return exercises ?? new List<Exercise>();
         }
 
@@ -140,7 +142,8 @@ namespace Duo.Services
         {
             var response = await httpClient.GetAsync($"{url}api/Exercise/quiz/{quizId}");
             response.EnsureSuccessStatusCode();
-            var exercises = await response.Content.ReadFromJsonAsync<List<Exercise>>();
+            string responseJson = await response.Content.ReadAsStringAsync();
+            var exercises = JsonSerializationUtil.DeserializeExerciseList(responseJson);
             return exercises ?? new List<Exercise>();
         }
 

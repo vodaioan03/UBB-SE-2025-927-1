@@ -70,7 +70,7 @@ namespace Duo.ViewModels
             set
             {
                 selectedExam = value;
-                _ = Task.Run(async () => await UpdateExamExercises(SelectedExam));
+                _ = UpdateExamExercises(SelectedExam);
                 OnPropertyChanged();
             }
         }
@@ -200,7 +200,7 @@ namespace Duo.ViewModels
 
                 SelectedExam.AddExercise(selectedExercise);
 
-                await quizService.AddExerciseToQuiz(SelectedExam.Id, selectedExercise.ExerciseId);
+                await quizService.AddExerciseToExam(SelectedExam.Id, selectedExercise.ExerciseId);
                 await UpdateExamExercises(SelectedExam);
             }
             catch (Exception ex)
@@ -216,7 +216,7 @@ namespace Duo.ViewModels
             {
                 Debug.WriteLine("Removing exercise...");
 
-                await quizService.RemoveExerciseFromQuiz(SelectedExam.Id, selectedExercise.ExerciseId);
+                await quizService.RemoveExerciseFromExam(SelectedExam.Id, selectedExercise.ExerciseId);
                 SelectedExam.RemoveExercise(selectedExercise);
                 await UpdateExamExercises(SelectedExam);
             }

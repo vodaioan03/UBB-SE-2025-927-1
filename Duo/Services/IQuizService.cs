@@ -9,6 +9,7 @@ namespace Duo.Services
     {
         Task AddExercisesToQuiz(int quizId, List<Exercise> exercises);
         Task AddExerciseToQuiz(int quizId, int exerciseId);
+        Task AddExerciseToExam(int examId, int exerciseId);
         Task<int> CountQuizzesFromSection(int sectionId);
         Task<int> CreateExam(Exam exam);
         Task<int> CreateQuiz(Quiz quiz);
@@ -22,6 +23,7 @@ namespace Duo.Services
         Task<Quiz> GetQuizById(int quizId);
         Task<int> LastOrderNumberFromSection(int sectionId);
         Task RemoveExerciseFromQuiz(int quizId, int exerciseId);
+        Task RemoveExerciseFromExam(int examId, int exerciseId);
         Task UpdateExam(Exam exam);
         Task UpdateQuiz(Quiz quiz);
     }

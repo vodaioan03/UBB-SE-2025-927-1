@@ -96,6 +96,11 @@ namespace Duo.Services
                 await serviceProxy.AddExercisesToQuizAsync(quizId, ids).ConfigureAwait(false);
         }
 
+        public async Task AddExerciseToExam(int examId, int exerciseId)
+        {
+            await serviceProxy.AddExerciseToExamAsync(examId, exerciseId).ConfigureAwait(false);
+        }
+
         public async Task AddExerciseToQuiz(int quizId, int exerciseId)
         {
                 await serviceProxy.AddExerciseToQuizAsync(quizId, exerciseId).ConfigureAwait(false);
@@ -104,6 +109,11 @@ namespace Duo.Services
         public async Task RemoveExerciseFromQuiz(int quizId, int exerciseId)
         {
                 await serviceProxy.RemoveExerciseFromQuizAsync(quizId, exerciseId).ConfigureAwait(false);
+        }
+
+        public async Task RemoveExerciseFromExam(int examId, int exerciseId)
+        {
+            await serviceProxy.RemoveExerciseFromExamAsync(examId, exerciseId).ConfigureAwait(false);
         }
 
         public async Task DeleteExam(int examId)

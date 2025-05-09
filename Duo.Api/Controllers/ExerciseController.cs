@@ -5,6 +5,7 @@ using Duo.Api.DTO.Requests;
 using Duo.Api.Models.Exercises;
 using Duo.Api.Repositories;
 using Microsoft.AspNetCore.Mvc;
+using Duo.Api.Helpers;
 
 #pragma warning disable IDE0079 // Remove unnecessary suppression
 #pragma warning disable SA1009 // Closing parenthesis should be spaced correctly
@@ -102,7 +103,8 @@ namespace Duo.Api.Controllers
                 }
 
                 var exercises = quiz.Exercises?.ToList() ?? [];
-                return Ok(exercises);
+                var mergedExercises = MergeExercises(exercises);
+                return Ok(mergedExercises);
             }
             catch (Exception ex)
             {
@@ -130,9 +132,21 @@ namespace Duo.Api.Controllers
                 {
                     return NotFound();
                 }
+                var exercises = exam.Exercises.ToList();
+                List<Exercise> exercisesWithType = new List<Exercise>(exercises.Count);
+                foreach (var exercise in exercises)
+                {
+                    var ex = await this.repository.GetExerciseByIdAsync(exercise.ExerciseId);
+                    if (ex == null)
+                    {
+                        return this.NotFound();
+                    }
 
-                var exercises = exam.Exercises?.ToList() ?? [];
-                return Ok(exercises);
+                    exercisesWithType.Add(ex);
+                }
+
+                var mergedExercises = ExerciseMerger.MergeExercises(exercisesWithType);
+                return Ok(mergedExercises);
             }
             catch (Exception ex)
             {

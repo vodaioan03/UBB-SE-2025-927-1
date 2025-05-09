@@ -195,6 +195,43 @@ namespace Duo.Api.Controllers
         }
 
         /// <summary>
+        /// Adds a single exercise to an exam.
+        /// </summary>
+        /// <param name="examId">The ID of the exam to which the exercise will be added.</param>
+        /// <param name="exerciseId">The ID of the exercise to add to the exam.</param>
+        /// <returns>An IActionResult indicating the result of the operation.</returns>
+        [HttpPost("add-exercise")]
+        public async Task<IActionResult> AddExerciseToExam([FromForm] int examId, [FromForm] int exerciseId)
+        {
+            try
+            {
+                await repository.AddExerciseToExamAsync(examId, exerciseId);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// Removes an exercise from a quiz.
+        /// </summary>
+        [HttpDelete("remove-exercise")]
+        public async Task<IActionResult> RemoveExerciseFromExam([FromQuery] int examId, [FromQuery] int exerciseId)
+        {
+            try
+            {
+                await repository.RemoveExerciseFromExamAsync(examId, exerciseId);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        /// <summary>
         /// Retrieves the exam associated with a specific section.
         /// </summary>
         /// <param name="sectionId">The ID of the section.</param>
