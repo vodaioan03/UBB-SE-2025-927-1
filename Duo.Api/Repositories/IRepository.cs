@@ -483,9 +483,9 @@ namespace Duo.Api.Repositories
         public Task<Exam?> GetExamFromSectionAsync(int sectionId);
 
         /// <summary>
-        /// Adds a single exercise to a quiz asynchronously.
+        /// Adds a single exercise to an exam asynchronously.
         /// </summary>
-        /// <param name="quizId">The unique identifier of the quiz to which the exercise is being added.</param>
+        /// <param name="examId">The unique identifier of the exam to which the exercise is being added.</param>
         /// <param name="exerciseId">The unique identifier of the exercise to be added.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
         public Task AddExerciseToExamAsync(int examId, int exerciseId);
