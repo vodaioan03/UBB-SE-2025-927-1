@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using ABI.System;
+using Duo.Exceptions;
 using Duo.Models.Exercises;
 using Duo.Models.Quizzes;
 
@@ -27,6 +29,75 @@ namespace Duo.Helpers
             };
 
             return JsonSerializer.Serialize(examDto, options);
+        }
+        public static string SerializeQuiz(Quiz quiz)
+        {
+            var options = new JsonSerializerOptions
+            {
+                WriteIndented = true,
+                PropertyNameCaseInsensitive = true,
+            };
+
+            var quizDTO = new
+            {
+                quiz.Id,
+                quiz.SectionId,
+                quiz.OrderNumber,
+                Exercises = quiz.Exercises.Select(q => q.ExerciseId).ToList(),
+            };
+
+            return JsonSerializer.Serialize(quizDTO, options);
+        }
+
+        public static Quiz DeserializeQuiz(string json)
+        {
+            using JsonDocument doc = JsonDocument.Parse(json);
+
+            var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            };
+
+            var root = doc.RootElement;
+
+            int id = root.GetProperty("id").GetInt32();
+            int? sectionId = root.TryGetProperty("sectionId", out var sectionProp) && sectionProp.ValueKind != JsonValueKind.Null
+            ? sectionProp.GetInt32()
+            : null;
+            int orderNumber = root.GetProperty("orderNumber").GetInt32();
+
+            var quiz = new Quiz(id, sectionId, orderNumber);
+
+            foreach (var exercise in root.GetProperty("exercises").EnumerateArray())
+            {
+                if (!exercise.TryGetProperty("type", out var typeProp))
+                {
+                    throw new JsonException("Exercise is missing a 'Type' property.");
+                }
+
+                string type = typeProp.GetString();
+
+                if (type == null)
+                {
+                    throw new JsonException("Exercise 'Type' property is null.");
+                }
+
+                Exercise? ex = type switch
+                {
+                    "MultipleChoice" => exercise.Deserialize<MultipleChoiceExercise>(options),
+                    "FillInTheBlank" => exercise.Deserialize<FillInTheBlankExercise>(options),
+                    "Association" => exercise.Deserialize<AssociationExercise>(options),
+                    "Flashcard" => exercise.Deserialize<FlashcardExercise>(options),
+                    _ => throw new JsonException($"Unknown type: {type}")
+                };
+
+                if (ex == null)
+                {
+                    throw new JsonException($"Failed to deserialize exercise of type: {type}");
+                }
+                quiz.AddExercise(ex);
+            }
+            return quiz;
         }
 
         public static Exam DeserializeExamWithTypedExercises(string json)
