@@ -2,9 +2,11 @@ using Duo.Api.DTO;
 using Duo.Api.Models;
 using Duo.Api.Models.Exercises;
 using Duo.Api.Models.Quizzes;
+using Duo.Api.Models.Roadmaps;
 using Duo.Api.Models.Sections;
 using Duo.Api.Persistence;
 using Duo.Models.Quizzes.API;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 #pragma warning disable IDE0079 // Remove unnecessary suppression
@@ -977,6 +979,47 @@ namespace Duo.Api.Repositories
         }
 
         /// <summary>
+        /// Asynchronously adds a list of exercises to an exam.
+        /// </summary>
+        /// <param name="examId"></param>
+        /// <param name="exerciseId"></param>
+        /// <returns></returns>
+        public async Task AddExerciseToExamAsync(int examId, int exerciseId)
+        {
+            var exam = await context.Exams
+                .Include(q => q.Exercises)
+                .FirstOrDefaultAsync(q => q.Id == examId);
+
+            var exercise = await context.Exercises.FindAsync(exerciseId);
+
+            if (exam != null && exercise != null && !exam.Exercises.Contains(exercise))
+            {
+                exam.Exercises.Add(exercise);
+                await context.SaveChangesAsync();
+            }
+        }
+
+        /// <summary>
+        /// Removes an exercise from an exam.
+        /// </summary>
+        /// <param name="examId">The unique identifier of the exam.</param>
+        /// <param name="exerciseId">The unique identifier of the exercise to remove.</param>
+        public async Task RemoveExerciseFromExamAsync(int examId, int exerciseId)
+        {
+            var exam = await context.Exams
+                .Include(q => q.Exercises)
+                .FirstOrDefaultAsync(q => q.Id == examId);
+
+            var exercise = await context.Exercises.FindAsync(exerciseId);
+
+            if (exam != null && exercise != null && exam.Exercises.Contains(exercise))
+            {
+                exam.Exercises.Remove(exercise);
+                await context.SaveChangesAsync();
+            }
+        }
+
+        /// <summary>
         /// Retrieves an exam associated with a specific section asynchronously.
         /// </summary>
         /// <param name="sectionId">The unique identifier of the section to retrieve the exam from.</param>
@@ -1181,5 +1224,18 @@ namespace Duo.Api.Repositories
         }
 
         #endregion
+
+        #region Roadmaps
+
+        /// <summary>
+        /// Asynchronously retrieves a specific roadmap by its unique identifier.
+        /// </summary>
+        /// <param name="id">The unique identifier of the roadmap to retrieve.</param>
+        /// <returns>A <see cref="Roadmap"/> object representing the specified roadmap, or null if not found.</returns>
+        public async Task<Roadmap> GetRoadmapByIdAsync(int id)
+        {
+            return await context.Roadmaps.FindAsync(id);
+        }
     }
+        #endregion
 }

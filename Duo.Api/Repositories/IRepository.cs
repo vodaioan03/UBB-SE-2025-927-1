@@ -2,8 +2,10 @@ using Duo.Api.DTO;
 using Duo.Api.Models;
 using Duo.Api.Models.Exercises;
 using Duo.Api.Models.Quizzes;
+using Duo.Api.Models.Roadmaps;
 using Duo.Api.Models.Sections;
 using Duo.Models.Quizzes.API;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Duo.Api.Repositories
 {
@@ -481,6 +483,22 @@ namespace Duo.Api.Repositories
         public Task<Exam?> GetExamFromSectionAsync(int sectionId);
 
         /// <summary>
+        /// Adds a single exercise to a quiz asynchronously.
+        /// </summary>
+        /// <param name="quizId">The unique identifier of the quiz to which the exercise is being added.</param>
+        /// <param name="exerciseId">The unique identifier of the exercise to be added.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        public Task AddExerciseToExamAsync(int examId, int exerciseId);
+
+        /// <summary>
+        /// Removes a specific exercise from a quiz asynchronously.
+        /// </summary>
+        /// <param name="quizId"></param>
+        /// <param name="exerciseId"></param>
+        /// <returns></returns>
+        public Task RemoveExerciseFromExamAsync(int examId, int exerciseId);
+
+        /// <summary>
         /// Retrieves a list of all available exams asynchronously.
         /// </summary>
         /// <returns>A list of all available exams in the database.</returns>
@@ -572,6 +590,17 @@ namespace Duo.Api.Repositories
         /// <param name="moduleId">The unique identifier of the module to open.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
         public Task OpenModuleAsync(int userId, int moduleId);
+
+        #endregion
+
+        #region Roadmaps
+
+        /// <summary>
+        /// Asynchronously retrieves a specific roadmap by its unique identifier.
+        /// </summary>
+        /// <param name="id">The unique identifier of the roadmap to retrieve.</param>
+        /// <returns>A <see cref="Roadmap"/> object representing the specified roadmap, or null if not found.</returns>
+        Task<Roadmap> GetRoadmapByIdAsync(int id);
 
         #endregion
     }

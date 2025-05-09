@@ -20,7 +20,9 @@ namespace Duo.Services.Interfaces
         Task CreateQuizAsync(Quiz quiz);
         Task AddExercisesToQuizAsync(int quizId, List<int> exerciseIds);
         Task AddExerciseToQuizAsync(int quizId, int exerciseId);
+        Task AddExerciseToExamAsync(int quizId, int exerciseId);
         Task RemoveExerciseFromQuizAsync(int quizId, int exerciseId);
+        Task RemoveExerciseFromExamAsync(int examId, int exerciseId);
         Task DeleteExamAsync(int examId);
         Task UpdateExamAsync(Exam exam);
         Task CreateExamAsync(Exam exam);
