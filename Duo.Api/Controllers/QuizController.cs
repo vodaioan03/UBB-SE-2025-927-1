@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
+using Duo.Api.Helpers;
 using Duo.Api.Models.Exercises;
 using Duo.Api.Models.Quizzes;
 using Duo.Api.Persistence;
@@ -73,7 +74,29 @@ namespace Duo.Api.Controllers
             try
             {
                 var quizzes = await repository.GetQuizzesFromDbAsync();
-                return Ok(quizzes);
+                List<Quiz> quizList = new List<Quiz>(quizzes.Count);
+
+                foreach (var quiz in quizzes)
+                {
+                    var exercises = quiz.Exercises.ToList();
+                    List<Exercise> exercisesWithType = new List<Exercise>(exercises.Count);
+                    foreach (var exercise in exercises)
+                    {
+                        var ex = await this.repository.GetExerciseByIdAsync(exercise.ExerciseId);
+                        if (ex == null)
+                        {
+                            return this.NotFound();
+                        }
+
+                        exercisesWithType.Add(ex);
+                    }
+
+                    var mergedExercises = ExerciseMerger.MergeExercises(exercisesWithType);
+                    quiz.Exercises = mergedExercises;
+                    quizList.Add(quiz);
+                }
+
+                return Ok(quizList);
             }
             catch (Exception ex)
             {
