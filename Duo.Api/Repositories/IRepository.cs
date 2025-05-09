@@ -2,8 +2,10 @@ using Duo.Api.DTO;
 using Duo.Api.Models;
 using Duo.Api.Models.Exercises;
 using Duo.Api.Models.Quizzes;
+using Duo.Api.Models.Roadmaps;
 using Duo.Api.Models.Sections;
 using Duo.Models.Quizzes.API;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Duo.Api.Repositories
 {
@@ -572,6 +574,17 @@ namespace Duo.Api.Repositories
         /// <param name="moduleId">The unique identifier of the module to open.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
         public Task OpenModuleAsync(int userId, int moduleId);
+
+        #endregion
+
+        #region Roadmaps
+
+        /// <summary>
+        /// Asynchronously retrieves a specific roadmap by its unique identifier.
+        /// </summary>
+        /// <param name="id">The unique identifier of the roadmap to retrieve.</param>
+        /// <returns>A <see cref="Roadmap"/> object representing the specified roadmap, or null if not found.</returns>
+        Task<Roadmap> GetRoadmapByIdAsync(int id);
 
         #endregion
     }
