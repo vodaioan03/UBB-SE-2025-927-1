@@ -56,7 +56,6 @@ namespace Duo
                 .Build();
 
             var services = new ServiceCollection();
-
             var handler = new HttpClientHandler
             {
                 ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true
@@ -65,6 +64,7 @@ namespace Duo
             var httpClient = new HttpClient(handler);
 
             services.AddSingleton<HttpClient>();
+
             services.AddSingleton<IConfiguration>(configuration);
             services.AddSingleton<DatabaseConnection>();
 

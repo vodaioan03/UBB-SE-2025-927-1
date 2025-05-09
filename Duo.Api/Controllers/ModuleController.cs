@@ -142,7 +142,7 @@ namespace Duo.Api.Controllers
                     return NotFound(new { message = "Module not found!" });
                 }
 
-                return Ok(new { result = module, message = "Successfully retrieved module!" });
+                return Ok(module);
             }
             catch (Exception e)
             {
@@ -162,7 +162,7 @@ namespace Duo.Api.Controllers
             try
             {
                 var modules = await repository.GetModulesFromDbAsync();
-                return Ok(new { result = modules, message = "Successfully retrieved list of modules." });
+                return Ok(modules);
             }
             catch (Exception e)
             {
@@ -185,11 +185,6 @@ namespace Duo.Api.Controllers
             {
                 var modules = await repository.GetModulesFromDbAsync();
                 var filteredModules = modules.Where(m => m.CourseId == courseId).ToList();
-
-                if (!filteredModules.Any())
-                {
-                    return NotFound(new { result = new List<Module>(), message = "No modules found for the specified course!" });
-                }
 
                 return Ok(filteredModules);
             }
@@ -254,6 +249,50 @@ namespace Duo.Api.Controllers
             catch (Exception e)
             {
                 return BadRequest(new { message = e.Message });
+            }
+        }
+
+        [HttpPost("open")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> OpenModule([FromBody] OpenModuleRequest request)
+        {
+            if (request == null || request.UserId <= 0 || request.ModuleId <= 0)
+            {
+                return BadRequest("Invalid user or module ID.");
+            }
+
+            try
+            {
+                Console.WriteLine($"User {request.UserId} opened module {request.ModuleId}");
+
+                return Ok(new { message = "Module opened successfully!" });
+            }
+            catch (Exception e)
+            {
+                return BadRequest(new { message = e.Message });
+            }
+        }
+
+        [HttpGet("isOpen")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> IsModuleOpen([FromQuery] int userId, [FromQuery] int moduleId)
+        {
+            if (userId <= 0 || moduleId <= 0)
+            {
+                return BadRequest("Invalid userId or moduleId");
+            }
+
+            try
+            {
+                bool isUnlocked = await repository.IsModuleOpenAsync(userId, moduleId);
+
+                return Ok(isUnlocked);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
             }
         }
         #endregion

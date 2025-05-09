@@ -20,6 +20,8 @@ public interface IModuleViewModel : IBaseViewModel
     /// </summary>
     bool IsCompleted { get; }
 
+    Task InitializeAsync();
+
     /// <summary>
     /// Command that triggers the completion of the current module.
     /// </summary>

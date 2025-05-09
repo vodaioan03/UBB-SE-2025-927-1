@@ -40,6 +40,7 @@ namespace Duo.Commands
             try
             {
                 object converted = Convert.ChangeType(parameter, typeof(T));
+
                 if (converted is T typedConverted)
                 {
                     return canExecute(typedConverted);
@@ -47,7 +48,6 @@ namespace Duo.Commands
             }
             catch
             {
-                // swallow conversion errors
             }
             return false;
         }
