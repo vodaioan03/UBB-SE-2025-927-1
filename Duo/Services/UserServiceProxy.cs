@@ -2,8 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Json;
+using System.Text.Json;
 using System.Threading.Tasks;
+// using ABI.System;
 using Duo.Models;
+using Duo.Models.Exercises;
 using Duo.Models.Quizzes;
 
 namespace Duo.Services
@@ -11,7 +14,7 @@ namespace Duo.Services
     public class UserServiceProxy : IUserServiceProxy
     {
         private readonly HttpClient httpClient;
-        private const string BaseUrl = "api/user";
+        private const string BaseUrl = "https://localhost:7174/api/User";
 
         public UserServiceProxy(HttpClient httpClient)
         {
@@ -24,7 +27,22 @@ namespace Duo.Services
             {
                 throw new ArgumentException("User ID must be greater than 0.", nameof(userId));
             }
-            return await httpClient.GetFromJsonAsync<User>($"{BaseUrl}/{userId}");
+            var response = await httpClient.GetAsync($"{BaseUrl}/{userId}");
+            response.EnsureSuccessStatusCode();
+
+            string responseJson = await response.Content.ReadAsStringAsync();
+
+            using JsonDocument doc = JsonDocument.Parse(responseJson);
+
+            User newUser = new User()
+            {
+                UserId = doc.RootElement.GetProperty("userId").GetInt32(),
+                Username = doc.RootElement.GetProperty("username").GetString(),
+                NumberOfCompletedSections = doc.RootElement.GetProperty("numberOfCompletedSections").GetInt32(),
+                NumberOfCompletedQuizzesInSection = doc.RootElement.GetProperty("numberOfCompletedQuizzesInSection").GetInt32()
+            };
+
+            return newUser;
         }
 
         public async Task<User> GetByUsernameAsync(string username)

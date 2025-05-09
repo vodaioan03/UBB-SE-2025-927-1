@@ -26,4 +26,8 @@ public class User
     {
         Username = username;
     }
+
+    public User()
+    {
+    }
 }
