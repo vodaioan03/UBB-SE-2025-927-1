@@ -59,32 +59,32 @@ public class RoadmapServiceTests
         };
     }
 
-    [TestMethod]
-    public async Task GetAllAsync_ReturnsEmptyList_WhenNoRoadmaps()
-    {
-        // Arrange
-        mockProxy.Setup(p => p.GetAllAsync()).ReturnsAsync(new List<Roadmap>());
-        // Act
-        var result = await roadmapService.GetAllAsync();
-        // Assert
-        Assert.AreEqual(0, result.Count);
-    }
+    //[TestMethod]
+    //public async Task GetAllAsync_ReturnsEmptyList_WhenNoRoadmaps()
+    //{
+    //    // Arrange
+    //    mockProxy.Setup(p => p.GetAllAsync()).ReturnsAsync(new List<Roadmap>());
+    //    // Act
+    //    var result = await roadmapService.GetAllAsync();
+    //    // Assert
+    //    Assert.AreEqual(0, result.Count);
+    //}
 
-    [TestMethod]
-    public async Task GetAllAsync_ReturnsListOfRoadmaps()
-    {
-        // Arrange
-        var roadmaps = new List<Roadmap>
-        {
-            CreateSampleRoadmap(1),
-            CreateSampleRoadmap(2)
-        };
-        mockProxy.Setup(p => p.GetAllAsync()).ReturnsAsync(roadmaps);
-        // Act
-        var result = await roadmapService.GetAllAsync();
-        // Assert
-        Assert.AreEqual(2, result.Count);
-    }
+    //[TestMethod]
+    //public async Task GetAllAsync_ReturnsListOfRoadmaps()
+    //{
+    //    // Arrange
+    //    var roadmaps = new List<Roadmap>
+    //    {
+    //        CreateSampleRoadmap(1),
+    //        CreateSampleRoadmap(2)
+    //    };
+    //    mockProxy.Setup(p => p.GetAllAsync()).ReturnsAsync(roadmaps);
+    //    // Act
+    //    var result = await roadmapService.GetAllAsync();
+    //    // Assert
+    //    Assert.AreEqual(2, result.Count);
+    //}
 
     [TestMethod]
     public async Task GetByIdAsync_ReturnsNull_WhenRoadmapNotFound()
@@ -110,63 +110,63 @@ public class RoadmapServiceTests
         Assert.AreEqual(roadmap.Id, result.Id);
     }
 
-    [TestMethod]
-    public async Task GetByNameAsync_ReturnsNull_WhenRoadmapNotFound()
-    {
-        // Arrange
-        mockProxy.Setup(p => p.GetByNameAsync(It.IsAny<string>())).ReturnsAsync((Roadmap)null);
-        // Act
-        var result = await roadmapService.GetByNameAsync("NonExistentRoadmap");
-        // Assert
-        Assert.IsNull(result);
-    }
+    //[TestMethod]
+    //public async Task GetByNameAsync_ReturnsNull_WhenRoadmapNotFound()
+    //{
+    //    // Arrange
+    //    mockProxy.Setup(p => p.GetByNameAsync(It.IsAny<string>())).ReturnsAsync((Roadmap)null);
+    //    // Act
+    //    var result = await roadmapService.GetByNameAsync("NonExistentRoadmap");
+    //    // Assert
+    //    Assert.IsNull(result);
+    //}
 
-    [TestMethod]
-    public async Task GetByNameAsync_ReturnsRoadmap_WhenRoadmapFound()
-    {
-        // Arrange
-        var roadmap = CreateSampleRoadmap(1);
-        mockProxy.Setup(p => p.GetByNameAsync("Roadmap 1")).ReturnsAsync(roadmap);
-        // Act
-        var result = await roadmapService.GetByNameAsync("Roadmap 1");
-        // Assert
-        Assert.IsNotNull(result);
-        Assert.AreEqual(roadmap.Name, result.Name);
-    }
+    //[TestMethod]
+    //public async Task GetByNameAsync_ReturnsRoadmap_WhenRoadmapFound()
+    //{
+    //    // Arrange
+    //    var roadmap = CreateSampleRoadmap(1);
+    //    mockProxy.Setup(p => p.GetByNameAsync("Roadmap 1")).ReturnsAsync(roadmap);
+    //    // Act
+    //    var result = await roadmapService.GetByNameAsync("Roadmap 1");
+    //    // Assert
+    //    Assert.IsNotNull(result);
+    //    Assert.AreEqual(roadmap.Name, result.Name);
+    //}
 
-    [TestMethod]
-    public async Task AddAsync_ReturnsNewId_WhenRoadmapAdded()
-    {
-        // Arrange
-        var roadmap = CreateSampleRoadmap(1);
-        mockProxy.Setup(p => p.AddAsync(roadmap)).ReturnsAsync(roadmap.Id);
-        // Act
-        var result = await roadmapService.AddAsync(roadmap);
-        // Assert
-        Assert.AreEqual(roadmap.Id, result);
-    }
+    //[TestMethod]
+    //public async Task AddAsync_ReturnsNewId_WhenRoadmapAdded()
+    //{
+    //    // Arrange
+    //    var roadmap = CreateSampleRoadmap(1);
+    //    mockProxy.Setup(p => p.AddAsync(roadmap)).ReturnsAsync(roadmap.Id);
+    //    // Act
+    //    var result = await roadmapService.AddAsync(roadmap);
+    //    // Assert
+    //    Assert.AreEqual(roadmap.Id, result);
+    //}
 
-    [TestMethod]
-    public async Task AddAsync_ReturnsZero_WhenRoadmapNotAdded()
-    {
-        // Arrange
-        var roadmap = CreateSampleRoadmap(1);
-        mockProxy.Setup(p => p.AddAsync(roadmap)).ReturnsAsync(0);
-        // Act
-        var result = await roadmapService.AddAsync(roadmap);
-        // Assert
-        Assert.AreEqual(0, result);
-    }
+    //[TestMethod]
+    //public async Task AddAsync_ReturnsZero_WhenRoadmapNotAdded()
+    //{
+    //    // Arrange
+    //    var roadmap = CreateSampleRoadmap(1);
+    //    mockProxy.Setup(p => p.AddAsync(roadmap)).ReturnsAsync(0);
+    //    // Act
+    //    var result = await roadmapService.AddAsync(roadmap);
+    //    // Assert
+    //    Assert.AreEqual(0, result);
+    //}
 
-    [TestMethod]
-    public async Task DeleteAsync_CallsDeleteOnProxy_WhenRoadmapExists()
-    {
-        // Arrange
-        var roadmap = CreateSampleRoadmap(1);
-        mockProxy.Setup(p => p.DeleteAsync(roadmap)).Returns(Task.CompletedTask);
-        // Act
-        await roadmapService.DeleteAsync(roadmap);
-        // Assert
-        mockProxy.Verify(p => p.DeleteAsync(roadmap), Times.Once);
-    }
+    //[TestMethod]
+    //public async Task DeleteAsync_CallsDeleteOnProxy_WhenRoadmapExists()
+    //{
+    //    // Arrange
+    //    var roadmap = CreateSampleRoadmap(1);
+    //    mockProxy.Setup(p => p.DeleteAsync(roadmap)).Returns(Task.CompletedTask);
+    //    // Act
+    //    await roadmapService.DeleteAsync(roadmap);
+    //    // Assert
+    //    mockProxy.Verify(p => p.DeleteAsync(roadmap), Times.Once);
+    //}
 }

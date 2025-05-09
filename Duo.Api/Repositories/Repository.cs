@@ -2,9 +2,11 @@ using Duo.Api.DTO;
 using Duo.Api.Models;
 using Duo.Api.Models.Exercises;
 using Duo.Api.Models.Quizzes;
+using Duo.Api.Models.Roadmaps;
 using Duo.Api.Models.Sections;
 using Duo.Api.Persistence;
 using Duo.Models.Quizzes.API;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 #pragma warning disable IDE0079 // Remove unnecessary suppression
@@ -1181,5 +1183,18 @@ namespace Duo.Api.Repositories
         }
 
         #endregion
+
+        #region Roadmaps
+
+        /// <summary>
+        /// Asynchronously retrieves a specific roadmap by its unique identifier.
+        /// </summary>
+        /// <param name="id">The unique identifier of the roadmap to retrieve.</param>
+        /// <returns>A <see cref="Roadmap"/> object representing the specified roadmap, or null if not found.</returns>
+        public async Task<Roadmap> GetRoadmapByIdAsync(int id)
+        {
+            return await context.Roadmaps.FindAsync(id);
+        }
     }
+        #endregion
 }
