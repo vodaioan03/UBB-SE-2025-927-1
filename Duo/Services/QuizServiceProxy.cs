@@ -159,9 +159,22 @@ namespace Duo.Services
                 await httpClient.PostAsync($"{url}quiz/add-exercise", formData);
         }
 
+        public async Task AddExerciseToExamAsync(int examId, int exerciseId)
+        {
+            var formData = new MultipartFormDataContent();
+            formData.Add(new StringContent(examId.ToString()), "examId");
+            formData.Add(new StringContent(exerciseId.ToString()), "exerciseId");
+            await httpClient.PostAsync($"{url}exam/add-exercise", formData);
+        }
+
         public async Task RemoveExerciseFromQuizAsync(int quizId, int exerciseId)
         {
                 await httpClient.DeleteAsync($"{url}quiz/remove-exercise?quizId={quizId}&exerciseId={exerciseId}");
+        }
+
+        public async Task RemoveExerciseFromExamAsync(int examId, int exerciseId)
+        {
+            await httpClient.DeleteAsync($"{url}exam/remove-exercise?examId={examId}&exerciseId={exerciseId}");
         }
 
         public async Task DeleteExamAsync(int examId)

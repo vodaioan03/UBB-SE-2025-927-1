@@ -80,5 +80,37 @@ namespace Duo.Helpers
 
             return exam;
         }
+
+        public static List<Exercise> DeserializeExerciseList(string exercisesJson)
+        {
+            var exercises = new List<Exercise>();
+            using JsonDocument doc = JsonDocument.Parse(exercisesJson);
+
+            var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            };
+
+            foreach (var element in doc.RootElement.EnumerateArray())
+            {
+                string? type = element.GetProperty("type").GetString();
+
+                Exercise? mc = type switch
+                {
+                    "MultipleChoice" => element.Deserialize<MultipleChoiceExercise>(options),
+                    "FillInTheBlank" => element.Deserialize<FillInTheBlankExercise>(options),
+                    "Association" => element.Deserialize<AssociationExercise>(options),
+                    "Flashcard" => element.Deserialize<FlashcardExercise>(options),
+                    _ => throw new Exception($"Unknown type: {type}")
+                };
+
+                if (mc == null)
+                {
+                    throw new Exception($"Failed to deserialize exercise of type: {type}");
+                }
+                exercises.Add(mc);
+            }
+            return exercises;
+        }
     }
 }

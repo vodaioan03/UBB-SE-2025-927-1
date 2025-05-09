@@ -979,6 +979,47 @@ namespace Duo.Api.Repositories
         }
 
         /// <summary>
+        /// Asynchronously adds a list of exercises to an exam.
+        /// </summary>
+        /// <param name="examId"></param>
+        /// <param name="exerciseId"></param>
+        /// <returns></returns>
+        public async Task AddExerciseToExamAsync(int examId, int exerciseId)
+        {
+            var exam = await context.Exams
+                .Include(q => q.Exercises)
+                .FirstOrDefaultAsync(q => q.Id == examId);
+
+            var exercise = await context.Exercises.FindAsync(exerciseId);
+
+            if (exam != null && exercise != null && !exam.Exercises.Contains(exercise))
+            {
+                exam.Exercises.Add(exercise);
+                await context.SaveChangesAsync();
+            }
+        }
+
+        /// <summary>
+        /// Removes an exercise from an exam.
+        /// </summary>
+        /// <param name="examId">The unique identifier of the exam.</param>
+        /// <param name="exerciseId">The unique identifier of the exercise to remove.</param>
+        public async Task RemoveExerciseFromExamAsync(int examId, int exerciseId)
+        {
+            var exam = await context.Exams
+                .Include(q => q.Exercises)
+                .FirstOrDefaultAsync(q => q.Id == examId);
+
+            var exercise = await context.Exercises.FindAsync(exerciseId);
+
+            if (exam != null && exercise != null && exam.Exercises.Contains(exercise))
+            {
+                exam.Exercises.Remove(exercise);
+                await context.SaveChangesAsync();
+            }
+        }
+
+        /// <summary>
         /// Retrieves an exam associated with a specific section asynchronously.
         /// </summary>
         /// <param name="sectionId">The unique identifier of the section to retrieve the exam from.</param>
