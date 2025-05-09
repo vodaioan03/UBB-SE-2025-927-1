@@ -70,7 +70,7 @@ namespace Duo.ViewModels
             set
             {
                 selectedQuiz = value;
-                _ = Task.Run(async () => await UpdateQuizExercises(SelectedQuiz));
+                _ = UpdateQuizExercises(SelectedQuiz);
                 OnPropertyChanged();
             }
         }

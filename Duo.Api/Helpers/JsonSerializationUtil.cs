@@ -80,5 +80,50 @@ namespace Duo.Api.Helpers
 
             return exam;
         }
+
+        public static async Task<Quiz> DeserializeQuiz(string json, IRepository repo)
+        {
+            var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true,
+            };
+
+            using JsonDocument doc = JsonDocument.Parse(json);
+            var root = doc.RootElement;
+
+            Console.WriteLine($"Root Element Type: {root.ValueKind}"); // Check root type
+
+
+            int id = root.GetProperty("Id").GetInt32();
+            int? sectionId = root.TryGetProperty("SectionId", out var sectionProp) && sectionProp.ValueKind != JsonValueKind.Null
+                ? sectionProp.GetInt32()
+                : null;
+            int? orderNumber = root.TryGetProperty("OrderNumber", out var orderProp) && orderProp.ValueKind != JsonValueKind.Null
+                ? orderProp.GetInt32()
+                : null;
+
+
+            var quiz = new Quiz
+            {
+                Id = id,
+                SectionId = sectionId,
+                OrderNumber = orderNumber,
+                Exercises = new List<Exercise>(),
+            };
+
+            var exerciseIds = root.GetProperty("Exercises").EnumerateArray().Select(q => q.GetInt32());
+            foreach (var exerciseId in exerciseIds)
+            {
+                var exercise = await repo.GetExerciseByIdAsync(exerciseId);
+                if (exercise == null)
+                {
+                    throw new InvalidOperationException($"Exercise with ID {exerciseId} not found.");
+                }
+
+                quiz.Exercises.Add(exercise);
+            }
+
+            return quiz;
+        }
     }
 }

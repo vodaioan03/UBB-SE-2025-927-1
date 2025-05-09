@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
-using ABI.System;
 using Duo.Exceptions;
 using Duo.Models.Exercises;
 using Duo.Models.Quizzes;
@@ -64,7 +63,9 @@ namespace Duo.Helpers
             int? sectionId = root.TryGetProperty("sectionId", out var sectionProp) && sectionProp.ValueKind != JsonValueKind.Null
             ? sectionProp.GetInt32()
             : null;
-            int orderNumber = root.GetProperty("orderNumber").GetInt32();
+            int? orderNumber = root.TryGetProperty("OrderNumber", out var orderProp) && orderProp.ValueKind != JsonValueKind.Null
+                ? orderProp.GetInt32()
+                : null;
 
             var quiz = new Quiz(id, sectionId, orderNumber);
 
