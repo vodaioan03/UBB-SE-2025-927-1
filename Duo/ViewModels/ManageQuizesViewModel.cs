@@ -55,9 +55,13 @@ namespace Duo.ViewModels
             });
 
             RemoveExerciseFromQuizCommand = new RelayCommandWithParameter<Exercise>(exercise => _ = RemoveExerciseFromQuiz(exercise));
+            InitView();
+        }
 
-            _ = Task.Run(async () => await LoadExercisesAsync());
-            _ = Task.Run(async () => await InitializeViewModel());
+        public async void InitView()
+        {
+            await LoadExercisesAsync();
+            await InitializeViewModel();
         }
 
         public Quiz SelectedQuiz
