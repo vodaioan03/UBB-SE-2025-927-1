@@ -39,10 +39,8 @@ namespace Duo.Services
 
         public async Task<int> CreateUserAsync(User user)
         {
-            if (user == null)
-            {
-                throw new ArgumentNullException(nameof(user));
-            }
+            ArgumentNullException.ThrowIfNull(user);
+
             var response = await httpClient.PostAsJsonAsync($"{BaseUrl}/register", user);
             response.EnsureSuccessStatusCode();
 
@@ -56,11 +54,13 @@ namespace Duo.Services
             {
                 throw new ArgumentException("User ID must be greater than 0.", nameof(userId));
             }
+
             var user = await GetByIdAsync(userId);
             user.NumberOfCompletedSections = newNrOfSectionsCompleted;
             user.NumberOfCompletedQuizzesInSection = newNrOfQuizzesInSectionCompleted;
 
-            await httpClient.PutAsJsonAsync($"{BaseUrl}/update", user);
+            var response = await httpClient.PutAsJsonAsync($"{BaseUrl}/update", user);
+            response.EnsureSuccessStatusCode();
         }
 
         public async Task IncrementUserProgressAsync(int userId)
@@ -69,19 +69,20 @@ namespace Duo.Services
             {
                 throw new ArgumentException("User ID must be greater than 0.", nameof(userId));
             }
+
             var user = await GetByIdAsync(userId);
             user.NumberOfCompletedQuizzesInSection++;
 
-            await httpClient.PutAsJsonAsync($"{BaseUrl}/update", user);
+            var response = await httpClient.PutAsJsonAsync($"{BaseUrl}/update", user);
+            response.EnsureSuccessStatusCode();
         }
 
         public async Task UpdateUserAsync(User user)
         {
-            if (user == null)
-            {
-                throw new ArgumentNullException(nameof(user));
-            }
-            await httpClient.PutAsJsonAsync($"{BaseUrl}", user);
+            ArgumentNullException.ThrowIfNull(user);
+
+            var response = await httpClient.PutAsJsonAsync($"{BaseUrl}", user);
+            response.EnsureSuccessStatusCode();
         }
     }
 }
