@@ -70,7 +70,7 @@ namespace Duo.Services
 
         public async Task EnrollUser(int userId, int courseId)
         {
-            var response = await httpClient.PostAsJsonAsync($"{url}/api/course/enroll", new { UserId = userId, CourseId = courseId });
+            var response = await httpClient.PostAsJsonAsync($"{url}/api/course/enroll", new { userId, courseId });
             response.EnsureSuccessStatusCode();
         }
 
@@ -98,7 +98,7 @@ namespace Duo.Services
 
         public async Task UpdateTimeSpent(int userId, int courseId, int seconds)
         {
-            var response = await httpClient.PostAsJsonAsync($"{url}/api/course/updateTime", new { UserId = userId, CourseId = courseId, Seconds = seconds });
+            var response = await httpClient.PutAsJsonAsync($"{url}/api/course/update-time", new { userId, courseId, seconds });
             response.EnsureSuccessStatusCode();
         }
 
