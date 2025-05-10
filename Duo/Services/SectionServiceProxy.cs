@@ -48,9 +48,10 @@ namespace Duo.Services
 
         public async Task DeleteSection(int sectionId)
         {
-            await this.httpClient
+            var response = await this.httpClient
                     .DeleteAsync($"{this.url}/api/sections/{sectionId}")
                     .ConfigureAwait(false);
+            response.EnsureSuccessStatusCode();
         }
 
         public async Task<List<Section>> GetAllSections()
@@ -85,9 +86,10 @@ namespace Duo.Services
 
         public async Task UpdateSection(Section section)
         {
-            await this.httpClient
+            var response = await this.httpClient
                     .PutAsJsonAsync($"{this.url}/api/sections/update", section)
                     .ConfigureAwait(false);
+            response.EnsureSuccessStatusCode();
         }
 
         public async Task<bool> TrackCompletion(int sectionId, bool isCompleted)
