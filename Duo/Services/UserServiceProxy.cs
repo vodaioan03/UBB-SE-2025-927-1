@@ -2,11 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Json;
-using System.Text.Json;
 using System.Threading.Tasks;
-// using ABI.System;
 using Duo.Models;
-using Duo.Models.Exercises;
 using Duo.Models.Quizzes;
 
 namespace Duo.Services
@@ -14,7 +11,7 @@ namespace Duo.Services
     public class UserServiceProxy : IUserServiceProxy
     {
         private readonly HttpClient httpClient;
-        private const string BaseUrl = "https://localhost:7174/api/User";
+        private const string BaseUrl = "api/user";
 
         public UserServiceProxy(HttpClient httpClient)
         {
@@ -27,22 +24,7 @@ namespace Duo.Services
             {
                 throw new ArgumentException("User ID must be greater than 0.", nameof(userId));
             }
-            var response = await httpClient.GetAsync($"{BaseUrl}/{userId}");
-            response.EnsureSuccessStatusCode();
-
-            string responseJson = await response.Content.ReadAsStringAsync();
-
-            using JsonDocument doc = JsonDocument.Parse(responseJson);
-
-            User newUser = new User()
-            {
-                UserId = doc.RootElement.GetProperty("userId").GetInt32(),
-                Username = doc.RootElement.GetProperty("username").GetString(),
-                NumberOfCompletedSections = doc.RootElement.GetProperty("numberOfCompletedSections").GetInt32(),
-                NumberOfCompletedQuizzesInSection = doc.RootElement.GetProperty("numberOfCompletedQuizzesInSection").GetInt32()
-            };
-
-            return newUser;
+            return await httpClient.GetFromJsonAsync<User>($"{BaseUrl}/{userId}");
         }
 
         public async Task<User> GetByUsernameAsync(string username)
@@ -57,10 +39,8 @@ namespace Duo.Services
 
         public async Task<int> CreateUserAsync(User user)
         {
-            if (user == null)
-            {
-                throw new ArgumentNullException(nameof(user));
-            }
+            ArgumentNullException.ThrowIfNull(user);
+
             var response = await httpClient.PostAsJsonAsync($"{BaseUrl}/register", user);
             response.EnsureSuccessStatusCode();
 
@@ -74,11 +54,13 @@ namespace Duo.Services
             {
                 throw new ArgumentException("User ID must be greater than 0.", nameof(userId));
             }
+
             var user = await GetByIdAsync(userId);
             user.NumberOfCompletedSections = newNrOfSectionsCompleted;
             user.NumberOfCompletedQuizzesInSection = newNrOfQuizzesInSectionCompleted;
 
-            await httpClient.PutAsJsonAsync($"{BaseUrl}/update", user);
+            var response = await httpClient.PutAsJsonAsync($"{BaseUrl}/update", user);
+            response.EnsureSuccessStatusCode();
         }
 
         public async Task IncrementUserProgressAsync(int userId)
@@ -87,19 +69,20 @@ namespace Duo.Services
             {
                 throw new ArgumentException("User ID must be greater than 0.", nameof(userId));
             }
+
             var user = await GetByIdAsync(userId);
             user.NumberOfCompletedQuizzesInSection++;
 
-            await httpClient.PutAsJsonAsync($"{BaseUrl}/update", user);
+            var response = await httpClient.PutAsJsonAsync($"{BaseUrl}/update", user);
+            response.EnsureSuccessStatusCode();
         }
 
         public async Task UpdateUserAsync(User user)
         {
-            if (user == null)
-            {
-                throw new ArgumentNullException(nameof(user));
-            }
-            await httpClient.PutAsJsonAsync($"{BaseUrl}", user);
+            ArgumentNullException.ThrowIfNull(user);
+
+            var response = await httpClient.PutAsJsonAsync($"{BaseUrl}", user);
+            response.EnsureSuccessStatusCode();
         }
     }
 }
