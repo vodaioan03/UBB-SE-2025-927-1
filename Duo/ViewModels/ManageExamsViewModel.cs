@@ -110,7 +110,7 @@ namespace Duo.ViewModels
         {
             try
             {
-                List<Exam> exams = await quizService.GetAllAvailableExams();
+                List<Exam> exams = await quizService.GetAllExams();
                 Exams.Clear();
 
                 foreach (var exam in exams)

@@ -8,6 +8,8 @@ namespace Duo.Services.Interfaces
     public interface IQuizServiceProxy
     {
         Task<List<Quiz>> GetAsync();
+        Task<List<Exam>> GetAllExams();
+        Task<List<Quiz>> GetAllAvailableQuizzesAsync();
         Task<List<Exam>> GetAllAvailableExamsAsync();
         Task<Quiz> GetQuizByIdAsync(int id);
         Task<Exam> GetExamByIdAsync(int id);

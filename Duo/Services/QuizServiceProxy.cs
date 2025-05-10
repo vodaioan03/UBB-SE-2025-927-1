@@ -42,6 +42,50 @@ namespace Duo.Services
             return quizzes;
         }
 
+        public async Task<List<Quiz>> GetAllAvailableQuizzesAsync()
+        {
+            var result = await httpClient.GetAsync($"{url}quiz/get-available");
+            if (result == null)
+            {
+                throw new QuizServiceProxyException("Received null response when fetching quiz list.");
+            }
+            result.EnsureSuccessStatusCode();
+            string responseJson = await result.Content.ReadAsStringAsync();
+            var quizzes = new List<Quiz>();
+            using JsonDocument doc = JsonDocument.Parse(responseJson);
+
+            foreach (var element in doc.RootElement.EnumerateArray())
+            {
+                var quizJsonString = element.GetRawText();
+                var quiz = JsonSerializationUtil.DeserializeQuiz(quizJsonString);
+                quizzes.Add(quiz);
+            }
+
+            return quizzes;
+        }
+
+        public async Task<List<Exam>> GetAllExams()
+        {
+            var result = await httpClient.GetAsync($"{url}exam/list");
+            if (result == null)
+            {
+                throw new QuizServiceProxyException("Received null response when fetching available exams.");
+            }
+            result.EnsureSuccessStatusCode();
+            string responseJson = await result.Content.ReadAsStringAsync();
+            var exams = new List<Exam>();
+            using JsonDocument doc = JsonDocument.Parse(responseJson);
+
+            foreach (var element in doc.RootElement.EnumerateArray())
+            {
+                var examJsonString = element.GetRawText();
+                var exam = JsonSerializationUtil.DeserializeExamWithTypedExercises(examJsonString);
+                exams.Add(exam);
+            }
+
+            return exams;
+        }
+
         public async Task<List<Exam>> GetAllAvailableExamsAsync()
         {
             var result = await httpClient.GetAsync($"{url}exam/get-available");

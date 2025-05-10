@@ -1,5 +1,6 @@
 ﻿using Duo.Api.Models.Exercises;
 using Duo.Api.Models.Quizzes;
+using Duo.Api.Models.Sections;
 using Duo.Api.Repositories;
 using System.Text.Json;
 
@@ -125,5 +126,76 @@ namespace Duo.Api.Helpers
 
             return quiz;
         }
+
+        public static async Task<Section> DeserializeSection(string json, IRepository repo)
+        {
+            var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true,
+            };
+
+            using JsonDocument doc = JsonDocument.Parse(json);
+            var root = doc.RootElement;
+
+            int id = root.GetProperty("Id").GetInt32();
+
+            int? subjectId = root.TryGetProperty("SubjectId", out var subjectProp) && subjectProp.ValueKind != JsonValueKind.Null
+                ? subjectProp.GetInt32()
+                : null;
+
+            string title = root.GetProperty("Title").GetString();
+            string description = root.GetProperty("Description").GetString();
+
+            // Set RoadmapId to -1 if missing or null
+            int roadmapId = root.TryGetProperty("RoadmapId", out var roadmapProp) && roadmapProp.ValueKind != JsonValueKind.Null
+                ? roadmapProp.GetInt32()
+                : -1;
+
+            int? orderNumber = root.TryGetProperty("OrderNumber", out var orderProp) && orderProp.ValueKind != JsonValueKind.Null
+                ? orderProp.GetInt32()
+                : null;
+
+            var section = new Section
+            {
+                Id = id,
+                SubjectId = subjectId,
+                Title = title,
+                Description = description,
+                RoadmapId = roadmapId,
+                OrderNumber = orderNumber,
+            };
+
+            // Deserialize and attach quizzes
+            if (root.TryGetProperty("QuizIds", out var quizIdsElement) && quizIdsElement.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var quizIdElement in quizIdsElement.EnumerateArray())
+                {
+                    int quizId = quizIdElement.GetInt32();
+                    var quiz = await repo.GetQuizByIdAsync(quizId);
+                    if (quiz == null)
+                    {
+                        throw new InvalidOperationException($"Quiz with ID {quizId} not found.");
+                    }
+
+                    section.Quizzes.Add(quiz);
+                }
+            }
+
+            // Deserialize and attach exam
+            if (root.TryGetProperty("ExamId", out var examIdElement) && examIdElement.ValueKind != JsonValueKind.Null)
+            {
+                int examId = examIdElement.GetInt32();
+                var exam = await repo.GetExamByIdAsync(examId);
+                if (exam == null)
+                {
+                    throw new InvalidOperationException($"Exam with ID {examId} not found.");
+                }
+
+                section.Exam = exam;
+            }
+
+            return section;
+        }
+
     }
 }

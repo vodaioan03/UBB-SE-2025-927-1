@@ -32,7 +32,7 @@ namespace Duo.Services
 
         public async Task<int> AddSection(Section section)
         {
-            ValidationHelper.ValidateSection(section);
+            // ValidationHelper.ValidateSection(section);
             var allSections = await GetAllSections();
             section.OrderNumber = allSections.Count + 1;
             return await sectionServiceProxy.AddSection(section);

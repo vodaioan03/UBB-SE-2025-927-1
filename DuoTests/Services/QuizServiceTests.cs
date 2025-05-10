@@ -49,7 +49,7 @@ namespace Duo.Tests.Services
             var list = new List<Quiz> { Q(1), Q(2) };
             proxyMock.Setup(p => p.GetAsync()).ReturnsAsync(list);
 
-            var result = await service.Get();
+            var result = await service.GetAllQuizzes();
 
             CollectionAssert.AreEqual(list, result);
             proxyMock.VerifyAll();
@@ -60,16 +60,16 @@ namespace Duo.Tests.Services
         public async Task Get_ThrowsQuizServiceException_OnError()
         {
             proxyMock.Setup(p => p.GetAsync()).ThrowsAsync(new InvalidOperationException("boom"));
-            await service.Get();
+            await service.GetAllQuizzes();
         }
 
         [TestMethod]
         public async Task GetAllAvailableExams_ReturnsList()
         {
             var list = new List<Exam> { E(3) };
-            proxyMock.Setup(p => p.GetAllAvailableExamsAsync()).ReturnsAsync(list);
+            proxyMock.Setup(p => p.GetAllExams()).ReturnsAsync(list);
 
-            var result = await service.GetAllAvailableExams();
+            var result = await service.GetAllExams();
 
             CollectionAssert.AreEqual(list, result);
             proxyMock.VerifyAll();
@@ -79,9 +79,9 @@ namespace Duo.Tests.Services
         [ExpectedException(typeof(QuizServiceException))]
         public async Task GetAllAvailableExams_Throws_OnError()
         {
-            proxyMock.Setup(p => p.GetAllAvailableExamsAsync())
+            proxyMock.Setup(p => p.GetAllExams())
                      .ThrowsAsync(new Exception("fail"));
-            await service.GetAllAvailableExams();
+            await service.GetAllExams();
         }
 
         [TestMethod]

@@ -15,8 +15,10 @@ namespace Duo.Services
         Task<int> CreateQuiz(Quiz quiz);
         Task DeleteExam(int examId);
         Task DeleteQuiz(int quizId);
-        Task<List<Quiz>> Get();
+        Task<List<Quiz>> GetAllAvailableQuizzes();
         Task<List<Exam>> GetAllAvailableExams();
+        Task<List<Quiz>> GetAllQuizzes();
+        Task<List<Exam>> GetAllExams();
         Task<List<Quiz>> GetAllQuizzesFromSection(int sectionId);
         Task<Exam> GetExamById(int examId);
         Task<Exam?> GetExamFromSection(int sectionId);

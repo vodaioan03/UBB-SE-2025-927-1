@@ -13,31 +13,22 @@
     <Page.DataContext>
         <viewmodels:CreateSectionViewModel x:Name="ViewModel"/>
     </Page.DataContext>
-    
-    <Page.Resources>
-        <!-- Template for the main list with remove button -->
-        <DataTemplate x:Key="ExamItemTemplate">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-                <StackPanel Orientation="Horizontal"
-                        Spacing="8">
-                    <TextBlock Text="Exam #"/>
-                    <TextBlock Text="{Binding Id}"/>
-                </StackPanel>
-                <Button Grid.Column="1"
-                    Content="Remove"
-                    Style="{ThemeResource TextBlockButtonStyle}"/>
-            </Grid>
-        </DataTemplate>
 
+    <Page.Resources>
         <!-- Template for selection dialog without remove button -->
         <DataTemplate x:Key="QuizSelectionItemTemplate">
             <StackPanel Orientation="Horizontal"
                     Spacing="8">
                 <TextBlock Text="Quiz #"/>
+                <TextBlock Text="{Binding Id}"/>
+            </StackPanel>
+        </DataTemplate>
+
+        <!-- Template for selection dialog without remove button -->
+        <DataTemplate x:Key="ExamSelectionItemTemplate">
+            <StackPanel Orientation="Horizontal"
+            Spacing="8">
+                <TextBlock Text="Exam #"/>
                 <TextBlock Text="{Binding Id}"/>
             </StackPanel>
         </DataTemplate>
@@ -143,9 +134,28 @@
                           Height="80"
                           BorderThickness="1"
                           BorderBrush="{ThemeResource SystemControlForegroundBaseLowBrush}"
-                          Padding="8"
-                          ItemTemplate="{StaticResource ExamItemTemplate}">
-
+                          Padding="8">
+                        <ListView.ItemTemplate>
+                            <DataTemplate x:DataType="local1:Exam">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Orientation="Horizontal"
+                                                Spacing="8">
+                                        <TextBlock Text="Exam #"/>
+                                        <TextBlock Text="{Binding Id}"/>
+                                    </StackPanel>
+                                    <Button Grid.Column="1"
+                                        Content="Remove"
+                                        Command="{x:Bind ViewModel.RemoveExamCommand}"
+                                        CommandParameter="{Binding}"
+                                        Style="{ThemeResource TextBlockButtonStyle}"/>          
+                                </Grid>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                        
                     </ListView>
                 </StackPanel>
             </ScrollViewer>

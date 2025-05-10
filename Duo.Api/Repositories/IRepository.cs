@@ -321,6 +321,12 @@ namespace Duo.Api.Repositories
         /// <returns>An object representing the quiz submitted by the user</returns>
         Task<QuizSubmissionEntity?> GetSubmissionByQuizIdAsync(int quizId);
 
+        /// <summary>
+        /// Retrieves a list of all available quizzes asynchronously.
+        /// </summary>
+        /// <returns>A list of all available quizzes in the database.</returns>
+        public Task<List<Quiz>> GetAvailableQuizzesAsync();
+
         #endregion
 
         #region Courses

@@ -642,6 +642,18 @@ namespace Duo.Api.Repositories
             return new QuizResult();
         }
 
+        /// <summary>
+        /// Asynchronously retrieves all available quizzes from the database.
+        /// </summary>
+        /// <returns></returns>
+        public async Task<List<Quiz>> GetAvailableQuizzesAsync()
+        {
+            return await context.Quizzes
+                .Include(e => e.Exercises) // Ensure exercises related to the quizzes are included
+                .Where(e => e.SectionId == null) // Filter quizzes with no section assigned
+                .ToListAsync();
+        }
+
         #endregion
 
         #region Courses
@@ -1053,7 +1065,10 @@ namespace Duo.Api.Repositories
         /// <returns>A list of all sections in the database.</returns>
         public async Task<List<Section>> GetSectionsFromDbAsync()
         {
-            return await context.Sections.ToListAsync();
+            return await context.Sections.
+                Include(section => section.Quizzes).
+                Include(section => section.Exam).
+                ToListAsync();
         }
 
         /// <summary>
