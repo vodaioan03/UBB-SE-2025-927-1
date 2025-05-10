@@ -6,6 +6,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using Azure;
 using Duo.Models.Sections;
 using Duo.Models.Sections.DTO;
 using Duo.Services.Interfaces;
@@ -68,13 +69,14 @@ namespace Duo.Services
 
         public async Task<List<Section>> GetAllSections()
         {
-            /*return await this.httpClient
+            var list = await this.httpClient
                     .GetFromJsonAsync<List<Section>>($"{url}/api/section/list")
-                    .ConfigureAwait(false);*/
-            var response = await this.httpClient
-                    .GetFromJsonAsync<List<Section>>($"{url}/api/section/list");
-            response.EnsureSuccessStatusCode();
-            return await response.Content.ReadFromJsonAsync<List<Section>>() ?? new List<Section>();
+                    .ConfigureAwait(false);
+            if (list == null)
+            {
+                throw new InvalidOperationException("Empty or invalid response from server.");
+            }
+            return list;
         }
 
         public async Task<List<Section>> GetByRoadmapId(int roadmapId)
