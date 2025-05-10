@@ -177,7 +177,7 @@ namespace Duo.Api.Controllers
         {
             if (!data.TryGetValue("userId", out var userIdObj) || !data.TryGetValue("courseId", out var courseIdObj) || !data.TryGetValue("seconds", out var secondsObj))
             {
-                return this.BadRequest("Missing userId or courseId");
+                return this.BadRequest("Missing one or more required parameters: userId, courseId, or seconds.");
             }
 
             var userId = ((JsonElement)data["userId"]).GetInt32();
