@@ -29,26 +29,17 @@ namespace Duo.Services
         public async Task<int> AddAsync(Roadmap roadmap)
         {
             var response = await httpClient.PostAsJsonAsync($"{url}api/Roadmaps", roadmap);
+            response.EnsureSuccessStatusCode();
 
-            if (response.IsSuccessStatusCode)
-            {
-                var result = await response.Content.ReadFromJsonAsync<Roadmap>();
-                return result?.Id ?? 0;
-            }
-            else
-            {
-                throw new Exception("Failed to add roadmap");
-            }
+            var result = await response.Content.ReadFromJsonAsync<Roadmap>();
+            return result?.Id ?? 0;
         }
 
         public async Task DeleteAsync(Roadmap roadmap)
         {
             var id = roadmap.Id;
             var response = await httpClient.DeleteAsync($"{url}api/Roadmaps/{id}");
-            if (!response.IsSuccessStatusCode)
-            {
-                throw new Exception("Failed to delete roadmap");
-            }
+            response.EnsureSuccessStatusCode();
         }
 
         public async Task<Roadmap> GetByIdAsync(int roadmapId)
