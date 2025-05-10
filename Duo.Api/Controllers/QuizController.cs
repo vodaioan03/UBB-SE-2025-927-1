@@ -405,6 +405,47 @@ namespace Duo.Api.Controllers
             }
         }
 
+
+        /// <summary>
+        /// Retrieves all available quiz.
+        /// </summary>
+        /// <returns>A list of available quizzes.</returns>
+        [HttpGet("get-available")]
+        public async Task<IActionResult> GetAvailableQuizzes()
+        {
+            try
+            {
+                var quizzes = await this.repository.GetAvailableQuizzesAsync();
+                List<Quiz> quizList = new List<Quiz>(quizzes.Count);
+
+                foreach (var quiz in quizzes)
+                {
+                    var exercises = quiz.Exercises.ToList();
+                    List<Exercise> exercisesWithType = new List<Exercise>(exercises.Count);
+                    foreach (var exercise in exercises)
+                    {
+                        var ex = await this.repository.GetExerciseByIdAsync(exercise.ExerciseId);
+                        if (ex == null)
+                        {
+                            return this.NotFound();
+                        }
+
+                        exercisesWithType.Add(ex);
+                    }
+
+                    var mergedExercises = ExerciseMerger.MergeExercises(exercisesWithType);
+                    quiz.Exercises = mergedExercises;
+                    quizList.Add(quiz);
+                }
+
+                return Ok(quizList);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
         #endregion
     }
 }

@@ -82,7 +82,7 @@ namespace Duo.Views.Pages
                     ItemsSource = exams,
                     SelectionMode = ListViewSelectionMode.Single,
                     MaxHeight = 300,
-                    ItemTemplate = (DataTemplate)Resources["QuizSelectionItemTemplate"]
+                    ItemTemplate = (DataTemplate)Resources["ExamSelectionItemTemplate"]
                 };
 
                 dialog.Content = listView;

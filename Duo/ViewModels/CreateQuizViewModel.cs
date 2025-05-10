@@ -152,7 +152,7 @@ namespace Duo.ViewModels
             try
             {
                 Debug.WriteLine("Creating quiz...");
-                var newQuiz = new Quiz(0, 1, null);
+                var newQuiz = new Quiz(0, null, null);
 
                 foreach (var exercise in SelectedExercises)
                 {

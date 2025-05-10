@@ -29,9 +29,9 @@ namespace Duo.Services
             this.serviceProxy = serviceProxy ?? throw new ArgumentNullException(nameof(serviceProxy));
         }
 
-        public async Task<List<Quiz>> Get()
+        public async Task<List<Quiz>> GetAllAvailableQuizzes()
         {
-                return await serviceProxy.GetAsync().ConfigureAwait(false);
+                return await serviceProxy.GetAllAvailableQuizzesAsync().ConfigureAwait(false);
         }
 
         public async Task<List<Exam>> GetAllAvailableExams()
@@ -81,8 +81,9 @@ namespace Duo.Services
 
         public async Task<int> CreateQuiz(Quiz quiz)
         {
-                await serviceProxy.CreateQuizAsync(quiz).ConfigureAwait(false);
-                return quiz.Id;
+            // ValidationHelper.ValidateQuiz(quiz);
+            await serviceProxy.CreateQuizAsync(quiz).ConfigureAwait(false);
+            return quiz.Id;
         }
 
         public async Task AddExercisesToQuiz(int quizId, List<Exercise> exercises)
@@ -128,7 +129,8 @@ namespace Duo.Services
 
         public async Task<int> CreateExam(Exam exam)
         {
-                await serviceProxy.CreateExamAsync(exam).ConfigureAwait(false);
+            // ValidationHelper.ValidateExam(exam);
+            await serviceProxy.CreateExamAsync(exam).ConfigureAwait(false);
                 return exam.Id;
         }
 
@@ -140,6 +142,16 @@ namespace Duo.Services
         public async Task<QuizResult> GetResultAsync(int quizId)
         {
                 return await serviceProxy.GetResultAsync(quizId).ConfigureAwait(false);
+        }
+
+        public async Task<List<Exam>> GetAllExams()
+        {
+            return await serviceProxy.GetAllExams().ConfigureAwait(false);
+        }
+
+        public async Task<List<Quiz>> GetAllQuizzes()
+        {
+            return await serviceProxy.GetAsync().ConfigureAwait(false);
         }
     }
 }

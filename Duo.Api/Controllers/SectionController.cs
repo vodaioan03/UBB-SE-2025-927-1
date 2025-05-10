@@ -1,5 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
 using Duo.Api.DTO.Requests;
+using Duo.Api.Helpers;
 using Duo.Api.Models.Sections;
 using Duo.Api.Repositories;
 using Microsoft.AspNetCore.Mvc;
@@ -65,21 +67,15 @@ namespace Duo.Api.Controllers
         [HttpPost("add")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> AddSection([FromForm] AddSectionRequest request)
+        public async Task<IActionResult> AddSection([FromBody] JsonElement rawJson)
         {
             try
             {
-                var section = new Section
-                {
-                    SubjectId = request.SubjectId,
-                    Title = request.Title,
-                    Description = request.Description,
-                    RoadmapId = request.RoadmapId,
-                    OrderNumber = request.OrderNumber ?? await GetLastOrderNumberAsync(request.RoadmapId)
-                };
+                string json = rawJson.GetRawText();
+                var section = await JsonSerializationUtil.DeserializeSection(json, this.repository);
 
-                await repository.AddSectionAsync(section);
-                return Ok(new { message = "Section added successfully!" });
+                await this.repository.AddSectionAsync(section);
+                return Ok(new { message = "Section added successfully!", id = section.Id });
             }
             catch (Exception e)
             {
@@ -96,7 +92,7 @@ namespace Duo.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> RemoveSection([FromForm] int id)
+        public async Task<IActionResult> RemoveSection(int id)
         {
             try
             {
@@ -124,7 +120,7 @@ namespace Duo.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> GetSectionById(int id)
+        public async Task<IActionResult> GetSectionById([FromQuery] int id)
         {
             try
             {
@@ -154,7 +150,7 @@ namespace Duo.Api.Controllers
             try
             {
                 var sections = await repository.GetSectionsFromDbAsync();
-                return Ok(new { result = sections, message = "Successfully retrieved list of sections." });
+                return Ok(sections);
             }
             catch (Exception e)
             {

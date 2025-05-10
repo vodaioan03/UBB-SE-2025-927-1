@@ -12,6 +12,7 @@ using Duo.Models.Quizzes;
 using Duo.Models.Sections;
 using Duo.Services;
 using Duo.ViewModels.Base;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Duo.ViewModels
 {
@@ -30,6 +31,7 @@ namespace Duo.ViewModels
         public event Action<List<Quiz>> ShowListViewModalQuizes;
         public event Action<List<Exam>> ShowListViewModalExams;
         public ICommand RemoveQuizCommand { get; }
+        public ICommand RemoveExamCommand { get; }
         public ICommand SaveButtonCommand { get; }
         public ICommand OpenSelectQuizesCommand { get; }
         public ICommand OpenSelectExamsCommand { get; }
@@ -56,9 +58,10 @@ namespace Duo.ViewModels
             SaveButtonCommand = new RelayCommand((_) => _ = CreateSection());
 
             RemoveQuizCommand = new RelayCommandWithParameter<Quiz>(RemoveSelectedQuiz);
+            RemoveExamCommand = new RelayCommandWithParameter<Exam>(RemoveSelectedExam);
 
-            _ = Task.Run(async () => await GetQuizesAsync());
-            _ = Task.Run(async () => await GetExamAsync());
+            _ = GetQuizesAsync();
+            _ = GetExamsAsync();
         }
 
         public string SubjectText
@@ -80,6 +83,20 @@ namespace Duo.ViewModels
             {
                 Debug.WriteLine("Removing quiz...");
                 SelectedQuizes.Remove(quizToBeRemoved);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+                RaiseErrorMessage("Failed to remove quiz", ex.Message);
+            }
+        }
+
+        public void RemoveSelectedExam(Exam examToBeRemoved)
+        {
+            try
+            {
+                Debug.WriteLine("Removing quiz...");
+                SelectedExams.Remove(examToBeRemoved);
             }
             catch (Exception ex)
             {
@@ -121,7 +138,7 @@ namespace Duo.ViewModels
             try
             {
                 Quizes.Clear();
-                List<Quiz> quizes = await quizService.GetAllQuizzesFromSection(1);
+                List<Quiz> quizes = await quizService.GetAllAvailableQuizzes();
                 foreach (var quiz in quizes)
                 {
                     Debug.WriteLine(quiz);
@@ -136,13 +153,13 @@ namespace Duo.ViewModels
             }
         }
 
-        public async Task GetExamAsync()
+        public async Task GetExamsAsync()
         {
             try
             {
                 Exams.Clear();
-                Exam exam = await quizService.GetExamFromSection(1);
-                if (exam != null)
+                List<Exam> exams = await quizService.GetAllAvailableExams();
+                foreach (var exam in exams)
                 {
                     Exams.Add(exam);
                 }
@@ -217,6 +234,7 @@ namespace Duo.ViewModels
                 if (!SelectedExams.Contains(newExam))
                 {
                     Debug.WriteLine("Adding exam..." + newExam.Id);
+                    SelectedExams.Clear();
                     SelectedExams.Add(newExam);
                 }
             }
@@ -231,6 +249,11 @@ namespace Duo.ViewModels
         {
             try
             {
+                if (SubjectText.IsNullOrEmpty())
+                {
+                    throw new Exception("Missing Title");
+                }
+
                 Section newSection = new Section(0, 1, SubjectText, "placeholder description", 1, null);
                 newSection.Quizzes = SelectedQuizes.ToList();
                 foreach (var quiz in newSection.Quizzes)
@@ -249,11 +272,11 @@ namespace Duo.ViewModels
                 newSection.Exam = SelectedExams.ToList()[0];
                 newSection.Exam.Exercises = await exerciseService.GetAllExercisesFromExam(newSection.Exam.Id);
                 int sectionId = await sectionService.AddSection(newSection);
-                foreach (var quiz in SelectedQuizes.ToList())
+                /*foreach (var quiz in SelectedQuizes.ToList())
                 {
                     quiz.SectionId = sectionId;
                     await quizService.UpdateQuiz(quiz);
-                }
+                }*/
                 Debug.WriteLine("Section created: " + newSection);
             }
             catch (Exception ex)

@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Json;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Duo.Models.Sections;
+using Duo.Models.Sections.DTO;
 using Duo.Services.Interfaces;
 
 namespace Duo.Services
@@ -33,12 +35,22 @@ namespace Duo.Services
 
         public async Task<int> AddSection(Section section)
         {
-            var response = await this.httpClient.PostAsJsonAsync(
-                    $"{this.url}/api/sections/add",
-                    section).ConfigureAwait(false);
+            SectionDTO dto = SectionDTO.ToDto(section);
+            string json = JsonSerializer.Serialize(dto, new JsonSerializerOptions { WriteIndented = true });
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+            var response = await this.httpClient.PostAsync(
+                    $"{this.url}/api/section/add",
+                    content).ConfigureAwait(false);
 
             response.EnsureSuccessStatusCode();
-            return await response.Content.ReadFromJsonAsync<int>().ConfigureAwait(false);
+            var responseBody = await response.Content.ReadFromJsonAsync<SectionAddResponse>().ConfigureAwait(false);
+
+            if (responseBody == null)
+            {
+                throw new InvalidOperationException("Empty or invalid response from server.");
+            }
+
+            return responseBody.Id;
         }
 
         public async Task<int> CountSectionsFromRoadmap(int roadmapId)
@@ -51,14 +63,14 @@ namespace Duo.Services
         public async Task DeleteSection(int sectionId)
         {
             await this.httpClient
-                    .DeleteAsync($"{this.url}/api/sections/{sectionId}")
+                    .DeleteAsync($"{this.url}/api/section/{sectionId}")
                     .ConfigureAwait(false);
         }
 
         public async Task<List<Section>> GetAllSections()
         {
             return await this.httpClient
-                    .GetFromJsonAsync<List<Section>>($"{url}/api/sections")
+                    .GetFromJsonAsync<List<Section>>($"{url}/api/section/list")
                     .ConfigureAwait(false);
         }
 
