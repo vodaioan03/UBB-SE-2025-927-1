@@ -52,12 +52,16 @@ namespace Duo.Services
         // }
         public async Task<Roadmap> GetByIdAsync(int roadmapId)
         {
-            var response = await httpClient.GetFromJsonAsync<Roadmap>($"{url}api/Roadmaps/{roadmapId}");
-            if (response == null)
+            var response = await httpClient.GetAsync($"{url}api/Roadmaps/{roadmapId}");
+            response.EnsureSuccessStatusCode();
+
+            var roadmap = await response.Content.ReadFromJsonAsync<Roadmap>();
+            if (roadmap == null)
             {
                 throw new Exception("Roadmap not found");
             }
-            return response;
+
+            return roadmap;
         }
 
         // public async Task<Roadmap> GetByNameAsync(string roadmapName)

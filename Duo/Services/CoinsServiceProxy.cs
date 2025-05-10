@@ -51,7 +51,8 @@ namespace Duo.Services
         /// <returns>A task that represents the asynchronous operation.</returns>
         public async Task AddCoinsAsync(int userId, int amount)
         {
-            await httpClient.PostAsJsonAsync($"{url}/api/coins/add", new { UserId = userId, Amount = amount });
+            var response = await httpClient.PostAsJsonAsync($"{url}/api/coins/add", new { UserId = userId, Amount = amount });
+            response.EnsureSuccessStatusCode();
         }
 
         /// <summary>
