@@ -722,20 +722,20 @@ namespace Duo.Api.Repositories
         /// <returns>A task that represents the asynchronous operation.</returns>
         public async Task EnrollUserInCourseAsync(int userId, int courseId)
         {
-            var existing = await context.CourseCompletions
+            var existing = await context.Enrollments
                 .FirstOrDefaultAsync(cc => cc.UserId == userId && cc.CourseId == courseId);
 
             if (existing == null)
             {
-                var newCompletion = new CourseCompletion
+                var enrollment = new Enrollment
                 {
                     UserId = userId,
                     CourseId = courseId,
-                    CompletionRewardClaimed = false,
-                    TimedRewardClaimed = false,
-                    CompletedAt = DateTime.MinValue // Not yet completed
+                    EnrolledAt = DateTime.UtcNow,
+                    TimeSpent = 0,
+                    IsCompleted = false,
                 };
-                context.CourseCompletions.Add(newCompletion);
+                context.Enrollments.Add(enrollment);
                 await context.SaveChangesAsync();
             }
         }
@@ -748,8 +748,7 @@ namespace Duo.Api.Repositories
         /// <returns>True if the user is enrolled in the course, otherwise false.</returns>
         public async Task<bool> IsUserEnrolledInCourseAsync(int userId, int courseId)
         {
-            return await context.CourseCompletions
-                .AnyAsync(cc => cc.UserId == userId && cc.CourseId == courseId);
+            return await context.Enrollments.FindAsync(userId, courseId) != null;
         }
 
         /// <summary>
@@ -760,10 +759,13 @@ namespace Duo.Api.Repositories
         /// <returns>True if the course is completed, otherwise false.</returns>
         public async Task<bool> IsCourseCompletedAsync(int userId, int courseId)
         {
-            var completion = await context.CourseCompletions
-                .FirstOrDefaultAsync(cc => cc.UserId == userId && cc.CourseId == courseId);
-
-            return completion != null && completion.CompletedAt != DateTime.MinValue;
+            var enrollment = await this.context.Enrollments
+                .FirstOrDefaultAsync(e => e.UserId == userId && e.CourseId == courseId);
+            if (enrollment == null)
+            {
+                return false;
+            }
+            return enrollment.IsCompleted;
         }
 
         /// <summary>
@@ -797,10 +799,11 @@ namespace Duo.Api.Repositories
         /// <returns>A task that represents the asynchronous operation.</returns>
         public async Task UpdateTimeSpentAsync(int userId, int courseId, int timeInSeconds)
         {
-            var user = await context.Users.FindAsync(userId);
-            if (user != null)
+            var enrollment = await context.Enrollments
+                .FirstOrDefaultAsync(e => e.UserId == userId && e.CourseId == courseId);
+            if (enrollment != null)
             {
-                user.NumberOfCompletedSections += timeInSeconds;
+                enrollment.TimeSpent += timeInSeconds;
                 await context.SaveChangesAsync();
             }
         }
@@ -849,8 +852,8 @@ namespace Duo.Api.Repositories
         /// <returns>The time spent by the user in seconds, or 0 if no data exists.</returns>
         public async Task<int> GetTimeSpentAsync(int userId, int courseId)
         {
-            var user = await context.Users.FindAsync(userId);
-            return user?.NumberOfCompletedSections ?? 0;
+            var time = await context.Enrollments.FindAsync(userId, courseId);
+            return time?.TimeSpent ?? 0;
         }
 
         /// <summary>

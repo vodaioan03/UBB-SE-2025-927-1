@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
 using Duo.Api.Models;
 using Duo.Api.Repositories;
 using Microsoft.AspNetCore.Mvc;
@@ -102,8 +103,16 @@ namespace Duo.Api.Controllers
         /// <param name="courseId">The ID of the course.</param>
         /// <returns>Ok if enrollment is successful.</returns>
         [HttpPost("enroll")]
-        public async Task<IActionResult> Enroll([FromForm] int userId, [FromForm] int courseId)
+        public async Task<IActionResult> Enroll([FromBody] Dictionary<string, object> data)
         {
+            if (!data.TryGetValue("userId", out var userIdObj) || !data.TryGetValue("courseId", out var courseIdObj))
+            {
+                return this.BadRequest("Missing userId or courseId");
+            }
+
+            var userId = ((JsonElement)data["userId"]).GetInt32();
+            var courseId = ((JsonElement)data["courseId"]).GetInt32();
+
             await repository.EnrollUserInCourseAsync(userId, courseId);
             return Ok();
         }
@@ -164,10 +173,19 @@ namespace Duo.Api.Controllers
         /// <param name="timeInSeconds">The time in seconds to add.</param>
         /// <returns>Ok if updated.</returns>
         [HttpPut("update-time")]
-        public async Task<IActionResult> UpdateTime([FromForm] int userId, [FromForm] int courseId, [FromForm] int timeInSeconds)
+        public async Task<IActionResult> UpdateTime([FromBody] Dictionary<string, object> data)
         {
-            await repository.UpdateTimeSpentAsync(userId, courseId, timeInSeconds);
-            return Ok();
+            if (!data.TryGetValue("userId", out var userIdObj) || !data.TryGetValue("courseId", out var courseIdObj) || !data.TryGetValue("seconds", out var secondsObj))
+            {
+                return this.BadRequest("Missing one or more required parameters: userId, courseId, or seconds.");
+            }
+
+            var userId = ((JsonElement)data["userId"]).GetInt32();
+            var courseId = ((JsonElement)data["courseId"]).GetInt32();
+            var seconds = ((JsonElement)data["seconds"]).GetInt32();
+
+            await this.repository.UpdateTimeSpentAsync(userId, courseId, seconds);
+            return this.Ok();
         }
 
         /// <summary>
