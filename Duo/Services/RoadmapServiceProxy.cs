@@ -20,36 +20,28 @@ namespace Duo.Services
             this.httpClient = httpClient;
         }
 
-        // public async Task<List<Roadmap>> GetAllAsync()
-        // {
-        //    var response = await httpClient.GetFromJsonAsync<List<Roadmap>>($"{url}api/Roadmaps");
-        //    return response ?? new List<Roadmap>();
-        // }
+        public async Task<List<Roadmap>> GetAllAsync()
+        {
+            var response = await httpClient.GetFromJsonAsync<List<Roadmap>>($"{url}api/Roadmaps");
+            return response ?? new List<Roadmap>();
+        }
 
-        // public async Task<int> AddAsync(Roadmap roadmap)
-        // {
-        //    var response = await httpClient.PostAsJsonAsync($"{url}api/Roadmaps", roadmap);
+        public async Task<int> AddAsync(Roadmap roadmap)
+        {
+            var response = await httpClient.PostAsJsonAsync($"{url}api/Roadmaps", roadmap);
+            response.EnsureSuccessStatusCode();
 
-        // if (response.IsSuccessStatusCode)
-        //    {
-        //        var result = await response.Content.ReadFromJsonAsync<Roadmap>();
-        //        return result?.Id ?? 0;
-        //    }
-        //    else
-        //    {
-        //        throw new Exception("Failed to add roadmap");
-        //    }
-        // }
+            var result = await response.Content.ReadFromJsonAsync<Roadmap>();
+            return result?.Id ?? 0;
+        }
 
-        // public async Task DeleteAsync(Roadmap roadmap)
-        // {
-        //    var id = roadmap.Id;
-        //    var response = await httpClient.DeleteAsync($"{url}api/Roadmaps/{id}");
-        //    if (!response.IsSuccessStatusCode)
-        //    {
-        //        throw new Exception("Failed to delete roadmap");
-        //    }
-        // }
+        public async Task DeleteAsync(Roadmap roadmap)
+        {
+            var id = roadmap.Id;
+            var response = await httpClient.DeleteAsync($"{url}api/Roadmaps/{id}");
+            response.EnsureSuccessStatusCode();
+        }
+
         public async Task<Roadmap> GetByIdAsync(int roadmapId)
         {
             var response = await httpClient.GetFromJsonAsync<Roadmap>($"{url}api/Roadmaps/{roadmapId}");
@@ -60,14 +52,14 @@ namespace Duo.Services
             return response;
         }
 
-        // public async Task<Roadmap> GetByNameAsync(string roadmapName)
-        // {
-        //    var response = await httpClient.GetFromJsonAsync<List<Roadmap>>($"{url}api/Roadmaps/search?name={roadmapName}");
-        //    if (response == null || !response.Any())
-        //    {
-        //        throw new Exception("Roadmap not found");
-        //    }
-        //    return response.FirstOrDefault();
-        // }
+        public async Task<Roadmap> GetByNameAsync(string roadmapName)
+        {
+            var response = await httpClient.GetFromJsonAsync<List<Roadmap>>($"{url}api/Roadmaps/search?name={roadmapName}");
+            if (response == null || !response.Any())
+            {
+                throw new Exception("Roadmap not found");
+            }
+            return response.FirstOrDefault();
+        }
     }
 }
