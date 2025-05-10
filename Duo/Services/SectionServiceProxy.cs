@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Json;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Duo.Models.Sections;
 using Duo.Services.Interfaces;
@@ -20,7 +18,7 @@ namespace Duo.Services
     public class SectionServiceProxy : ISectionServiceProxy
     {
         private readonly HttpClient httpClient;
-        private readonly string url = "https://localhost:7174";
+        private readonly string url = "http://localhost:7174";
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SectionServiceProxy"/> class.
@@ -50,9 +48,10 @@ namespace Duo.Services
 
         public async Task DeleteSection(int sectionId)
         {
-            await this.httpClient
+            var response = await this.httpClient
                     .DeleteAsync($"{this.url}/api/sections/{sectionId}")
                     .ConfigureAwait(false);
+            response.EnsureSuccessStatusCode();
         }
 
         public async Task<List<Section>> GetAllSections()
@@ -64,21 +63,10 @@ namespace Duo.Services
 
         public async Task<List<Section>> GetByRoadmapId(int roadmapId)
         {
-            var response = await this.httpClient.GetAsync($"{this.url}/api/Section/list/roadmap/{roadmapId}");
-            response.EnsureSuccessStatusCode();
-
-            var responseJson = await response.Content.ReadAsStringAsync();
-            using JsonDocument doc = JsonDocument.Parse(responseJson);
-            var result = doc.RootElement.GetProperty("result");
-            var sections = JsonSerializer.Deserialize<List<Section>>(result, new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true,
-                Converters =
-                {
-                    new JsonStringEnumConverter(JsonNamingPolicy.CamelCase)
-                }
-            });
-            return sections ?? new List<Section>();
+            return await this.httpClient
+                    .GetFromJsonAsync<List<Section>>(
+                        $"{this.url}/api/sections/roadmap/{roadmapId}")
+                    .ConfigureAwait(false);
         }
 
         public async Task<Section> GetSectionById(int sectionId)
@@ -98,9 +86,10 @@ namespace Duo.Services
 
         public async Task UpdateSection(Section section)
         {
-            await this.httpClient
+            var response = await this.httpClient
                     .PutAsJsonAsync($"{this.url}/api/sections/update", section)
                     .ConfigureAwait(false);
+            response.EnsureSuccessStatusCode();
         }
 
         public async Task<bool> TrackCompletion(int sectionId, bool isCompleted)
