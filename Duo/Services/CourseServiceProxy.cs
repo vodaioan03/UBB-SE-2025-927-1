@@ -41,7 +41,8 @@ namespace Duo.Services
 
         public async Task OpenModule(int userId, int moduleId)
         {
-            await httpClient.PostAsJsonAsync($"{url}/api/module/open", new { UserId = userId, ModuleId = moduleId });
+            var response = await httpClient.PostAsJsonAsync($"{url}/api/module/open", new { UserId = userId, ModuleId = moduleId });
+            response.EnsureSuccessStatusCode();
         }
 
         public async Task<List<Module>> GetModulesByCourseId(int courseId)
@@ -61,7 +62,8 @@ namespace Duo.Services
 
         public async Task EnrollUser(int userId, int courseId)
         {
-            await httpClient.PostAsJsonAsync($"{url}/api/course/enroll", new { UserId = userId, CourseId = courseId });
+            var response = await httpClient.PostAsJsonAsync($"{url}/api/course/enroll", new { UserId = userId, CourseId = courseId });
+            response.EnsureSuccessStatusCode();
         }
 
         public async Task<bool> IsUserEnrolled(int userId, int courseId)
@@ -71,7 +73,8 @@ namespace Duo.Services
 
         public async Task CompleteModule(int userId, int moduleId)
         {
-            await httpClient.PostAsJsonAsync($"{url}/api/module/complete", new { UserId = userId, ModuleId = moduleId });
+            var response = await httpClient.PostAsJsonAsync($"{url}/api/module/complete", new { UserId = userId, ModuleId = moduleId });
+            response.EnsureSuccessStatusCode();
         }
 
         public async Task<bool> IsCourseCompleted(int userId, int courseId)
@@ -81,12 +84,14 @@ namespace Duo.Services
 
         public async Task MarkCourseAsCompleted(int userId, int courseId)
         {
-            await httpClient.PostAsJsonAsync($"{url}/course/complete", new { UserId = userId, CourseId = courseId });
+            var response = await httpClient.PostAsJsonAsync($"{url}/course/complete", new { UserId = userId, CourseId = courseId });
+            response.EnsureSuccessStatusCode();
         }
 
         public async Task UpdateTimeSpent(int userId, int courseId, int seconds)
         {
-            await httpClient.PostAsJsonAsync($"{url}/api/course/updateTime", new { UserId = userId, CourseId = courseId, Seconds = seconds });
+            var response = await httpClient.PostAsJsonAsync($"{url}/api/course/updateTime", new { UserId = userId, CourseId = courseId, Seconds = seconds });
+            response.EnsureSuccessStatusCode();
         }
 
         public async Task<int> GetTimeSpent(int userId, int courseId)
@@ -96,7 +101,8 @@ namespace Duo.Services
 
         public async Task ClickModuleImage(int userId, int moduleId)
         {
-            await httpClient.PostAsJsonAsync($"{url}/api/module/clickImage", new { UserId = userId, ModuleId = moduleId });
+            var response = await httpClient.PostAsJsonAsync($"{url}/api/module/clickImage", new { UserId = userId, ModuleId = moduleId });
+            response.EnsureSuccessStatusCode();
         }
 
         public async Task<bool> IsModuleImageClicked(int userId, int moduleId)
@@ -127,13 +133,15 @@ namespace Duo.Services
         public async Task<bool> ClaimCompletionReward(int userId, int courseId)
         {
             var response = await httpClient.PostAsJsonAsync($"{url}/api/course/claimReward", new { UserId = userId, CourseId = courseId });
-            return response.IsSuccessStatusCode;
+            response.EnsureSuccessStatusCode();
+            return true;
         }
 
         public async Task<bool> ClaimTimedReward(int userId, int courseId, int timeSpent)
         {
             var response = await httpClient.PostAsJsonAsync($"{url}/api/course/claimTimedReward", new { UserId = userId, CourseId = courseId, TimeSpent = timeSpent });
-            return response.IsSuccessStatusCode;
+            response.EnsureSuccessStatusCode();
+            return true;
         }
 
         public async Task<int> GetCourseTimeLimit(int courseId)
@@ -154,8 +162,8 @@ namespace Duo.Services
                 "application/json");
 
             var response = await httpClient.PostAsync($"{url}/api/course/buyBonusModule", requestContent);
-
-            return response.IsSuccessStatusCode;
+            response.EnsureSuccessStatusCode();
+            return true;
         }
     }
 }
