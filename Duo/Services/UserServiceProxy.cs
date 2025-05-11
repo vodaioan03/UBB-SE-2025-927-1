@@ -93,7 +93,7 @@ namespace Duo.Services
                 throw new ArgumentNullException(nameof(user));
             }
 
-            var response = await httpClient.PutAsJsonAsync($"{BaseUrl}", user);
+            var response = await httpClient.PutAsJsonAsync($"{BaseUrl}/update", user);
             response.EnsureSuccessStatusCode();
         }
     }

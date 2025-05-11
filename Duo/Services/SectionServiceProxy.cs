@@ -7,6 +7,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Azure;
+using Duo.Models.Roadmap;
 using Duo.Models.Sections;
 using Duo.Models.Sections.DTO;
 using Duo.Services.Interfaces;
@@ -100,7 +101,7 @@ namespace Duo.Services
 
         public async Task<Section> GetSectionById(int sectionId)
         {
-            var response = await httpClient.GetAsync($"{url}/api/sections/{sectionId}");
+            var response = await httpClient.GetAsync($"{url}/api/Section/{sectionId}?id={sectionId}");
             response.EnsureSuccessStatusCode();
             var section = await response.Content.ReadFromJsonAsync<Section>();
             if (section == null)
