@@ -27,7 +27,7 @@ namespace Duo.Services
         /// <returns>The user's coin balance, or 0 if an error occurs.</returns>
         public async Task<int> GetUserCoinBalanceAsync(int userId)
         {
-            var response = await httpClient.GetFromJsonAsync<int>($"{url}/api/coins/balance/{userId}");
+            var response = await httpClient.GetFromJsonAsync<int>($"{url}/api/Coins/get-balance/{userId}");
             return response;
         }
 
@@ -39,7 +39,7 @@ namespace Duo.Services
         /// <returns><c>true</c> if the operation is successful; otherwise, <c>false</c>.</returns>
         public async Task<bool> TrySpendingCoinsAsync(int userId, int cost)
         {
-            var response = await httpClient.PostAsJsonAsync($"{url}/api/coins/spend", new { UserId = userId, Cost = cost });
+            var response = await httpClient.PostAsJsonAsync($"{url}/api/Coins/add-spent-coins", new { UserId = userId, Cost = cost });
             return response.IsSuccessStatusCode;
         }
 
@@ -51,7 +51,7 @@ namespace Duo.Services
         /// <returns>A task that represents the asynchronous operation.</returns>
         public async Task AddCoinsAsync(int userId, int amount)
         {
-            var response = await httpClient.PostAsJsonAsync($"{url}/api/coins/add", new { UserId = userId, Amount = amount });
+            var response = await httpClient.PostAsJsonAsync($"{url}/api/Coins/add", new { UserId = userId, Amount = amount });
             response.EnsureSuccessStatusCode();
         }
 
@@ -63,7 +63,7 @@ namespace Duo.Services
         public async Task<bool> ApplyDailyLoginBonusAsync(int userId)
         {
             Console.WriteLine("daily bonus endpoint hit");
-            var response = await httpClient.PostAsJsonAsync($"{url}/api/coins/dailybonus", new { UserId = userId });
+            var response = await httpClient.PostAsJsonAsync($"{url}/api/Coins/get-dailybonus", new { UserId = userId });
             return response.IsSuccessStatusCode;
         }
     }
