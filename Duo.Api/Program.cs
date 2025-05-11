@@ -232,12 +232,12 @@ namespace Duo.Api
             // Sections
             if (!db.Sections.Any())
             {
-                db.Sections.AddRange(Enumerable.Range(1, 10).Select(i => new Section
+                db.Sections.AddRange(Enumerable.Range(1, 3).Select(i => new Section
                 {
                     SubjectId = i,
                     Title = $"Section {i}",
                     Description = $"Description for Section {i}",
-                    RoadmapId = i,
+                    RoadmapId = 1,
                     OrderNumber = i,
                 }));
             }
@@ -309,9 +309,9 @@ namespace Duo.Api
             // Exams
             if (!db.Exams.Any())
             {
-                db.Exams.AddRange(Enumerable.Range(1, 10).Select(i => new Exam
+                db.Exams.AddRange(Enumerable.Range(1, 3).Select(i => new Exam
                 {
-                    SectionId = i,
+                    SectionId = (i % 3) + 1,
                 }));
             }
             db.SaveChanges();
@@ -319,10 +319,10 @@ namespace Duo.Api
             // Quizzes
             if (!db.Quizzes.Any())
             {
-                db.Quizzes.AddRange(Enumerable.Range(1, 10).Select(i => new Quiz
+                db.Quizzes.AddRange(Enumerable.Range(1, 9).Select(i => new Quiz
                 {
-                    SectionId = i,
-                    OrderNumber = i,
+                    SectionId = (i % 3) + 1,
+                    OrderNumber = (i / 3) + (i % 3),
                 }));
             }
             db.SaveChanges();
