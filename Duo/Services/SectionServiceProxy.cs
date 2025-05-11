@@ -41,7 +41,7 @@ namespace Duo.Services
             string json = JsonSerializer.Serialize(dto, new JsonSerializerOptions { WriteIndented = true });
             var content = new StringContent(json, Encoding.UTF8, "application/json");
             var response = await this.httpClient.PostAsync(
-                    $"{this.url}/api/section/add",
+                    $"{this.url}/api/Section/add",
                     content).ConfigureAwait(false);
 
             response.EnsureSuccessStatusCode();
@@ -57,21 +57,21 @@ namespace Duo.Services
 
         public async Task<int> CountSectionsFromRoadmap(int roadmapId)
         {
-            var response = await httpClient.GetAsync($"{url}/api/sections/count/{roadmapId}");
+            var response = await httpClient.GetAsync($"{url}/api/Section/get-section-count-on-roadmap");
             response.EnsureSuccessStatusCode();
             return await response.Content.ReadFromJsonAsync<int>();
         }
 
         public async Task DeleteSection(int sectionId)
         {
-            var response = await this.httpClient.DeleteAsync($"{url}/api/section/{sectionId}");
+            var response = await this.httpClient.DeleteAsync($"{url}/api/Section/{sectionId}");
             response.EnsureSuccessStatusCode();
         }
 
         public async Task<List<Section>> GetAllSections()
         {
             var list = await this.httpClient
-                    .GetFromJsonAsync<List<Section>>($"{url}/api/section/list")
+                    .GetFromJsonAsync<List<Section>>($"{url}/api/Section/get-all")
                     .ConfigureAwait(false);
             if (list == null)
             {
@@ -101,7 +101,8 @@ namespace Duo.Services
 
         public async Task<Section> GetSectionById(int sectionId)
         {
-            var response = await httpClient.GetAsync($"{url}/api/Section/{sectionId}?id={sectionId}");
+            var response = await httpClient.GetAsync($"{url}/api/Section/get-section-by-id");
+
             response.EnsureSuccessStatusCode();
             var section = await response.Content.ReadFromJsonAsync<Section>();
             if (section == null)
@@ -113,14 +114,14 @@ namespace Duo.Services
 
         public async Task<int> LastOrderNumberFromRoadmap(int roadmapId)
         {
-            var response = await httpClient.GetAsync($"{url}/api/sections/lastordernumber/{roadmapId}");
+            var response = await httpClient.GetAsync($"{url}/api/Section/get-last-from-roadmap");
             response.EnsureSuccessStatusCode();
             return await response.Content.ReadFromJsonAsync<int>();
         }
 
         public async Task UpdateSection(Section section)
         {
-            var response = await httpClient.PutAsJsonAsync($"{url}/api/sections/update", section);
+            var response = await httpClient.PutAsJsonAsync($"{url}/api/Section/patch", section);
             response.EnsureSuccessStatusCode();
         }
 

@@ -45,7 +45,7 @@ namespace Duo.Services
                     "FillInTheBlank" => JsonSerializer.Serialize((FillInTheBlankExercise)exercise, options),
                     _ => throw new NotSupportedException($"Exercise type '{exercise.Type}' is not supported.")
                 };
-                var response = await httpClient.PostAsync($"{url}api/Exercise", new StringContent(jsonExercise, Encoding.UTF8, "application/json"));
+                var response = await httpClient.PostAsync($"{url}api/Exercise/add", new StringContent(jsonExercise, Encoding.UTF8, "application/json"));
                 response.EnsureSuccessStatusCode();
 
                 // Deserialize the response to get the Id
@@ -74,7 +74,7 @@ namespace Duo.Services
 
         public async Task DeleteExercise(int exerciseId)
         {
-            var response = await httpClient.DeleteAsync($"{url}api/Exercise/{exerciseId}");
+            var response = await httpClient.DeleteAsync($"{url}api/Exercise/delete/{exerciseId}");
             response.EnsureSuccessStatusCode();
         }
 
@@ -82,7 +82,7 @@ namespace Duo.Services
         {
             try
             {
-                var response = await httpClient.GetAsync($"{url}api/Exercise");
+                var response = await httpClient.GetAsync($"{url}api/Exercise/get-all");
                 response.EnsureSuccessStatusCode();
 
                 string responseJson = await response.Content.ReadAsStringAsync();
@@ -131,7 +131,7 @@ namespace Duo.Services
 
         public async Task<List<Exercise>> GetAllExercisesFromExam(int examId)
         {
-            var response = await httpClient.GetAsync($"{url}api/Exercise/exam/{examId}");
+            var response = await httpClient.GetAsync($"{url}api/Exercise/get-exercises-by-exam/{examId}");
             response.EnsureSuccessStatusCode();
             string responseJson = await response.Content.ReadAsStringAsync();
             var exercises = JsonSerializationUtil.DeserializeExerciseList(responseJson);
@@ -140,7 +140,7 @@ namespace Duo.Services
 
         public async Task<List<Exercise>> GetAllExercisesFromQuiz(int quizId)
         {
-            var response = await httpClient.GetAsync($"{url}api/Exercise/quiz/{quizId}");
+            var response = await httpClient.GetAsync($"{url}api/Exercise/get-exercises-by-quiz/{quizId}");
             response.EnsureSuccessStatusCode();
             string responseJson = await response.Content.ReadAsStringAsync();
             var exercises = JsonSerializationUtil.DeserializeExerciseList(responseJson);
@@ -149,7 +149,7 @@ namespace Duo.Services
 
         public async Task<Exercise?> GetExerciseById(int exerciseId)
         {
-            var response = await httpClient.GetAsync($"{url}api/Exercise/{exerciseId}");
+            var response = await httpClient.GetAsync($"{url}api/Exercise/get-exercise-by-id");
             response.EnsureSuccessStatusCode();
             var exercise = await response.Content.ReadFromJsonAsync<Exercise>();
             return exercise ?? throw new InvalidOperationException("Exercise not found.");

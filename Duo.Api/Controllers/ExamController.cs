@@ -55,7 +55,7 @@ namespace Duo.Api.Controllers
         /// </summary>
         /// <param name="id">The ID of the exam to retrieve.</param>
         /// <returns>The exam if found; otherwise, NotFound.</returns>
-        [HttpGet("get")]
+        [HttpGet("get-exam-by-id")]
         public async Task<IActionResult> GetExam([FromQuery] int id)
         {
             try
@@ -108,7 +108,7 @@ namespace Duo.Api.Controllers
         /// Lists all exams in the database.
         /// </summary>
         /// <returns>A list of all exams.</returns>
-        [HttpGet("list")]
+        [HttpGet("get-all")]
         public async Task<IActionResult> ListExams()
         {
             try
@@ -236,7 +236,7 @@ namespace Duo.Api.Controllers
         /// </summary>
         /// <param name="sectionId">The ID of the section.</param>
         /// <returns>The exam if found; otherwise, NotFound.</returns>
-        [HttpGet("get-from-section")]
+        [HttpGet("get-exams-from-section")]
         public async Task<IActionResult> GetExamFromSection([FromQuery] int sectionId)
         {
             try
@@ -259,7 +259,7 @@ namespace Duo.Api.Controllers
         /// Retrieves all available exams.
         /// </summary>
         /// <returns>A list of available exams.</returns>
-        [HttpGet("get-available")]
+        [HttpGet("get-all-available")]
         public async Task<IActionResult> GetAvailableExams()
         {
             try
