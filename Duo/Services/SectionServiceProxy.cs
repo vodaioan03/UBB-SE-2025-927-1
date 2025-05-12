@@ -101,7 +101,7 @@ namespace Duo.Services
 
         public async Task<Section> GetSectionById(int sectionId)
         {
-            var response = await httpClient.GetAsync($"{url}/api/Section/get-section-by-id");
+            var response = await httpClient.GetAsync($"{url}/api/Section/get-section-by-id?id={sectionId}");
 
             response.EnsureSuccessStatusCode();
             var section = await response.Content.ReadFromJsonAsync<Section>();
